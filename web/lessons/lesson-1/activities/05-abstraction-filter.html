@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Activity 5 — Abstraction</title>
+  <link rel="stylesheet" href="../../../core/app.css" />
+  <script src="../assets/data.js"></script>
+  
+</head>
+<body>
+  <div class="topbar no-print">
+    <div class="container">
+      <div class="brand">
+        <b>Thinking like a Coder — Lesson 1</b>
+        <span>Offline interactive resources (HTML/CSS/JS)</span>
+      </div>
+      <div class="row">
+        <a class="pill" href="../index.html"><strong>HOME</strong> <span>Teacher hub</span></a>
+        <a class="pill" href="../student.html"><strong>STUDENT</strong> <span>Student hub</span></a>
+        <button class="btn" id="teacherToggle" type="button">Teacher mode: OFF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    
+<h1>Activity 5: Abstraction — keep the important details</h1>
+<div class="note">
+  <b>Goal:</b> Select details that matter for the task, and ignore the ones that do not change the outcome.
+</div>
+
+<div id="wrap" class="grid" style="grid-template-columns: 1fr; gap:14px"></div>
+
+<div class="card no-print" style="margin-top:14px">
+  <div class="row">
+    <button id="export" class="btn primary" type="button">Export</button>
+    <button id="reset" class="btn bad" type="button">Reset</button>
+  </div>
+</div>
+
+<div class="teacher-only card" id="teacherBlock" style="display:none; margin-top:14px">
+  <h2>Teacher mode note</h2>
+  <p>
+    This activity is meant to show that abstraction is not “removing lots of detail”.
+    It is removing <b>irrelevant</b> detail while keeping what affects outcomes or safety.
+  </p>
+</div>
+
+    <div class="footer">
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      <div class="no-print">
+        <hr class="sep"/>
+        <small>
+          Tip: add <span class="kbd">?teacher=1</span> to the URL to force teacher mode on.
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../../core/app.js"></script>
+  
+<script>
+document.addEventListener("DOMContentLoaded", ()=>{
+  const data = window.LESSON1_DATA;
+  const stateKey = "tlac_l1_a05_state";
+  const state = store.get(stateKey, { answers: {}, checked: {} });
+
+  function render(){
+    const wrap = $("#wrap");
+    wrap.innerHTML = "";
+
+    data.abstractionPrompts.forEach((p, pi)=>{
+      const card = document.createElement("div");
+      card.className = "card";
+      const items = p.items.map((it, ii)=>{
+        const id = `${pi}:${ii}`;
+        const checked = !!state.answers[id];
+        return `<label style="display:flex; gap:10px; align-items:flex-start; margin:8px 0">
+          <input type="checkbox" data-id="${id}" ${checked?"checked":""}/>
+          <span>${escapeHtml(it.text)}</span>
+        </label>`;
+      }).join("");
+
+      card.innerHTML = `
+        <h2>${escapeHtml(p.title)}</h2>
+        <p>${escapeHtml(p.question)}</p>
+        <hr class="sep"/>
+        ${items}
+        <div class="row no-print" style="margin-top:10px">
+          <button class="btn good" type="button" data-check="${pi}">Check</button>
+        </div>
+        <div class="note ${getTeacherMode()?'':'teacher-only'}" data-feedback="${pi}" style="margin-top:12px; display:${state.checked[pi]?'':'none'}"></div>
+      `;
+      wrap.appendChild(card);
+    });
+
+    $$("input[data-id]").forEach(cb=>{
+      cb.addEventListener("change", ()=>{
+        state.answers[cb.dataset.id] = cb.checked;
+        store.set(stateKey, state);
+      });
+    });
+
+    $$("[data-check]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const pi = Number(btn.dataset.check);
+        state.checked[pi] = true;
+        store.set(stateKey, state);
+        showFeedback(pi);
+      });
+    });
+
+    $("#reset").addEventListener("click", ()=>{
+      store.del(stateKey);
+      location.reload();
+    });
+
+    $("#export").addEventListener("click", ()=>{
+      downloadText("lesson1-abstraction.json", JSON.stringify({
+        activity:"Abstraction filter",
+        answers: state.answers,
+        savedAt: new Date().toISOString()
+      }, null, 2), "application/json");
+    });
+
+    $("#teacherBlock").style.display = getTeacherMode() ? "" : "none";
+  }
+
+  function showFeedback(pi){
+    const p = data.abstractionPrompts[pi];
+    const fb = $(`[data-feedback="${pi}"]`);
+    fb.style.display = "";
+    let correct = 0;
+    let total = p.items.length;
+    let keptCorrect = 0, keptWrong = 0;
+
+    p.items.forEach((it, ii)=>{
+      const id = `${pi}:${ii}`;
+      const picked = !!state.answers[id];
+      if(picked === it.keep) correct++;
+      if(picked && it.keep) keptCorrect++;
+      if(picked && !it.keep) keptWrong++;
+    });
+
+    const score = `${correct}/${total}`;
+    const ok = correct === total;
+
+    const reveal = getTeacherMode();
+    const explain = reveal ? `<hr class="sep"/><small>${escapeHtml(p.explain || "")}</small>` : "";
+
+    fb.className = `note ${ok?'good':'warn'}`;
+    fb.innerHTML = `<b>Result: ${score}</b><br>
+      <small>You kept ${keptCorrect} essential item(s) and ${keptWrong} optional item(s).</small>
+      ${explain}`;
+    toast(`Checked: ${score}`);
+  }
+
+  function escapeHtml(s){
+    return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+  }
+
+  render();
+});
+</script>
+
+</body>
+</html>

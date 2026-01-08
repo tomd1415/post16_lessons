@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Activity 8 — Mini assessment</title>
+  <link rel="stylesheet" href="../../../core/app.css" />
+  <script src="../assets/data.js"></script>
+  
+</head>
+<body>
+  <div class="topbar no-print">
+    <div class="container">
+      <div class="brand">
+        <b>Thinking like a Coder — Lesson 1</b>
+        <span>Offline interactive resources (HTML/CSS/JS)</span>
+      </div>
+      <div class="row">
+        <a class="pill" href="../index.html"><strong>HOME</strong> <span>Teacher hub</span></a>
+        <a class="pill" href="../student.html"><strong>STUDENT</strong> <span>Student hub</span></a>
+        <button class="btn" id="teacherToggle" type="button">Teacher mode: OFF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    
+<h1>Activity 8: Mini assessment</h1>
+<div class="note">
+  <b>Goal:</b> Check your understanding of Lesson 1 concepts.
+</div>
+
+<div class="card">
+  <h2 id="title"></h2>
+  <div class="row no-print">
+    <button id="submit" class="btn good" type="button">Submit</button>
+    <button id="print" class="btn" type="button">Print</button>
+    <button id="reset" class="btn bad" type="button">Reset</button>
+  </div>
+</div>
+
+<div id="questions" class="grid" style="grid-template-columns:1fr; gap:14px; margin-top:14px"></div>
+
+<div id="results" style="margin-top:14px"></div>
+
+<div class="teacher-only card" style="margin-top:14px">
+  <h2>Teacher mode notes</h2>
+  <ul class="list">
+    <li>Short answers are marked with a basic heuristic. Use teacher judgement.</li>
+    <li>Use this as a checkpoint, not a final assessment.</li>
+  </ul>
+</div>
+
+    <div class="footer">
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      <div class="no-print">
+        <hr class="sep"/>
+        <small>
+          Tip: add <span class="kbd">?teacher=1</span> to the URL to force teacher mode on.
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../../core/app.js"></script>
+  
+<script>
+document.addEventListener("DOMContentLoaded", ()=>{
+  const quiz = window.LESSON1_DATA.quiz;
+  const stateKey = "tlac_l1_a08_state";
+  const state = store.get(stateKey, { answers: {}, submitted:false, short:{} });
+
+  function render(){
+    $("#title").textContent = quiz.title;
+
+    const wrap = $("#questions");
+    wrap.innerHTML = "";
+
+    quiz.questions.forEach((q, qi)=>{
+      const card = document.createElement("div");
+      card.className = "card";
+      let inner = `<h2>Q${qi+1}</h2><p>${escapeHtml(q.q)}</p>`;
+
+      if(q.type==="mcq"){
+        inner += q.options.map((opt, oi)=>{
+          const id = `q${qi}`;
+          const checked = state.answers[id]===oi;
+          return `<label style="display:flex; gap:10px; align-items:flex-start; margin:8px 0">
+            <input type="radio" name="${id}" data-q="${qi}" data-opt="${oi}" ${checked?"checked":""}/>
+            <span>${escapeHtml(opt)}</span>
+          </label>`;
+        }).join("");
+      } else if(q.type==="short"){
+        const id = `q${qi}`;
+        const val = state.short[id] || "";
+        inner += `<textarea class="input" data-short="${qi}" placeholder="Write your answer here...">${escapeHtml(val)}</textarea>`;
+        if(getTeacherMode()){
+          inner += `<div class="teacher-only note"><b>Key points:</b><ul class="list">${
+            (q.keyPoints||[]).map(k=>`<li>${escapeHtml(k)}</li>`).join("")
+          }</ul></div>`;
+        }
+      }
+
+      card.innerHTML = inner;
+      wrap.appendChild(card);
+    });
+
+    $$("input[type=radio][data-q]").forEach(r=>{
+      r.addEventListener("change", ()=>{
+        state.answers[`q${r.dataset.q}`] = Number(r.dataset.opt);
+        state.submitted = false;
+        store.set(stateKey, state);
+      });
+    });
+
+    $$("textarea[data-short]").forEach(t=>{
+      t.addEventListener("input", ()=>{
+        state.short[`q${t.dataset.short}`] = t.value;
+        state.submitted = false;
+        store.set(stateKey, state);
+      });
+    });
+
+    $("#results").innerHTML = "";
+  }
+
+  function score(){
+    let mcqTotal=0, mcqCorrect=0, missing=0;
+    const feedback = [];
+    quiz.questions.forEach((q, qi)=>{
+      if(q.type==="mcq"){
+        mcqTotal++;
+        const ans = state.answers[`q${qi}`];
+        if(ans===undefined){ missing++; feedback.push({qi, ok:false, msg:"No answer"}); return; }
+        const ok = ans===q.answer;
+        if(ok) mcqCorrect++;
+        const why = q.why ? ` ${q.why}` : "";
+        feedback.push({qi, ok, msg: ok ? "Correct" : `Incorrect.${why}`});
+      } else if(q.type==="short"){
+        const text = (state.short[`q${qi}`]||"").toLowerCase();
+        const points = q.keyPoints||[];
+        const hit = points.some(p => text.includes(p.toLowerCase().split(" ")[0])); // very light
+        feedback.push({qi, ok: hit, msg: hit ? "Looks plausible (auto-check is basic)." : "Review key points (teacher mode)."});
+      }
+    });
+    return {mcqTotal, mcqCorrect, missing, feedback};
+  }
+
+  $("#submit").addEventListener("click", ()=>{
+    const s = score();
+    state.submitted = true;
+    store.set(stateKey, state);
+
+    const wrap = document.createElement("div");
+    wrap.className = "note " + (s.mcqCorrect===s.mcqTotal && s.missing===0 ? "good":"warn");
+    wrap.innerHTML = `<b>MCQ score: ${s.mcqCorrect}/${s.mcqTotal}</b><br><small>Short answers are not reliably auto-marked.</small>`;
+    $("#results").innerHTML = "";
+    $("#results").appendChild(wrap);
+
+    const table = document.createElement("table");
+    table.className = "table";
+    table.innerHTML = `<thead><tr><th>Question</th><th>Result</th></tr></thead>`;
+    const tb = document.createElement("tbody");
+    s.feedback.forEach(f=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>Q${f.qi+1}</td><td>${f.ok?"✅":"⚠️"} ${escapeHtml(f.msg)}</td>`;
+      tb.appendChild(tr);
+    });
+    table.appendChild(tb);
+    $("#results").appendChild(table);
+    toast("Submitted.");
+  });
+
+  $("#reset").addEventListener("click", ()=>{
+    store.del(stateKey);
+    location.reload();
+  });
+
+  $("#print").addEventListener("click", ()=> printPage());
+
+  function escapeHtml(s){
+    return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+  }
+
+  render();
+});
+</script>
+
+</body>
+</html>

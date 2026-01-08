@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Activity 7 — Big problems decomposition</title>
+  <link rel="stylesheet" href="../../../core/app.css" />
+  <script src="../assets/data.js"></script>
+  
+</head>
+<body>
+  <div class="topbar no-print">
+    <div class="container">
+      <div class="brand">
+        <b>Thinking like a Coder — Lesson 1</b>
+        <span>Offline interactive resources (HTML/CSS/JS)</span>
+      </div>
+      <div class="row">
+        <a class="pill" href="../index.html"><strong>HOME</strong> <span>Teacher hub</span></a>
+        <a class="pill" href="../student.html"><strong>STUDENT</strong> <span>Student hub</span></a>
+        <button class="btn" id="teacherToggle" type="button">Teacher mode: OFF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    
+<h1>Activity 7: Big problems — break it down</h1>
+<div class="note">
+  <b>Goal:</b> Take a huge challenge and decompose it into smaller parts.
+  You must include at least one <b>concrete software idea</b>.
+</div>
+
+<div class="grid cols2">
+  <div class="card">
+    <h2>Choose a problem</h2>
+    <select id="problemSelect"></select>
+    <hr class="sep"/>
+    <p id="starter"></p>
+
+    <div class="row no-print">
+      <button id="add" class="btn primary" type="button">Add sub-problem</button>
+      <button id="validate" class="btn good" type="button">Check requirement</button>
+      <button id="export" class="btn" type="button">Export</button>
+      <button id="reset" class="btn bad" type="button">Reset</button>
+    </div>
+
+    <div id="validateOut" style="margin-top:12px"></div>
+
+    <div class="teacher-only note" id="teacherNote" style="display:none; margin-top:12px">
+      <b>Teacher note:</b> Do not accept “magic” ideas (e.g., “a program that invents teleportation”).
+      Push for a real, data-based, testable software contribution.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Your decomposition notes</h2>
+    <div id="notes" class="grid" style="grid-template-columns:1fr; gap:10px"></div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:14px">
+  <h2>Example starting points (teacher mode supports this)</h2>
+  <ul id="examples" class="list"></ul>
+  <small>Use these only if you are stuck; your own ideas are better.</small>
+</div>
+
+    <div class="footer">
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      <div class="no-print">
+        <hr class="sep"/>
+        <small>
+          Tip: add <span class="kbd">?teacher=1</span> to the URL to force teacher mode on.
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../../core/app.js"></script>
+  
+<script>
+document.addEventListener("DOMContentLoaded", ()=>{
+  const data = window.LESSON1_DATA;
+  const stateKey = "tlac_l1_a07_state";
+  const state = store.get(stateKey, { selected: 0, notes: {}, checked:false });
+
+  function render(){
+    const sel = $("#problemSelect");
+    sel.innerHTML = data.bigProblems.map((p,i)=>`<option value="${i}">${escapeHtml(p.title)}</option>`).join("");
+    sel.value = String(state.selected);
+
+    const p = data.bigProblems[state.selected];
+    $("#starter").textContent = p.starter;
+
+    const list = $("#notes");
+    list.innerHTML = "";
+    const items = state.notes[state.selected] || [];
+    items.forEach((n, idx)=>{
+      const el = document.createElement("div");
+      el.className="card";
+      el.style.padding="10px 12px";
+      el.innerHTML = `
+        <div class="row" style="justify-content:space-between">
+          <div>
+            <span class="tag">${n.type}</span> <b>${escapeHtml(n.title)}</b><br>
+            <small>${escapeHtml(n.detail)}</small>
+          </div>
+          <div class="row no-print">
+            <button class="btn" data-edit="${idx}" type="button">Edit</button>
+            <button class="btn bad" data-del="${idx}" type="button">Delete</button>
+          </div>
+        </div>`;
+      list.appendChild(el);
+    });
+
+    $("#examples").innerHTML = p.exampleIdeas.map(x=>`<li>${escapeHtml(x)}</li>`).join("");
+
+    $("#validateOut").innerHTML = "";
+    $("#teacherNote").style.display = getTeacherMode() ? "" : "none";
+  }
+
+  function addOrEdit(editIdx=null){
+    const pIndex = state.selected;
+    const items = state.notes[pIndex] || [];
+    const existing = editIdx!==null ? items[editIdx] : {type:"software", title:"", detail:""};
+
+    const title = prompt("Sub-problem (short title):", existing.title);
+    if(title===null) return;
+    const detail = prompt("More detail (how it helps):", existing.detail);
+    if(detail===null) return;
+    const type = prompt("Type: software / non-software", existing.type);
+    if(type===null) return;
+
+    const entry = {type: (type==="software"?"software":"non-software"), title:title.trim(), detail:detail.trim()};
+    if(editIdx!==null) items[editIdx]=entry; else items.push(entry);
+
+    state.notes[pIndex]=items;
+    store.set(stateKey,state);
+    render();
+  }
+
+  $("#problemSelect").addEventListener("change", (e)=>{
+    state.selected = Number(e.target.value);
+    store.set(stateKey, state);
+    render();
+  });
+
+  $("#add").addEventListener("click", ()=> addOrEdit(null));
+
+  document.addEventListener("click", (e)=>{
+    const ed = e.target.closest("[data-edit]");
+    const del = e.target.closest("[data-del]");
+    if(ed){
+      addOrEdit(Number(ed.dataset.edit));
+    }
+    if(del){
+      const idx = Number(del.dataset.del);
+      const pIndex = state.selected;
+      const items = state.notes[pIndex] || [];
+      items.splice(idx,1);
+      state.notes[pIndex]=items;
+      store.set(stateKey,state);
+      render();
+    }
+  });
+
+  $("#validate").addEventListener("click", ()=>{
+    const pIndex = state.selected;
+    const items = state.notes[pIndex] || [];
+    const softwareCount = items.filter(x=>x.type==="software").length;
+    const total = items.length;
+
+    let html = "";
+    if(total===0){
+      html = `<div class="note bad"><b>Add at least one sub-problem.</b></div>`;
+    } else if(softwareCount===0){
+      html = `<div class="note warn"><b>Good start.</b> Now add at least <b>one software idea</b> with a concrete foundation.</div>`;
+    } else {
+      html = `<div class="note good"><b>Meets the requirement:</b> you have ${softwareCount} software idea(s) out of ${total} items.</div>`;
+    }
+    $("#validateOut").innerHTML = html;
+    toast("Checked.");
+  });
+
+  $("#export").addEventListener("click", ()=>{
+    downloadText("lesson1-big-problems.json", JSON.stringify({
+      activity:"Big problems decomposition",
+      selected: state.selected,
+      notes: state.notes,
+      savedAt: new Date().toISOString()
+    }, null, 2), "application/json");
+  });
+
+  $("#reset").addEventListener("click", ()=>{
+    store.del(stateKey);
+    location.reload();
+  });
+
+  function escapeHtml(s){
+    return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+  }
+
+  render();
+});
+</script>
+
+</body>
+</html>

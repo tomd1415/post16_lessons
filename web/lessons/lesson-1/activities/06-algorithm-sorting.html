@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Activity 6 — Algorithms (sorting)</title>
+  <link rel="stylesheet" href="../../../core/app.css" />
+  <script src="../assets/data.js"></script>
+  
+</head>
+<body>
+  <div class="topbar no-print">
+    <div class="container">
+      <div class="brand">
+        <b>Thinking like a Coder — Lesson 1</b>
+        <span>Offline interactive resources (HTML/CSS/JS)</span>
+      </div>
+      <div class="row">
+        <a class="pill" href="../index.html"><strong>HOME</strong> <span>Teacher hub</span></a>
+        <a class="pill" href="../student.html"><strong>STUDENT</strong> <span>Student hub</span></a>
+        <button class="btn" id="teacherToggle" type="button">Teacher mode: OFF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    
+<h1>Activity 6: Algorithms — sorting by height</h1>
+<div class="note">
+  <b>Goal:</b> See how “sorting people by height” becomes a set of clear steps (an algorithm).
+</div>
+
+<div class="row no-print" style="margin-bottom:12px">
+  <button id="modeLine" class="btn primary" type="button">Line (easy)</button>
+  <button id="modeCircle" class="btn" type="button">Circle (harder)</button>
+  <button id="newRoster" class="btn" type="button">Generate new class</button>
+</div>
+
+<div id="linePanel" class="grid cols2">
+  <div class="card">
+    <h2>Task: sort into a line</h2>
+    <p>Use the arrows to put the class in height order (shortest → tallest).</p>
+    <div id="lineList" class="grid" style="grid-template-columns: 1fr; gap:10px"></div>
+    <div id="lineStatus" style="margin-top:12px"></div>
+    <div class="row no-print" style="margin-top:12px">
+      <button id="checkSorted" class="btn good" type="button">Check</button>
+      <button id="autoSort" class="btn" type="button">Auto sort</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Algorithm demo (bubble sort)</h2>
+    <p>This shows one possible sorting algorithm: compare neighbours and swap if needed.</p>
+    <pre id="demoOut" style="white-space:pre-wrap; font-family:var(--mono); background:rgba(0,0,0,.25); padding:12px; border-radius:16px; border:1px solid var(--border)"></pre>
+    <div class="row no-print" style="margin-top:12px">
+      <button id="demoNext" class="btn primary" type="button">Next step</button>
+      <button id="demoReset" class="btn" type="button">Reset demo</button>
+    </div>
+
+    <div class="teacher-only note">
+      <b>Teacher note:</b> connect this to decomposition:
+      “sorting” can be decomposed into repeated “compare two people” decisions.
+    </div>
+  </div>
+</div>
+
+<div id="circlePanel" style="display:none">
+  <div class="grid cols2">
+    <div class="card">
+      <h2>Task: arrange in a circle</h2>
+      <p>Arrange the class in a circle so there is little height difference between neighbours.</p>
+      <div id="circleScore" class="badge" style="margin:10px 0"></div>
+      <div id="circleList" class="grid" style="grid-template-columns: 1fr; gap:10px"></div>
+      <div class="row no-print" style="margin-top:12px">
+        <button id="circleHeuristic" class="btn primary" type="button">Try a heuristic</button>
+        <button id="circleShuffle" class="btn" type="button">Shuffle</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Discussion</h2>
+      <ul class="list">
+        <li>How do you decide what “better” means? (a score)</li>
+        <li>Can you make a rule that always improves the score?</li>
+        <li>Do you need the whole solution at once, or can you improve it step-by-step?</li>
+      </ul>
+      <div class="teacher-only note">
+        <b>Teacher note:</b> This is intentionally harder: it encourages discussion about strategy,
+        decision-making, and defining success criteria.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card no-print" style="margin-top:14px">
+  <div class="row">
+    <button id="export" class="btn primary" type="button">Export</button>
+    <button id="reset" class="btn bad" type="button">Reset</button>
+  </div>
+</div>
+
+    <div class="footer">
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      <div class="no-print">
+        <hr class="sep"/>
+        <small>
+          Tip: add <span class="kbd">?teacher=1</span> to the URL to force teacher mode on.
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../../core/app.js"></script>
+  
+<script>
+document.addEventListener("DOMContentLoaded", ()=>{
+  const stateKey = "tlac_l1_a06_state";
+  const state = store.get(stateKey, { roster: null, circle: null, mode:"line" });
+
+  const names = ["Asha","Ben","Callum","Daisy","Eli","Farah","George","Hana","Ivy","Jamal","Kai","Leah","Mia","Noah","Omar","Poppy","Ravi","Sara","Tom","Zara"];
+
+  function newRoster(n=10){
+    const pool = shuffle(names).slice(0,n);
+    return pool.map((name,i)=>({ id: uid(), name, height: Math.floor(130 + Math.random()*50) })); // cm
+  }
+
+  function ensure(){
+    if(!state.roster) state.roster = newRoster(10);
+    if(!state.circle) state.circle = shuffle(state.roster.slice());
+    store.set(stateKey, state);
+  }
+
+  function render(){
+    ensure();
+    $("#modeLine").classList.toggle("primary", state.mode==="line");
+    $("#modeCircle").classList.toggle("primary", state.mode==="circle");
+    $("#linePanel").style.display = state.mode==="line" ? "" : "none";
+    $("#circlePanel").style.display = state.mode==="circle" ? "" : "none";
+
+    renderLine();
+    renderCircle();
+  }
+
+  function renderLine(){
+    const wrap = $("#lineList");
+    wrap.innerHTML = "";
+    state.roster.forEach((s, idx)=>{
+      const row = document.createElement("div");
+      row.className="card";
+      row.style.padding="10px 12px";
+      row.innerHTML = `
+        <div class="row" style="justify-content:space-between">
+          <div><b>${s.name}</b> <span class="tag">${s.height} cm</span></div>
+          <div class="row">
+            <button class="btn" data-up="${idx}" type="button">↑</button>
+            <button class="btn" data-down="${idx}" type="button">↓</button>
+          </div>
+        </div>`;
+      wrap.appendChild(row);
+    });
+
+    $$("#lineList [data-up]").forEach(b=> b.addEventListener("click", ()=>{
+      const i = Number(b.dataset.up);
+      if(i<=0) return;
+      [state.roster[i-1], state.roster[i]] = [state.roster[i], state.roster[i-1]];
+      store.set(stateKey, state);
+      renderLine();
+    }));
+    $$("#lineList [data-down]").forEach(b=> b.addEventListener("click", ()=>{
+      const i = Number(b.dataset.down);
+      if(i>=state.roster.length-1) return;
+      [state.roster[i+1], state.roster[i]] = [state.roster[i], state.roster[i+1]];
+      store.set(stateKey, state);
+      renderLine();
+    }));
+
+    $("#lineStatus").innerHTML = "";
+  }
+
+  function isSorted(arr){
+    for(let i=1;i<arr.length;i++){
+      if(arr[i-1].height > arr[i].height) return false;
+    }
+    return true;
+  }
+
+  function renderCircle(){
+    const wrap = $("#circleList");
+    wrap.innerHTML = "";
+    state.circle.forEach((s, idx)=>{
+      const prev = state.circle[(idx-1+state.circle.length)%state.circle.length];
+      const next = state.circle[(idx+1)%state.circle.length];
+      const diffPrev = Math.abs(s.height - prev.height);
+      const diffNext = Math.abs(s.height - next.height);
+
+      const row = document.createElement("div");
+      row.className="card";
+      row.style.padding="10px 12px";
+      row.innerHTML = `
+        <div class="row" style="justify-content:space-between; align-items:flex-start">
+          <div>
+            <b>${s.name}</b> <span class="tag">${s.height} cm</span><br>
+            <small>Diff to neighbours: ${diffPrev} &amp; ${diffNext}</small>
+          </div>
+          <div class="row">
+            <button class="btn" data-left="${idx}" type="button">←</button>
+            <button class="btn" data-right="${idx}" type="button">→</button>
+          </div>
+        </div>`;
+      wrap.appendChild(row);
+    });
+
+    $$("#circleList [data-left]").forEach(b=> b.addEventListener("click", ()=>{
+      const i = Number(b.dataset.left);
+      if(i<=0) return;
+      [state.circle[i-1], state.circle[i]] = [state.circle[i], state.circle[i-1]];
+      store.set(stateKey, state);
+      renderCircle();
+    }));
+    $$("#circleList [data-right]").forEach(b=> b.addEventListener("click", ()=>{
+      const i = Number(b.dataset.right);
+      if(i>=state.circle.length-1) return;
+      [state.circle[i+1], state.circle[i]] = [state.circle[i], state.circle[i+1]];
+      store.set(stateKey, state);
+      renderCircle();
+    }));
+
+    $("#circleScore").textContent = "Total neighbour difference: " + circleScore(state.circle);
+  }
+
+  function circleScore(arr){
+    let sum = 0;
+    for(let i=0;i<arr.length;i++){
+      const a = arr[i], b = arr[(i+1)%arr.length];
+      sum += Math.abs(a.height - b.height);
+    }
+    return sum;
+  }
+
+  function autoSortLine(){
+    state.roster = state.roster.slice().sort((a,b)=>a.height-b.height);
+    store.set(stateKey, state);
+    renderLine();
+    toast("Auto-sorted by height.");
+  }
+
+  function bubbleSteps(arr){
+    const a = arr.map(x=>({...x}));
+    const steps = [];
+    for(let i=0;i<a.length;i++){
+      for(let j=0;j<a.length-1-i;j++){
+        steps.push({type:"compare", i:j, j:j+1, snap:a.map(x=>x.height)});
+        if(a[j].height > a[j+1].height){
+          [a[j], a[j+1]] = [a[j+1], a[j]];
+          steps.push({type:"swap", i:j, j:j+1, snap:a.map(x=>x.height)});
+        }
+      }
+    }
+    return steps;
+  }
+
+  let demo = { steps:[], idx:0 };
+  function resetDemo(){
+    demo.steps = bubbleSteps(state.roster);
+    demo.idx = 0;
+    $("#demoOut").textContent = "Press “Next step” to see a simple sorting algorithm (bubble sort) in action.";
+  }
+
+  function nextDemo(){
+    if(!demo.steps.length) resetDemo();
+    if(demo.idx >= demo.steps.length){ toast("Demo finished."); return; }
+    const st = demo.steps[demo.idx++];
+    const line = `${st.type.toUpperCase()}: positions ${st.i+1} and ${st.j+1} → [${st.snap.join(", ")}]`;
+    $("#demoOut").textContent = line;
+  }
+
+  function heuristicCircle(){
+    // one heuristic from the handbook: make two sorted rows then join tall-to-tall, short-to-short
+    const sorted = state.roster.slice().sort((a,b)=>a.height-b.height);
+    const row1 = [], row2 = [];
+    for(let i=0;i<sorted.length;i++){
+      (i%2===0 ? row1 : row2).push(sorted[i]);
+    }
+    // join: row1 ascending, row2 descending
+    const circle = row1.concat(row2.reverse());
+    state.circle = circle;
+    store.set(stateKey, state);
+    renderCircle();
+    toast("Applied heuristic circle arrangement.");
+  }
+
+  $("#modeLine").addEventListener("click", ()=>{ state.mode="line"; store.set(stateKey,state); render(); });
+  $("#modeCircle").addEventListener("click", ()=>{ state.mode="circle"; store.set(stateKey,state); render(); });
+
+  $("#newRoster").addEventListener("click", ()=>{
+    state.roster = newRoster(10);
+    state.circle = shuffle(state.roster.slice());
+    store.set(stateKey, state);
+    resetDemo();
+    render();
+    toast("New class generated.");
+  });
+
+  $("#checkSorted").addEventListener("click", ()=>{
+    const ok = isSorted(state.roster);
+    $("#lineStatus").innerHTML = ok
+      ? `<div class="note good"><b>Correct:</b> in ascending height order.</div>`
+      : `<div class="note warn"><b>Not yet:</b> check where a taller person is before a shorter person.</div>`;
+  });
+
+  $("#autoSort").addEventListener("click", autoSortLine);
+
+  $("#demoReset").addEventListener("click", ()=>{ resetDemo(); toast("Demo reset."); });
+  $("#demoNext").addEventListener("click", nextDemo);
+
+  $("#circleHeuristic").addEventListener("click", heuristicCircle);
+  $("#circleShuffle").addEventListener("click", ()=>{
+    state.circle = shuffle(state.circle.slice());
+    store.set(stateKey, state);
+    renderCircle();
+    toast("Circle shuffled.");
+  });
+
+  $("#export").addEventListener("click", ()=>{
+    downloadText("lesson1-sorting.json", JSON.stringify({
+      activity:"Sorting (line + circle)",
+      roster: state.roster,
+      circle: state.circle,
+      lineSorted: isSorted(state.roster),
+      circleScore: circleScore(state.circle),
+      savedAt: new Date().toISOString()
+    }, null, 2), "application/json");
+  });
+
+  $("#reset").addEventListener("click", ()=>{
+    store.del(stateKey);
+    location.reload();
+  });
+
+  ensure(); resetDemo(); render();
+});
+</script>
+
+</body>
+</html>

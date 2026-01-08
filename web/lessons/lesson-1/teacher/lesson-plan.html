@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Teacher — lesson plan</title>
+  <link rel="stylesheet" href="../../../core/app.css" />
+  <script src="../assets/data.js"></script>
+  
+</head>
+<body>
+  <div class="topbar no-print">
+    <div class="container">
+      <div class="brand">
+        <b>Thinking like a Coder — Lesson 1</b>
+        <span>Offline interactive resources (HTML/CSS/JS)</span>
+      </div>
+      <div class="row">
+        <a class="pill" href="../index.html"><strong>HOME</strong> <span>Teacher hub</span></a>
+        <a class="pill" href="../student.html"><strong>STUDENT</strong> <span>Student hub</span></a>
+        <button class="btn" id="teacherToggle" type="button">Teacher mode: OFF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    
+<h1>Lesson plan (adaptable)</h1>
+<div class="note">
+  This is a suggested flow based on Lesson 1 themes: computational thinking (decomposition, pattern recognition, abstraction, algorithms) and “what is a computer?” discussion.
+</div>
+
+<h2>Learning objectives</h2>
+<ul class="list" id="lo"></ul>
+
+<h2>Suggested timing (50–60 minutes)</h2>
+<table class="table">
+  <thead><tr><th>Time</th><th>Phase</th><th>What to do</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><b>0–5</b></td>
+      <td>Starter</td>
+      <td>Quick question: “Name 3 things that might be a computer.” Collect a few answers.</td>
+    </tr>
+    <tr>
+      <td><b>5–15</b></td>
+      <td>Discussion</td>
+      <td>Run <a href="../activities/01-what-is-a-computer.html">Activity 1</a> as a class: place 4–6 devices, then debate boundaries.</td>
+    </tr>
+    <tr>
+      <td><b>15–25</b></td>
+      <td>Vocabulary</td>
+      <td>Pairs do <a href="../activities/02-key-terms-match.html">Activity 2</a>. Quick whole-class recap of the 4 CT methods.</td>
+    </tr>
+    <tr>
+      <td><b>25–40</b></td>
+      <td>Group task</td>
+      <td>Teams do <a href="../activities/03-decomposition-robo-chef.html">Activity 3</a> (decomposition tree). Encourage action + sensing + reusable functions.</td>
+    </tr>
+    <tr>
+      <td><b>40–50</b></td>
+      <td>Algorithm</td>
+      <td>Do <a href="../activities/06-algorithm-sorting.html">Activity 6</a> together. Emphasise “compare two” as the smallest step.</td>
+    </tr>
+    <tr>
+      <td><b>50–60</b></td>
+      <td>Plenary</td>
+      <td>Mini assessment (<a href="../activities/08-mini-assessment.html">Activity 8</a>) or a quick reflection: “Where did we use abstraction today?”</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Materials</h2>
+<ul class="list">
+  <li>Whiteboards or A2 paper + markers (for the robo‑chef design)</li>
+  <li>Access to a browser for interactive activities (or print from <a href="./print-cards.html">Printable cards</a>)</li>
+</ul>
+
+<h2>Differentiation options</h2>
+<div class="grid cols2">
+  <div class="card">
+    <h3>Support</h3>
+    <ul class="list">
+      <li>Use teacher mode to reveal hints.</li>
+      <li>Limit device cards to 6 items and focus on “inputs/processing/outputs”.</li>
+      <li>For robo‑chef: give a fixed speciality (e.g., “sandwich maker”) and provide a starter function list.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Stretch</h3>
+    <ul class="list">
+      <li>Use the harder “circle” sorting challenge in Activity 6.</li>
+      <li>Add “constraints” to the robo‑chef (cost, safety standards, reliability).</li>
+      <li>Use <a href="../activities/07-big-problems.html">Big problems</a> to force practical software ideas.</li>
+    </ul>
+  </div>
+</div>
+
+    <div class="footer">
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      <div class="no-print">
+        <hr class="sep"/>
+        <small>
+          Tip: add <span class="kbd">?teacher=1</span> to the URL to force teacher mode on.
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../../core/app.js"></script>
+  
+<script>
+document.addEventListener("DOMContentLoaded", ()=>{
+  const lo = window.LESSON1_DATA.learningObjectives;
+  $("#lo").innerHTML = lo.map(x=>`<li>${x}</li>`).join("");
+});
+</script>
+
+</body>
+</html>

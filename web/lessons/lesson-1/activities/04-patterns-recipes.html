@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Activity 4 — Pattern recognition</title>
+  <link rel="stylesheet" href="../../../core/app.css" />
+  <script src="../assets/data.js"></script>
+  
+</head>
+<body>
+  <div class="topbar no-print">
+    <div class="container">
+      <div class="brand">
+        <b>Thinking like a Coder — Lesson 1</b>
+        <span>Offline interactive resources (HTML/CSS/JS)</span>
+      </div>
+      <div class="row">
+        <a class="pill" href="../index.html"><strong>HOME</strong> <span>Teacher hub</span></a>
+        <a class="pill" href="../student.html"><strong>STUDENT</strong> <span>Student hub</span></a>
+        <button class="btn" id="teacherToggle" type="button">Teacher mode: OFF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    
+<h1>Activity 4: Pattern recognition — recipes</h1>
+<div class="note">
+  <b>Goal:</b> Find steps that repeat across different recipes, then write a reusable pattern.
+</div>
+
+<div id="recipes" class="grid cols3"></div>
+
+<div class="grid cols2" style="margin-top:14px">
+  <div class="card">
+    <h2>Common steps (appear in all recipes)</h2>
+    <ul id="commonAll" class="list"></ul>
+
+    <div class="teacher-only note" id="teacherHints" style="display:none">
+      <b>Teacher hints:</b>
+      If learners struggle, prompt them to look for “heat oven”, “mix”, “bake”, “check done” steps.
+      Then ask how those steps change between recipes (temperatures, timings, ingredients).
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Your pattern</h2>
+    <label><b>Pattern name</b></label>
+    <input id="patternName" class="input" />
+    <div style="height:10px"></div>
+    <ul id="yourPattern" class="list"></ul>
+    <label><b>Notes</b> (optional)</label>
+    <textarea id="notes" placeholder="What variables change between recipes?"></textarea>
+
+    <div class="row no-print">
+      <button id="export" class="btn primary" type="button">Export</button>
+      <button id="print" class="btn" type="button">Print</button>
+      <button id="reset" class="btn bad" type="button">Reset</button>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:14px">
+  <h2>Reusable template (algorithm)</h2>
+  <pre id="algo" style="white-space:pre-wrap; font-family:var(--mono); background:rgba(0,0,0,.25); padding:12px; border-radius:16px; border:1px solid var(--border)"></pre>
+</div>
+
+    <div class="footer">
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      <div class="no-print">
+        <hr class="sep"/>
+        <small>
+          Tip: add <span class="kbd">?teacher=1</span> to the URL to force teacher mode on.
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../../core/app.js"></script>
+  
+<script>
+document.addEventListener("DOMContentLoaded", ()=>{
+  const data = window.LESSON1_DATA;
+  const stateKey = "tlac_l1_a04_state";
+  const state = store.get(stateKey, { selected: {}, patternName: "Baked recipe pattern", notes:"" });
+
+  function render(){
+    const wrap = $("#recipes");
+    wrap.innerHTML = "";
+    data.recipes.forEach((r, ri)=>{
+      const card = document.createElement("div");
+      card.className = "card";
+      const stepsHtml = r.steps.map((s, si)=>{
+        const id = `${ri}:${si}`;
+        const checked = !!state.selected[id];
+        return `<label style="display:flex; gap:10px; align-items:flex-start; margin:8px 0">
+          <input type="checkbox" data-step="${id}" ${checked?"checked":""} />
+          <span>${escapeHtml(s)}</span>
+        </label>`;
+      }).join("");
+      card.innerHTML = `<h3>${escapeHtml(r.title)}</h3>
+        <small>Select steps you think belong in a “general pattern”.</small>
+        <hr class="sep"/>
+        ${stepsHtml}`;
+      wrap.appendChild(card);
+    });
+
+    $$("input[data-step]").forEach(cb=>{
+      cb.addEventListener("change", ()=>{
+        state.selected[cb.dataset.step] = cb.checked;
+        store.set(stateKey, state);
+        updatePattern();
+      });
+    });
+
+    $("#patternName").value = state.patternName;
+    $("#notes").value = state.notes;
+    $("#patternName").addEventListener("input", e=>{ state.patternName = e.target.value; store.set(stateKey, state); });
+    $("#notes").addEventListener("input", e=>{ state.notes = e.target.value; store.set(stateKey, state); });
+
+    updatePattern();
+    $("#teacherHints").style.display = getTeacherMode() ? "" : "none";
+  }
+
+  function updatePattern(){
+    // compute intersection of steps by exact text
+    const sets = data.recipes.map(r => new Set(r.steps));
+    let inter = new Set(sets[0]);
+    for(const s of sets.slice(1)){
+      inter = new Set([...inter].filter(x => s.has(x)));
+    }
+
+    // Show "common to all" and "your picks"
+    const yours = [];
+    for(const [k,v] of Object.entries(state.selected)){
+      if(v){
+        const [ri, si] = k.split(":").map(Number);
+        const step = data.recipes[ri].steps[si];
+        yours.push(step);
+      }
+    }
+
+    $("#commonAll").innerHTML = [...inter].map(s=>`<li>${escapeHtml(s)}</li>`).join("") || "<li><i>None</i></li>";
+    $("#yourPattern").innerHTML = yours.map(s=>`<li>${escapeHtml(s)}</li>`).join("") || "<li><i>Nothing selected yet</i></li>";
+
+    const algo = buildTemplate(inter, yours);
+    $("#algo").textContent = algo;
+  }
+
+  function buildTemplate(inter, yours){
+    const base = inter.size ? [...inter] : [];
+    const chosen = yours.length ? dedupe(yours) : base;
+    const lines = [];
+    lines.push(`${state.patternName || "Recipe pattern"} (template)`);
+    lines.push("1. Prepare workspace and ingredients");
+    let stepNum = 2;
+    chosen.forEach(s=>{
+      lines.push(`${stepNum}. ${s.replace("a set time","[time]").replace("oven temperature","[temperature]")}`);
+      stepNum++;
+    });
+    lines.push(`${stepNum}. Serve / finish`);
+    lines.push("");
+    lines.push("Fill in placeholders like [temperature] and [time].");
+    return lines.join("\n");
+  }
+
+  function dedupe(arr){
+    const out = [];
+    const seen = new Set();
+    for(const x of arr){
+      if(!seen.has(x)){ out.push(x); seen.add(x); }
+    }
+    return out;
+  }
+
+  function escapeHtml(s){
+    return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+  }
+
+  $("#reset").addEventListener("click", ()=>{
+    store.del(stateKey);
+    location.reload();
+  });
+  $("#export").addEventListener("click", ()=>{
+    downloadText("lesson1-pattern-recognition.json", JSON.stringify({
+      activity:"Pattern recognition (recipes)",
+      selected: state.selected,
+      patternName: state.patternName,
+      notes: state.notes,
+      savedAt: new Date().toISOString()
+    }, null, 2), "application/json");
+  });
+  $("#print").addEventListener("click", ()=> printPage());
+
+  render();
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,26 @@
+services:
+  proxy:
+    image: caddy:2.7.6
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+    volumes:
+      - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./web:/srv:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+
+  api:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+    expose:
+      - "8000"
+
+volumes:
+  caddy_data:
+  caddy_config:

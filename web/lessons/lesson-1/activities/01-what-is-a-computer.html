@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Activity 1 — What counts as a computer?</title>
+  <link rel="stylesheet" href="../../../core/app.css" />
+  <script src="../assets/data.js"></script>
+  
+</head>
+<body>
+  <div class="topbar no-print">
+    <div class="container">
+      <div class="brand">
+        <b>Thinking like a Coder — Lesson 1</b>
+        <span>Offline interactive resources (HTML/CSS/JS)</span>
+      </div>
+      <div class="row">
+        <a class="pill" href="../index.html"><strong>HOME</strong> <span>Teacher hub</span></a>
+        <a class="pill" href="../student.html"><strong>STUDENT</strong> <span>Student hub</span></a>
+        <button class="btn" id="teacherToggle" type="button">Teacher mode: OFF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    
+<h1>Activity 1: What counts as a computer?</h1>
+<div class="note">
+  <b>Goal:</b> Discuss what makes something “a computer”.
+  There may be more than one reasonable answer.
+</div>
+
+<div class="grid cols2">
+  <div class="card">
+    <h2>Device cards</h2>
+    <p>Select a card, then place it into a bin.</p>
+    <div id="cards" class="grid" style="grid-template-columns: 1fr; gap:10px"></div>
+    <hr class="sep"/>
+    <div class="row">
+      <button class="btn" data-action="reset" type="button">Reset</button>
+      <button class="btn primary" data-action="export" type="button">Export your work</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Bins</h2>
+    <div class="grid" style="grid-template-columns: 1fr; gap:12px">
+      <div class="card bin" id="bin-computer">
+        <div class="row" style="justify-content:space-between">
+          <h3 style="margin:0">Computer</h3>
+          <button class="btn primary" type="button">Place here</button>
+        </div>
+        <div class="items" style="margin-top:10px"></div>
+      </div>
+
+      <div class="card bin" id="bin-not">
+        <div class="row" style="justify-content:space-between">
+          <h3 style="margin:0">Not a computer</h3>
+          <button class="btn primary" type="button">Place here</button>
+        </div>
+        <div class="items" style="margin-top:10px"></div>
+      </div>
+
+      <div class="card bin" id="bin-depends">
+        <div class="row" style="justify-content:space-between">
+          <h3 style="margin:0">Depends / discuss</h3>
+          <button class="btn primary" type="button">Place here</button>
+        </div>
+        <div class="items" style="margin-top:10px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2>Discussion prompts</h2>
+<div class="grid cols2">
+  <div class="card">
+    <ul class="list">
+      <li>What data does it take in? (inputs)</li>
+      <li>What does it do with that data? (processing)</li>
+      <li>What does it output or control? (outputs)</li>
+      <li>How flexible is it? Can it be reprogrammed or changed?</li>
+    </ul>
+    <div class="teacher-only note">
+      <b>Teacher guidance:</b> The handbook frames this as a discussion rather than a right/wrong definition:
+      the aim is to notice inputs/outputs and the flexibility of the control system.
+    </div>
+  </div>
+  <div class="card">
+    <label for="reflection"><b>Your reflection</b> (optional)</label>
+    <textarea id="reflection" placeholder="Which item caused the most disagreement and why?"></textarea>
+    <small>Use “Export your work” to save your placements and reflection.</small>
+  </div>
+</div>
+
+    <div class="footer">
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      <div class="no-print">
+        <hr class="sep"/>
+        <small>
+          Tip: add <span class="kbd">?teacher=1</span> to the URL to force teacher mode on.
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../../core/app.js"></script>
+  
+<script>
+document.addEventListener("DOMContentLoaded", ()=>{
+  const data = window.LESSON1_DATA;
+  const cardsWrap = document.getElementById("cards");
+  const bins = {
+    computer: document.getElementById("bin-computer"),
+    not: document.getElementById("bin-not"),
+    depends: document.getElementById("bin-depends")
+  };
+
+  const stateKey = "tlac_l1_a01_state";
+  const state = store.get(stateKey, { placements: {}, selected: null });
+
+  function render(){
+    cardsWrap.innerHTML = "";
+    const placed = new Set(Object.keys(state.placements));
+    const unplaced = data.devices
+      .map(d => ({...d, id: d.name}))
+      .filter(d => !placed.has(d.id));
+
+    for(const d of unplaced){
+      const btn = document.createElement("button");
+      btn.className = "btn";
+      btn.style.width = "100%";
+      btn.dataset.id = d.id;
+      btn.innerHTML = `<b>${d.name}</b><br><small>${d.hint}</small>`;
+      btn.addEventListener("click", ()=>{ state.selected = d.id; store.set(stateKey, state); highlight(); toast(`Selected: ${d.name}. Choose a bin.`); });
+      cardsWrap.appendChild(btn);
+    }
+
+    for(const [id, bin] of Object.entries(state.placements)){
+      const d = data.devices.find(x => x.name === id);
+      const el = document.createElement("div");
+      el.className = "card";
+      el.style.padding = "10px 12px";
+      el.style.background = "rgba(0,0,0,.18)";
+      el.innerHTML = `<b>${d?.name ?? id}</b><br><small>${d?.hint ?? ""}</small>
+        <div class="row" style="margin-top:8px">
+          <button class="btn" type="button" data-move="${id}">Move</button>
+          <button class="btn bad" type="button" data-remove="${id}">Remove</button>
+        </div>`;
+      bins[bin].querySelector(".items").appendChild(el);
+    }
+
+    // clean bin containers before re-adding
+    Object.values(bins).forEach(b => b.querySelector(".items").innerHTML = "");
+    for(const [id, bin] of Object.entries(state.placements)){
+      const d = data.devices.find(x => x.name === id);
+      const el = document.createElement("div");
+      el.className = "card";
+      el.style.padding = "10px 12px";
+      el.style.background = "rgba(0,0,0,.18)";
+      el.innerHTML = `<b>${d?.name ?? id}</b><br><small>${d?.hint ?? ""}</small>
+        <div class="row" style="margin-top:8px">
+          <button class="btn" type="button" data-move="${id}">Move</button>
+          <button class="btn bad" type="button" data-remove="${id}">Remove</button>
+        </div>`;
+      bins[bin].querySelector(".items").appendChild(el);
+    }
+
+    $("[data-action='reset']").disabled = Object.keys(state.placements).length===0 && !state.selected;
+  }
+
+  function highlight(){
+    $$(".bin").forEach(b => b.style.outline = "none");
+    if(state.selected){
+      $$(".bin").forEach(b => b.style.outline = "2px dashed rgba(106,166,255,.55)");
+      $$(".bin").forEach(b => b.style.outlineOffset = "6px");
+    }
+  }
+
+  function place(binName){
+    if(!state.selected){ toast("Select a device card first."); return; }
+    state.placements[state.selected] = binName;
+    state.selected = null;
+    store.set(stateKey, state);
+    render(); highlight();
+  }
+
+  Object.entries(bins).forEach(([name, binEl])=>{
+    binEl.querySelector("button").addEventListener("click", ()=> place(name));
+  });
+
+  document.addEventListener("click", (e)=>{
+    const move = e.target.closest("[data-move]");
+    const rem = e.target.closest("[data-remove]");
+    if(move){
+      state.selected = move.dataset.move;
+      delete state.placements[state.selected];
+      store.set(stateKey, state);
+      render(); highlight();
+      toast("Now choose a new bin.");
+    }
+    if(rem){
+      const id = rem.dataset.remove;
+      delete state.placements[id];
+      store.set(stateKey, state);
+      render(); highlight();
+      toast("Removed.");
+    }
+  });
+
+  $("[data-action='reset']").addEventListener("click", ()=>{
+    store.del(stateKey);
+    location.reload();
+  });
+
+  $("[data-action='export']").addEventListener("click", ()=>{
+    const payload = {
+      activity:"What counts as a computer?",
+      placements: state.placements,
+      reflection: ($("#reflection").value || "").trim(),
+      savedAt: new Date().toISOString()
+    };
+    downloadText("lesson1-what-is-a-computer.json", JSON.stringify(payload, null, 2), "application/json");
+  });
+
+  render(); highlight();
+});
+</script>
+
+</body>
+</html>

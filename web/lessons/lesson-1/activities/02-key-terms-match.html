@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Activity 2 — Key terms match</title>
+  <link rel="stylesheet" href="../../../core/app.css" />
+  <script src="../assets/data.js"></script>
+  
+</head>
+<body>
+  <div class="topbar no-print">
+    <div class="container">
+      <div class="brand">
+        <b>Thinking like a Coder — Lesson 1</b>
+        <span>Offline interactive resources (HTML/CSS/JS)</span>
+      </div>
+      <div class="row">
+        <a class="pill" href="../index.html"><strong>HOME</strong> <span>Teacher hub</span></a>
+        <a class="pill" href="../student.html"><strong>STUDENT</strong> <span>Student hub</span></a>
+        <button class="btn" id="teacherToggle" type="button">Teacher mode: OFF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    
+<h1>Activity 2: Key terms match</h1>
+<div class="note">
+  <b>How it works:</b> Click a <b>term</b>, then click a <b>definition</b> to match them.
+</div>
+
+<div class="grid cols2">
+  <div class="card">
+    <h2>Terms</h2>
+    <div id="terms" class="grid" style="grid-template-columns: 1fr; gap:10px"></div>
+  </div>
+
+  <div class="card">
+    <h2>Definitions</h2>
+    <div id="defs" class="grid" style="grid-template-columns: 1fr; gap:10px"></div>
+  </div>
+</div>
+
+<div class="grid cols2" style="margin-top:14px">
+  <div class="card">
+    <h2>Your matches</h2>
+    <div id="result"></div>
+    <div id="scoreBlock" style="margin-top:12px"></div>
+    <div class="row">
+      <button id="check" class="btn good" type="button">Check score</button>
+      <button id="reset" class="btn bad" type="button">Reset</button>
+      <button id="flashcards" class="btn" type="button">Toggle flashcards</button>
+    </div>
+  </div>
+
+  <div class="card" id="flashView" style="display:none">
+    <h2>Flashcards</h2>
+    <div id="flashWrap" class="grid cols2"></div>
+  </div>
+</div>
+
+<div class="teacher-only card" id="teacherAnswers" style="display:none">
+  <h2>Teacher mode: suggestions</h2>
+  <p>For this activity, each term matches the definition aligned to it.</p>
+  <ul class="list">
+    <li>Computational thinking is about analysing a problem and designing a clear method to solve it.</li>
+    <li>An algorithm is the step-by-step method; a program is that algorithm written so a computer can run it.</li>
+  </ul>
+</div>
+
+    <div class="footer">
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      <div class="no-print">
+        <hr class="sep"/>
+        <small>
+          Tip: add <span class="kbd">?teacher=1</span> to the URL to force teacher mode on.
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../../core/app.js"></script>
+  
+<script>
+document.addEventListener("DOMContentLoaded", ()=>{
+  const data = window.LESSON1_DATA;
+  const terms = shuffle(data.terms.map(t => ({id:t.term, term:t.term, definition:t.definition})));
+  const defs = shuffle(data.terms.map(t => ({id:t.term, definition:t.definition})));
+
+  const stateKey = "tlac_l1_a02_state";
+  const state = store.get(stateKey, { pairs: {}, selectedTerm: null, selectedDef: null, checked:false });
+
+  const termsEl = $("#terms");
+  const defsEl = $("#defs");
+  const resultEl = $("#result");
+
+  function render(){
+    termsEl.innerHTML = "";
+    defsEl.innerHTML = "";
+    resultEl.innerHTML = "";
+
+    for(const t of terms){
+      const paired = state.pairs[t.id];
+      const btn = document.createElement("button");
+      btn.className = "btn";
+      btn.dataset.term = t.id;
+      btn.innerHTML = `<b>${t.term}</b>` + (paired ? `<br><small>Matched</small>` : "");
+      if(state.selectedTerm === t.id) btn.classList.add("primary");
+      btn.addEventListener("click", ()=>{
+        state.selectedTerm = t.id;
+        store.set(stateKey, state);
+        render();
+      });
+      termsEl.appendChild(btn);
+    }
+
+    for(const d of defs){
+      const usedBy = Object.entries(state.pairs).find(([termId, defId]) => defId === d.id)?.[0] || null;
+      const btn = document.createElement("button");
+      btn.className = "btn";
+      btn.dataset.def = d.id;
+      btn.innerHTML = `<small>${d.definition}</small>` + (usedBy ? `<br><span class="badge">used</span>` : "");
+      if(state.selectedDef === d.id) btn.classList.add("primary");
+      btn.addEventListener("click", ()=>{
+        state.selectedDef = d.id;
+        store.set(stateKey, state);
+        render();
+      });
+      defsEl.appendChild(btn);
+    }
+
+    if(state.selectedTerm && state.selectedDef){
+      // set pair
+      state.pairs[state.selectedTerm] = state.selectedDef;
+      state.selectedTerm = null;
+      state.selectedDef = null;
+      state.checked = false;
+      store.set(stateKey, state);
+      toast("Matched.");
+      render();
+      return;
+    }
+
+    // show current pairs list
+    const pairs = Object.entries(state.pairs);
+    if(pairs.length){
+      const table = document.createElement("table");
+      table.className = "table";
+      table.innerHTML = `<thead><tr><th>Term</th><th>Your match</th><th class="teacher-only">Correct?</th></tr></thead>`;
+      const tb = document.createElement("tbody");
+      for(const [termId, defId] of pairs){
+        const term = termId;
+        const def = data.terms.find(x => x.term===defId)?.definition ?? "";
+        const correct = (termId===defId);
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td><b>${term}</b></td><td>${def}</td>
+          <td class="teacher-only">${correct ? "✅" : "❌"}</td>`;
+        tb.appendChild(tr);
+      }
+      table.appendChild(tb);
+      resultEl.appendChild(table);
+    }
+
+    if(getTeacherMode()){
+      $("#teacherAnswers").style.display = "";
+    } else {
+      $("#teacherAnswers").style.display = "none";
+    }
+  }
+
+  $("#check").addEventListener("click", ()=>{
+    const pairs = Object.entries(state.pairs);
+    const total = data.terms.length;
+    const correct = pairs.filter(([t,d]) => t===d).length;
+    state.checked = true;
+    store.set(stateKey, state);
+
+    const missing = total - pairs.length;
+    const msg = `Score: ${correct}/${total}.` + (missing ? ` (${missing} not matched)` : "");
+    toast(msg);
+
+    const block = $("#scoreBlock");
+    block.innerHTML = `<div class="note ${correct===total?'good':'warn'}"><b>${msg}</b><br><small>Fix any incorrect matches and check again.</small></div>`;
+    render();
+  });
+
+  $("#reset").addEventListener("click", ()=>{
+    store.del(stateKey);
+    location.reload();
+  });
+
+  $("#flashcards").addEventListener("click", ()=>{
+    $("#flashView").style.display = ($("#flashView").style.display === "none") ? "" : "none";
+  });
+
+  // build flashcards
+  const flashWrap = $("#flashWrap");
+  flashWrap.innerHTML = "";
+  data.terms.forEach(t=>{
+    const c = document.createElement("div");
+    c.className="card";
+    c.innerHTML = `<b>${t.term}</b><hr class="sep"><small>${t.definition}</small>`;
+    flashWrap.appendChild(c);
+  });
+
+  render();
+});
+</script>
+
+</body>
+</html>

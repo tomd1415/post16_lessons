@@ -1,0 +1,19 @@
+{
+  admin off
+}
+
+http://localhost:8080 {
+  redir https://localhost:8443{uri}
+}
+
+https://localhost:8443 {
+  tls internal
+
+  @api path /api/*
+  handle @api {
+    reverse_proxy api:8000
+  }
+
+  root * /srv
+  file_server
+}

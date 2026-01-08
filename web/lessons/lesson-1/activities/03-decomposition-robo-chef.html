@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Activity 3 — Decomposition (Robo‑chef)</title>
+  <link rel="stylesheet" href="../../../core/app.css" />
+  <script src="../assets/data.js"></script>
+  
+</head>
+<body>
+  <div class="topbar no-print">
+    <div class="container">
+      <div class="brand">
+        <b>Thinking like a Coder — Lesson 1</b>
+        <span>Offline interactive resources (HTML/CSS/JS)</span>
+      </div>
+      <div class="row">
+        <a class="pill" href="../index.html"><strong>HOME</strong> <span>Teacher hub</span></a>
+        <a class="pill" href="../student.html"><strong>STUDENT</strong> <span>Student hub</span></a>
+        <button class="btn" id="teacherToggle" type="button">Teacher mode: OFF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    
+<h1>Activity 3: Decomposition — design a robo‑chef</h1>
+<div class="note">
+  <b>Goal:</b> Break the robot’s job into functions and sub-tasks. Include both:
+  <ul class="list">
+    <li><b>Action tasks</b> (do something)</li>
+    <li><b>Sensing/check tasks</b> (detect/measure problems)</li>
+    <li><b>Reusable functions</b> (can be used for different meals)</li>
+  </ul>
+</div>
+
+<div class="grid cols2">
+  <div class="card">
+    <h2>Team details</h2>
+    <label><b>Team name</b></label>
+    <input id="teamName" class="input" placeholder="e.g. The Byte Bakers" />
+    <div style="height:10px"></div>
+    <label><b>Spokesperson</b></label>
+    <input id="spokesperson" class="input" placeholder="Name" />
+    <div style="height:10px"></div>
+    <label><b>Robo‑chef speciality</b></label>
+    <input id="specialty" class="input" placeholder="e.g. Pancakes / Sandwiches / BBQ / Salad" />
+
+    <hr class="sep"/>
+    <div class="row no-print">
+      <button id="export" class="btn primary" type="button">Export</button>
+      <button id="print" class="btn" type="button">Print</button>
+      <button id="reset" class="btn bad" type="button">Reset</button>
+    </div>
+
+    <div class="teacher-only note">
+      <b>Teacher guidance:</b> Push teams to make their steps precise and unambiguous.
+      Prompt “what could go wrong?” to encourage sensing/check tasks.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Function tree</h2>
+    <div class="note warn no-print">
+      Click “Add…” to build the tree. Aim for at least 3 levels deep for one part of the task.
+    </div>
+    <div id="tree"></div>
+  </div>
+</div>
+
+<h2>Reflection</h2>
+<div class="grid cols2">
+  <div class="card">
+    <ul class="list">
+      <li>Which sub-task was hardest to describe clearly?</li>
+      <li>Which functions could be reused for other meals?</li>
+      <li>What safety problems must the robot detect?</li>
+    </ul>
+  </div>
+  <div class="card">
+    <p>
+      Optional extension: swap trees with another group and ask “could you build the robot from these instructions?”
+    </p>
+  </div>
+</div>
+
+    <div class="footer">
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      <div class="no-print">
+        <hr class="sep"/>
+        <small>
+          Tip: add <span class="kbd">?teacher=1</span> to the URL to force teacher mode on.
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../../core/app.js"></script>
+  
+<script>
+document.addEventListener("DOMContentLoaded", ()=>{
+  const stateKey = "tlac_l1_a03_state";
+  const state = store.get(stateKey, {
+    teamName: "",
+    spokesperson: "",
+    specialty: "",
+    nodes: [
+      { id: "root", title: "Robo‑Chef", kind:"system", children: [] }
+    ]
+  });
+
+  const kindLabels = {
+    system:"System",
+    action:"Action task",
+    sensing:"Sensing/check task",
+    reusable:"Reusable function",
+    other:"Other"
+  };
+
+  function findNode(id, nodes){
+    for(const n of nodes){
+      if(n.id===id) return n;
+      const c = findNode(id, n.children||[]);
+      if(c) return c;
+    }
+    return null;
+  }
+  function removeNode(id, nodes){
+    for(let i=0;i<nodes.length;i++){
+      if(nodes[i].id===id){ nodes.splice(i,1); return true; }
+      if(removeNode(id, nodes[i].children||[])) return true;
+    }
+    return false;
+  }
+
+  function render(){
+    $("#teamName").value = state.teamName;
+    $("#spokesperson").value = state.spokesperson;
+    $("#specialty").value = state.specialty;
+
+    const root = state.nodes[0];
+    $("#tree").innerHTML = renderNode(root, 0);
+    $$("#tree [data-add]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const parentId = btn.dataset.add;
+        const parent = findNode(parentId, state.nodes);
+        const title = prompt("New function/task name:");
+        if(!title) return;
+        const kind = prompt("Type: action / sensing / reusable / other", "action") || "other";
+        parent.children = parent.children || [];
+        parent.children.push({ id: uid(), title: title.trim(), kind: (kindLabels[kind]?kind:"other"), children: [] });
+        store.set(stateKey, state);
+        render();
+      });
+    });
+    $$("#tree [data-edit]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const id = btn.dataset.edit;
+        const n = findNode(id, state.nodes);
+        const title = prompt("Edit name:", n.title);
+        if(title===null) return;
+        const kind = prompt("Edit type (System/Action task/Sensing/check task/Reusable function/Other):", n.kind);
+        n.title = title.trim() || n.title;
+        n.kind = kind.trim() || n.kind;
+        store.set(stateKey, state);
+        render();
+      });
+    });
+    $$("#tree [data-del]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const id = btn.dataset.del;
+        if(id==="root"){ toast("Root cannot be deleted."); return; }
+        if(!confirm("Delete this node and all children?")) return;
+        removeNode(id, state.nodes[0].children);
+        store.set(stateKey, state);
+        render();
+      });
+    });
+  }
+
+  function renderNode(n, depth){
+    const indent = Math.min(depth*16, 64);
+    const kind = n.kind in kindLabels ? kindLabels[n.kind] : n.kind;
+    const children = (n.children||[]).map(c => renderNode(c, depth+1)).join("");
+    const controls = n.id==="root"
+      ? `<button class="btn primary" data-add="${n.id}" type="button">Add top-level function</button>`
+      : `<div class="row">
+           <button class="btn" data-add="${n.id}" type="button">Add sub-task</button>
+           <button class="btn" data-edit="${n.id}" type="button">Edit</button>
+           <button class="btn bad" data-del="${n.id}" type="button">Delete</button>
+         </div>`;
+    return `
+      <div class="card" style="margin-top:10px; margin-left:${indent}px">
+        <div class="row" style="justify-content:space-between; align-items:flex-start">
+          <div>
+            <b>${escapeHtml(n.title)}</b><br>
+            <span class="tag">${escapeHtml(kind)}</span>
+          </div>
+          <div class="no-print">${controls}</div>
+        </div>
+        ${children}
+      </div>
+    `;
+  }
+
+  function escapeHtml(s){
+    return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+  }
+
+  // Bind meta fields
+  ["teamName","spokesperson","specialty"].forEach(id=>{
+    $("#"+id).addEventListener("input", (e)=>{
+      state[id] = e.target.value;
+      store.set(stateKey, state);
+    });
+  });
+
+  $("#reset").addEventListener("click", ()=>{
+    if(!confirm("Reset this activity?")) return;
+    store.del(stateKey);
+    location.reload();
+  });
+
+  $("#export").addEventListener("click", ()=>{
+    const payload = { ...state, savedAt: new Date().toISOString(), activity:"Robo-Chef Decomposition" };
+    downloadText("lesson1-robo-chef-decomposition.json", JSON.stringify(payload, null, 2), "application/json");
+  });
+
+  $("#print").addEventListener("click", ()=> printPage());
+
+  render();
+});
+</script>
+
+</body>
+</html>

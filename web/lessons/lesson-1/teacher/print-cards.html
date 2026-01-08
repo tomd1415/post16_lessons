@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Teacher — printable cards</title>
+  <link rel="stylesheet" href="../../../core/app.css" />
+  <script src="../assets/data.js"></script>
+  
+<style>
+.print-grid{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 12px;
+}
+@media (max-width: 900px){
+  .print-grid{grid-template-columns: repeat(2, minmax(0,1fr));}
+}
+.card.print-card{
+  border: 2px dashed rgba(255,255,255,.25);
+  min-height: 120px;
+}
+.card.print-card b{font-size: 18px}
+.card.print-card small{font-size: 13px}
+.cut{
+  margin-top: 8px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+@media print{
+  .print-grid{grid-template-columns: repeat(3, minmax(0,1fr));}
+  .card.print-card{border-color: rgba(0,0,0,.35);}
+  .cut{color:#444}
+}
+</style>
+
+</head>
+<body>
+  <div class="topbar no-print">
+    <div class="container">
+      <div class="brand">
+        <b>Thinking like a Coder — Lesson 1</b>
+        <span>Offline interactive resources (HTML/CSS/JS)</span>
+      </div>
+      <div class="row">
+        <a class="pill" href="../index.html"><strong>HOME</strong> <span>Teacher hub</span></a>
+        <a class="pill" href="../student.html"><strong>STUDENT</strong> <span>Student hub</span></a>
+        <button class="btn" id="teacherToggle" type="button">Teacher mode: OFF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    
+<h1>Printable cards (cut-outs)</h1>
+<div class="note warn">
+  Use browser print. In print preview, set scale to “fit” if needed.
+</div>
+
+<div class="card">
+  <h2>Device cards (Activity 1)</h2>
+  <div id="deviceCards" class="print-grid"></div>
+  <hr class="sep"/>
+  <h3>Blank cards</h3>
+  <div id="blankCards" class="print-grid"></div>
+</div>
+
+<div class="card" style="margin-top:14px">
+  <h2>Height sorting cards (Activity 6)</h2>
+  <p>Write names/heights on cards and physically sort (line) or arrange in a circle.</p>
+  <div id="heightCards" class="print-grid"></div>
+</div>
+
+<div class="card" style="margin-top:14px">
+  <h2>Print tips</h2>
+  <ul class="list">
+    <li>Print in colour if possible for readability.</li>
+    <li>Laminate for reuse, then write with whiteboard markers.</li>
+  </ul>
+</div>
+
+    <div class="footer">
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      <div class="no-print">
+        <hr class="sep"/>
+        <small>
+          Tip: add <span class="kbd">?teacher=1</span> to the URL to force teacher mode on.
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../../core/app.js"></script>
+  
+<script>
+document.addEventListener("DOMContentLoaded", ()=>{
+  const devices = window.LESSON1_DATA.devices;
+  const wrap = document.getElementById("deviceCards");
+  wrap.innerHTML = devices.map(d=>`
+    <div class="card print-card">
+      <b>${d.name}</b><hr class="sep">
+      <small>${d.hint}</small>
+      <div class="cut">Cut out</div>
+    </div>
+  `).join("");
+
+  const blankWrap = document.getElementById("blankCards");
+  blankWrap.innerHTML = Array.from({length:6}).map(()=>`
+    <div class="card print-card">
+      <b>Blank card</b><hr class="sep">
+      <small>Write your own example device.</small>
+      <div class="cut">Cut out</div>
+    </div>
+  `).join("");
+
+  const heightWrap = document.getElementById("heightCards");
+  heightWrap.innerHTML = Array.from({length:12}).map((_,i)=>`
+    <div class="card print-card">
+      <b>Person ${i+1}</b><hr class="sep">
+      <small>Name: ______________________</small><br>
+      <small>Height: __________ cm</small>
+      <div class="cut">Cut out</div>
+    </div>
+  `).join("");
+});
+</script>
+
+</body>
+</html>

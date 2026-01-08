@@ -1,0 +1,213 @@
+
+:root{
+  --bg:#0b0f14;
+  --panel:#121824;
+  --panel2:#0f1420;
+  --text:#e8eef6;
+  --muted:#b9c6d8;
+  --accent:#6aa6ff;
+  --good:#49d17a;
+  --bad:#ff5d5d;
+  --warn:#ffc857;
+  --border:rgba(255,255,255,.14);
+  --shadow: 0 12px 30px rgba(0,0,0,.35);
+  --radius:16px;
+  --radius2:22px;
+  --focus: 0 0 0 3px rgba(106,166,255,.35);
+  --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+  --sans: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  --maxw: 1100px;
+  --pad: 18px;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family: var(--sans);
+  background: radial-gradient(1400px 900px at 20% -20%, rgba(106,166,255,.25), transparent 55%),
+              radial-gradient(900px 700px at 100% 0%, rgba(73,209,122,.12), transparent 50%),
+              var(--bg);
+  color:var(--text);
+  line-height:1.45;
+  font-size: 18px;
+}
+
+a{color:var(--accent); text-decoration:none}
+a:hover{text-decoration:underline}
+small{color:var(--muted)}
+h1,h2,h3{line-height:1.15; margin: 0 0 10px}
+h1{font-size: 34px}
+h2{font-size: 26px; margin-top: 18px}
+h3{font-size: 20px; margin-top: 16px}
+
+.container{max-width: var(--maxw); margin: 0 auto; padding: 22px var(--pad)}
+.topbar{
+  position:sticky; top:0; z-index:10;
+  backdrop-filter: blur(10px);
+  background: rgba(11,15,20,.75);
+  border-bottom: 1px solid var(--border);
+}
+.topbar .container{display:flex; gap:12px; align-items:center; justify-content:space-between}
+.brand{display:flex; flex-direction:column}
+.brand b{font-size:16px; letter-spacing:.02em}
+.brand span{font-size:13px; color:var(--muted)}
+.row{display:flex; gap:12px; flex-wrap:wrap; align-items:center}
+.pill{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:8px 12px; border:1px solid var(--border);
+  background: rgba(255,255,255,.04);
+  border-radius:999px;
+  font-size:14px;
+}
+.pill strong{font-family:var(--mono); font-size:13px; font-weight:600; color:var(--muted)}
+
+.card{
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  border:1px solid var(--border);
+  border-radius: var(--radius2);
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+.grid{display:grid; gap:14px}
+.grid.cols2{grid-template-columns: repeat(2, minmax(0,1fr))}
+.grid.cols3{grid-template-columns: repeat(3, minmax(0,1fr))}
+@media (max-width: 900px){
+  .grid.cols2, .grid.cols3{grid-template-columns: 1fr}
+  body{font-size: 17px}
+  h1{font-size: 30px}
+}
+
+.btn{
+  border:1px solid var(--border);
+  background: rgba(255,255,255,.06);
+  color: var(--text);
+  padding:10px 14px;
+  border-radius: 14px;
+  cursor:pointer;
+  font-size: 16px;
+}
+.btn:hover{background: rgba(255,255,255,.10)}
+.btn:focus{outline:none; box-shadow: var(--focus)}
+.btn.primary{background: rgba(106,166,255,.18); border-color: rgba(106,166,255,.45)}
+.btn.primary:hover{background: rgba(106,166,255,.26)}
+.btn.good{background: rgba(73,209,122,.16); border-color: rgba(73,209,122,.45)}
+.btn.bad{background: rgba(255,93,93,.14); border-color: rgba(255,93,93,.45)}
+
+.badge{
+  display:inline-flex; align-items:center; gap:8px;
+  font-family: var(--mono);
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(0,0,0,.25);
+}
+
+.kbd{
+  font-family: var(--mono);
+  font-size: 14px;
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(255,255,255,.04);
+}
+
+hr.sep{border:0; border-top:1px solid var(--border); margin: 16px 0}
+
+.note{
+  border-left: 4px solid rgba(106,166,255,.55);
+  padding: 10px 12px;
+  background: rgba(106,166,255,.08);
+  border-radius: 14px;
+}
+
+.warn{border-left-color: rgba(255,200,87,.7); background: rgba(255,200,87,.10)}
+.good{border-left-color: rgba(73,209,122,.7); background: rgba(73,209,122,.10)}
+.bad{border-left-color: rgba(255,93,93,.7); background: rgba(255,93,93,.08)}
+
+.list{margin:0; padding-left: 18px}
+.list li{margin: 6px 0}
+
+.split{
+  display:grid; gap:14px;
+  grid-template-columns: 320px minmax(0,1fr);
+}
+@media (max-width: 900px){.split{grid-template-columns: 1fr}}
+
+.nav{
+  position:sticky; top: 80px;
+  align-self:start;
+}
+.nav a{
+  display:block; padding:10px 12px; border-radius: 12px;
+  border:1px solid transparent;
+}
+.nav a:hover{border-color: var(--border); background: rgba(255,255,255,.05)}
+.nav a.active{border-color: rgba(106,166,255,.55); background: rgba(106,166,255,.10)}
+
+.tag{
+  display:inline-flex; align-items:center;
+  padding:4px 10px; border-radius:999px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.03);
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.table{
+  width:100%;
+  border-collapse: separate;
+  border-spacing:0;
+  overflow:hidden;
+  border:1px solid var(--border);
+  border-radius: 16px;
+}
+.table th, .table td{
+  padding: 10px 12px;
+  border-bottom:1px solid var(--border);
+  vertical-align: top;
+}
+.table th{background: rgba(255,255,255,.05); text-align:left; font-size: 14px; color: var(--muted)}
+.table tr:last-child td{border-bottom:0}
+.table .muted{color: var(--muted)}
+.table td code{font-family: var(--mono)}
+
+.input, textarea, select{
+  width:100%;
+  border:1px solid var(--border);
+  background: rgba(0,0,0,.25);
+  color: var(--text);
+  border-radius: 14px;
+  padding: 10px 12px;
+  font-size: 16px;
+}
+textarea{min-height: 110px; resize: vertical}
+.input:focus, textarea:focus, select:focus{outline:none; box-shadow: var(--focus)}
+
+.footer{margin-top: 26px; color: var(--muted); font-size: 13px}
+
+.toast{
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,.6);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 10px 12px;
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  display:none;
+  max-width: min(680px, calc(100vw - 24px));
+}
+.toast.show{display:block}
+
+@media print{
+  :root{ --bg: #fff; --text: #000; --muted: #444; --border: rgba(0,0,0,.25); --shadow: none;}
+  body{background:#fff; color:#000}
+  .topbar, .nav, .no-print{display:none !important}
+  .card{box-shadow:none}
+  a{text-decoration: none; color: #000}
+  .container{max-width: none}
+}
