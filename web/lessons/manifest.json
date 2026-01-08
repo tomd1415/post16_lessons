@@ -1,0 +1,208 @@
+{
+  "course": {
+    "id": "icdl-thinking-like-a-coder",
+    "title": "ICDL Thinking like a Coder 1.0",
+    "shortTitle": "Thinking like a Coder",
+    "version": "1.0",
+    "lessonsTotal": 8
+  },
+  "linksRegistry": {
+    "items": []
+  },
+  "lessons": [
+    {
+      "id": "lesson-1",
+      "number": 1,
+      "title": "Lesson 1: Thinking like a Coder",
+      "summary": "Computational thinking basics: decomposition, pattern recognition, abstraction, algorithms, and what counts as a computer.",
+      "status": "ready",
+      "studentPath": "/lessons/lesson-1/student.html",
+      "teacherPath": "/lessons/lesson-1/index.html",
+      "timings": "50-60 minutes",
+      "objectives": [
+        {"id": "L1-O1", "text": "Define computing."},
+        {"id": "L1-O2", "text": "Define computational thinking."},
+        {"id": "L1-O3", "text": "Describe typical computational thinking methods: decomposition, pattern recognition, abstraction, algorithms."},
+        {"id": "L1-O4", "text": "Use decomposition to break down a complex problem into smaller parts."},
+        {"id": "L1-O5", "text": "Define a program."},
+        {"id": "L1-O6", "text": "Explain how algorithms are used in computational thinking."},
+        {"id": "L1-O7", "text": "Identify patterns among smaller problems."},
+        {"id": "L1-O8", "text": "Use abstraction to keep important details and drop irrelevant ones."}
+      ],
+      "resources": [
+        "Browser access for interactive activities",
+        "Whiteboards or A2 paper plus markers",
+        "Optional: printed device cards and height cards"
+      ],
+      "teacherResources": [
+        {"title": "Lesson plan", "path": "/lessons/lesson-1/teacher/lesson-plan.html"},
+        {"title": "Printable cards", "path": "/lessons/lesson-1/teacher/print-cards.html"},
+        {"title": "Answer guidance", "path": "/lessons/lesson-1/teacher/answer-key.html"}
+      ],
+      "activities": [
+        {
+          "id": "a01",
+          "title": "What counts as a computer?",
+          "path": "/lessons/lesson-1/activities/01-what-is-a-computer.html",
+          "objectiveIds": ["L1-O1"],
+          "expectedEvidence": "Device placements and optional reflection.",
+          "rubricHook": null
+        },
+        {
+          "id": "a02",
+          "title": "Key terms match",
+          "path": "/lessons/lesson-1/activities/02-key-terms-match.html",
+          "objectiveIds": ["L1-O1", "L1-O2", "L1-O3", "L1-O5", "L1-O6", "L1-O7", "L1-O8"],
+          "expectedEvidence": "Matched term-definition pairs and score check.",
+          "rubricHook": null
+        },
+        {
+          "id": "a03",
+          "title": "Decomposition: robo-chef",
+          "path": "/lessons/lesson-1/activities/03-decomposition-robo-chef.html",
+          "objectiveIds": ["L1-O4", "L1-O6"],
+          "expectedEvidence": "Function tree with action, sensing, and reusable tasks.",
+          "rubricHook": null
+        },
+        {
+          "id": "a04",
+          "title": "Pattern recognition: recipes",
+          "path": "/lessons/lesson-1/activities/04-patterns-recipes.html",
+          "objectiveIds": ["L1-O7"],
+          "expectedEvidence": "Selected common steps and a reusable pattern name.",
+          "rubricHook": null
+        },
+        {
+          "id": "a05",
+          "title": "Abstraction filter",
+          "path": "/lessons/lesson-1/activities/05-abstraction-filter.html",
+          "objectiveIds": ["L1-O8"],
+          "expectedEvidence": "Chosen essential details and check results.",
+          "rubricHook": null
+        },
+        {
+          "id": "a06",
+          "title": "Algorithms: sorting",
+          "path": "/lessons/lesson-1/activities/06-algorithm-sorting.html",
+          "objectiveIds": ["L1-O6"],
+          "expectedEvidence": "Sorted line, circle arrangement, and optional export.",
+          "rubricHook": null
+        },
+        {
+          "id": "a07",
+          "title": "Big problems decomposition",
+          "path": "/lessons/lesson-1/activities/07-big-problems.html",
+          "objectiveIds": ["L1-O4", "L1-O6"],
+          "expectedEvidence": "Decomposition notes including at least one software idea.",
+          "rubricHook": null
+        },
+        {
+          "id": "a08",
+          "title": "Mini assessment",
+          "path": "/lessons/lesson-1/activities/08-mini-assessment.html",
+          "objectiveIds": ["L1-O1", "L1-O2", "L1-O3", "L1-O4", "L1-O5", "L1-O6", "L1-O7", "L1-O8"],
+          "expectedEvidence": "MCQ score summary and short responses.",
+          "rubricHook": null
+        }
+      ]
+    },
+    {
+      "id": "lesson-2",
+      "number": 2,
+      "title": "Lesson 2: Placeholder",
+      "summary": "Content coming soon.",
+      "status": "placeholder",
+      "studentPath": "/lessons/lesson-2/student.html",
+      "teacherPath": "/lessons/lesson-2/index.html",
+      "timings": "TBD",
+      "objectives": [],
+      "resources": [],
+      "teacherResources": [],
+      "activities": []
+    },
+    {
+      "id": "lesson-3",
+      "number": 3,
+      "title": "Lesson 3: Placeholder",
+      "summary": "Content coming soon.",
+      "status": "placeholder",
+      "studentPath": "/lessons/lesson-3/student.html",
+      "teacherPath": "/lessons/lesson-3/index.html",
+      "timings": "TBD",
+      "objectives": [],
+      "resources": [],
+      "teacherResources": [],
+      "activities": []
+    },
+    {
+      "id": "lesson-4",
+      "number": 4,
+      "title": "Lesson 4: Placeholder",
+      "summary": "Content coming soon.",
+      "status": "placeholder",
+      "studentPath": "/lessons/lesson-4/student.html",
+      "teacherPath": "/lessons/lesson-4/index.html",
+      "timings": "TBD",
+      "objectives": [],
+      "resources": [],
+      "teacherResources": [],
+      "activities": []
+    },
+    {
+      "id": "lesson-5",
+      "number": 5,
+      "title": "Lesson 5: Placeholder",
+      "summary": "Content coming soon.",
+      "status": "placeholder",
+      "studentPath": "/lessons/lesson-5/student.html",
+      "teacherPath": "/lessons/lesson-5/index.html",
+      "timings": "TBD",
+      "objectives": [],
+      "resources": [],
+      "teacherResources": [],
+      "activities": []
+    },
+    {
+      "id": "lesson-6",
+      "number": 6,
+      "title": "Lesson 6: Placeholder",
+      "summary": "Content coming soon.",
+      "status": "placeholder",
+      "studentPath": "/lessons/lesson-6/student.html",
+      "teacherPath": "/lessons/lesson-6/index.html",
+      "timings": "TBD",
+      "objectives": [],
+      "resources": [],
+      "teacherResources": [],
+      "activities": []
+    },
+    {
+      "id": "lesson-7",
+      "number": 7,
+      "title": "Lesson 7: Placeholder",
+      "summary": "Content coming soon.",
+      "status": "placeholder",
+      "studentPath": "/lessons/lesson-7/student.html",
+      "teacherPath": "/lessons/lesson-7/index.html",
+      "timings": "TBD",
+      "objectives": [],
+      "resources": [],
+      "teacherResources": [],
+      "activities": []
+    },
+    {
+      "id": "lesson-8",
+      "number": 8,
+      "title": "Lesson 8: Placeholder",
+      "summary": "Content coming soon.",
+      "status": "placeholder",
+      "studentPath": "/lessons/lesson-8/student.html",
+      "teacherPath": "/lessons/lesson-8/index.html",
+      "timings": "TBD",
+      "objectives": [],
+      "resources": [],
+      "teacherResources": [],
+      "activities": []
+    }
+  ]
+}
