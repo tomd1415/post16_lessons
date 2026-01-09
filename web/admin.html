@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Thinking like a Coder - Admin</title>
+  <link rel="stylesheet" href="./core/app.css" />
+</head>
+<body data-requires-role="admin">
+  <div class="topbar no-print">
+    <div class="container">
+      <div class="brand">
+        <b>Thinking like a Coder - Admin</b>
+        <span>User management</span>
+      </div>
+      <div class="row">
+        <a class="pill" href="./teacher.html"><strong>TEACHER</strong> <span>Teacher hub</span></a>
+        <a class="pill" href="./index.html"><strong>STUDENT</strong> <span>Student hub</span></a>
+        <span id="userBadge" class="badge" style="display:none"></span>
+        <button class="btn" id="logoutBtn" type="button">Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>Admin tools</h1>
+    <div class="note warn">
+      Only admins can access this page. Changes take effect immediately.
+    </div>
+
+    <div class="grid cols2" style="margin-top:14px">
+      <div class="card">
+        <h2>Create user</h2>
+        <form id="createUserForm">
+          <label><b>Name</b></label>
+          <input class="input" id="cu-name" placeholder="Full name" />
+          <div style="height:10px"></div>
+          <label><b>Username</b></label>
+          <input class="input" id="cu-username" placeholder="lastname.firstinitial" />
+          <div style="height:10px"></div>
+          <label><b>Role</b></label>
+          <select id="cu-role">
+            <option value="pupil">Pupil</option>
+            <option value="teacher">Teacher</option>
+            <option value="admin">Admin</option>
+          </select>
+          <div style="height:10px"></div>
+          <label><b>Cohort / year of course</b></label>
+          <input class="input" id="cu-cohort" placeholder="e.g. 2024" />
+          <small>Required for pupils.</small>
+          <div style="height:10px"></div>
+          <label><b>Password</b></label>
+          <input class="input" id="cu-password" type="password" autocomplete="new-password" />
+          <div style="height:10px"></div>
+          <label><b>Teacher notes</b> (optional)</label>
+          <textarea id="cu-notes" placeholder="Private notes"></textarea>
+          <div style="height:12px"></div>
+          <button class="btn primary" type="submit">Create user</button>
+        </form>
+        <div id="createUserResult" style="margin-top:12px"></div>
+      </div>
+
+      <div class="card">
+        <h2>CSV import</h2>
+        <p>CSV columns: <span class="kbd">username,name,role,cohort_year,password,teacher_notes</span></p>
+        <form id="importForm">
+          <input type="file" id="csvFile" accept=".csv" />
+          <div style="height:12px"></div>
+          <button class="btn primary" type="submit">Import users</button>
+        </form>
+        <div id="importResult" style="margin-top:12px"></div>
+        <div class="note" style="margin-top:12px">
+          <b>Notes:</b>
+          <ul class="list">
+            <li>Pupil usernames must be <span class="kbd">lastname.firstinitial</span>.</li>
+            <li>Set <span class="kbd">cohort_year</span> for pupils (required).</li>
+            <li>Passwords are stored securely; keep the CSV file private.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <script src="./core/app.js"></script>
+  <script src="./core/auth.js"></script>
+  <script>
+    async function getAuth(){
+      return window.tlacAuthReady;
+    }
+
+    document.getElementById("createUserForm").addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      const auth = await getAuth();
+      if(!auth){
+        toast("Not signed in.");
+        return;
+      }
+      const payload = {
+        name: document.getElementById("cu-name").value.trim(),
+        username: document.getElementById("cu-username").value.trim(),
+        role: document.getElementById("cu-role").value,
+        cohort_year: document.getElementById("cu-cohort").value.trim(),
+        password: document.getElementById("cu-password").value,
+        teacher_notes: document.getElementById("cu-notes").value.trim()
+      };
+      const res = await fetch("/api/admin/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": auth.csrf_token
+        },
+        credentials: "same-origin",
+        body: JSON.stringify(payload)
+      });
+      const out = document.getElementById("createUserResult");
+      if(res.ok){
+        out.innerHTML = "<div class='note good'><b>User created.</b></div>";
+      } else {
+        const data = await res.json().catch(()=>({}));
+        const msg = data.detail || "Create failed.";
+        out.innerHTML = `<div class='note bad'><b>${msg}</b></div>`;
+      }
+    });
+
+    document.getElementById("importForm").addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      const auth = await getAuth();
+      if(!auth){
+        toast("Not signed in.");
+        return;
+      }
+      const fileInput = document.getElementById("csvFile");
+      if(!fileInput.files.length){
+        toast("Choose a CSV file first.");
+        return;
+      }
+      const form = new FormData();
+      form.append("file", fileInput.files[0]);
+
+      const res = await fetch("/api/admin/users/import", {
+        method: "POST",
+        headers: {
+          "X-CSRF-Token": auth.csrf_token
+        },
+        credentials: "same-origin",
+        body: form
+      });
+      const out = document.getElementById("importResult");
+      const data = await res.json().catch(()=>({}));
+      if(res.ok && data.errors && data.errors.length === 0){
+        out.innerHTML = `<div class='note good'><b>Imported ${data.created} users.</b></div>`;
+      } else {
+        const errs = (data.errors || []).map(e=>`<li>Row ${e.row}: ${e.error}</li>`).join("") || "<li>Import failed.</li>";
+        out.innerHTML = `<div class='note bad'><b>Errors:</b><ul class='list'>${errs}</ul></div>`;
+      }
+    });
+  </script>
+</body>
+</html>

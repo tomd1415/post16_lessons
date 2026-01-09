@@ -8,12 +8,5 @@ http://localhost:8080 {
 
 https://localhost:8443 {
   tls internal
-
-  @api path /api/*
-  handle @api {
-    reverse_proxy api:8000
-  }
-
-  root * /srv
-  file_server
+  reverse_proxy api:8000
 }

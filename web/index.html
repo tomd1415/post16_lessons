@@ -11,10 +11,13 @@
     <div class="container">
       <div class="brand">
         <b>Thinking like a Coder - Course</b>
-        <span>On-prem learning platform (Phase 1)</span>
+        <span>On-prem learning platform (Phase 2)</span>
       </div>
       <div class="row">
-        <a class="pill" href="./teacher.html"><strong>TEACHER</strong> <span>Teacher hub</span></a>
+        <a class="pill" id="teacherLink" href="./teacher.html" style="display:none"><strong>TEACHER</strong> <span>Teacher hub</span></a>
+        <a class="pill" id="adminLink" href="./admin.html" style="display:none"><strong>ADMIN</strong> <span>Admin</span></a>
+        <span id="userBadge" class="badge" style="display:none"></span>
+        <button class="btn" id="logoutBtn" type="button">Logout</button>
         <button class="btn" id="teacherToggle" type="button">Teacher mode: OFF</button>
       </div>
     </div>
@@ -43,6 +46,7 @@
   </div>
 
   <script src="./core/app.js"></script>
+  <script src="./core/auth.js"></script>
   <script src="./core/catalog.js"></script>
 </body>
 </html>

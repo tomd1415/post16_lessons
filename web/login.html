@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Thinking like a Coder - Sign in</title>
+  <link rel="stylesheet" href="./core/app.css" />
+</head>
+<body>
+  <div class="topbar no-print">
+    <div class="container">
+      <div class="brand">
+        <b>Thinking like a Coder - Course</b>
+        <span>Local accounts sign-in</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>Sign in</h1>
+    <div class="grid cols2">
+      <div class="card">
+        <h2>Account login</h2>
+        <form id="loginForm">
+          <label for="username"><b>Username</b></label>
+          <input id="username" class="input" autocomplete="username" placeholder="lastname.firstinitial" />
+          <div style="height:10px"></div>
+          <label for="password"><b>Password</b></label>
+          <input id="password" class="input" type="password" autocomplete="current-password" />
+          <div style="height:12px"></div>
+          <button class="btn primary" type="submit">Sign in</button>
+        </form>
+      </div>
+      <div class="card">
+        <h2>Notes</h2>
+        <ul class="list">
+          <li>Use your school username format (lastname.firstinitial).</li>
+          <li>If you cannot sign in, ask a teacher to reset your password.</li>
+          <li>Teacher and admin accounts are created by an admin.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <script src="./core/app.js"></script>
+  <script>
+    function getNext(){
+      const params = new URLSearchParams(window.location.search);
+      const next = params.get("next");
+      if(next && next.startsWith("/")) return next;
+      return "/";
+    }
+
+    async function checkSession(){
+      const res = await fetch("/api/auth/me", { credentials: "same-origin" });
+      if(res.ok){
+        window.location.href = getNext();
+      }
+    }
+
+    document.getElementById("loginForm").addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      const payload = {
+        username: document.getElementById("username").value.trim(),
+        password: document.getElementById("password").value
+      };
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        credentials: "same-origin",
+        body: JSON.stringify(payload)
+      });
+      if(res.ok){
+        window.location.href = getNext();
+      } else {
+        toast("Sign in failed. Check your username and password.");
+      }
+    });
+
+    checkSession();
+  </script>
+</body>
+</html>

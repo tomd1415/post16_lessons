@@ -35,5 +35,5 @@ Purpose: Provide a single source of truth for the course catalogue, lesson metad
 
 ## Notes
 - Lesson 1 is populated with real metadata and activity mappings.
-- Lessons 2-8 are placeholders (empty activities/objectives) until Phase 5.
+- Lessons 2-15 are placeholders (empty activities/objectives) until Phase 5.
 - The catalogue UI uses the manifest directly; there is no additional build step.

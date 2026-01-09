@@ -7,7 +7,6 @@ services:
       - "8443:8443"
     volumes:
       - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
-      - ./web:/srv:ro
       - caddy_data:/data
       - caddy_config:/config
     depends_on:
@@ -18,9 +17,26 @@ services:
     restart: unless-stopped
     environment:
       - PYTHONUNBUFFERED=1
+      - DATABASE_URL=postgresql+psycopg://tlac:tlac@db:5432/tlac
+      - SESSION_TTL_MINUTES=480
     expose:
       - "8000"
+    volumes:
+      - ./web:/srv:ro
+    depends_on:
+      - db
+
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=tlac
+      - POSTGRES_PASSWORD=tlac
+      - POSTGRES_DB=tlac
+    volumes:
+      - pg_data:/var/lib/postgresql/data
 
 volumes:
   caddy_data:
   caddy_config:
+  pg_data:

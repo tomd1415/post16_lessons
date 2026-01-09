@@ -22,31 +22,117 @@ function toast(msg){
   window.__toastTimer = setTimeout(()=> el.classList.remove("show"), 2400);
 }
 
-function getTeacherMode(){
+function readStoredRole(){
+  try{
+    const raw = localStorage.getItem("tlac_role");
+    if(!raw) return null;
+    try{ return JSON.parse(raw); }catch{ return raw; }
+  }catch{
+    return null;
+  }
+}
+
+function applyTeacherMode(on){
+  document.documentElement.dataset.teacher = on ? "1" : "0";
+  $$(".teacher-only").forEach(e => e.style.display = on ? "" : "none");
+}
+
+function isStaffRole(role){
+  return role === "teacher" || role === "admin";
+}
+
+function findTeacherHubLinks(){
+  return $$("a").filter(link => {
+    const text = (link.textContent || "").toLowerCase();
+    if(text.includes("teacher hub")) return true;
+    const href = (link.getAttribute("href") || "").toLowerCase();
+    return href.includes("teacher.html");
+  });
+}
+
+function syncTeacherHubLinks(role){
+  const show = isStaffRole(role);
+  findTeacherHubLinks().forEach(link => {
+    link.style.display = show ? "" : "none";
+    link.setAttribute("aria-hidden", show ? "false" : "true");
+  });
+}
+
+function getTeacherMode(role){
+  const resolved = role || document.documentElement.dataset.role;
+  if(!isStaffRole(resolved)) return false;
   const params = new URLSearchParams(location.search);
   if(params.get("teacher")==="1") return true;
   return store.get("tlac_teacher_mode", false);
 }
-function setTeacherMode(on){
-  store.set("tlac_teacher_mode", !!on);
-  document.documentElement.dataset.teacher = on ? "1" : "0";
+
+function setTeacherMode(on, opts={}){
+  const persist = opts.persist !== false;
+  if(persist) store.set("tlac_teacher_mode", !!on);
+  applyTeacherMode(!!on);
 }
-function initTeacherToggle(){
+
+async function resolveRole(){
+  const existing = document.documentElement.dataset.role;
+  if(existing) return existing;
+
+  if(window.tlacAuthReady){
+    try{
+      const data = await window.tlacAuthReady;
+      if(data && data.user && data.user.role){
+        try{ localStorage.setItem("tlac_role", JSON.stringify(data.user.role)); }catch{}
+        document.documentElement.dataset.role = data.user.role;
+        return data.user.role;
+      }
+    }catch{}
+  }
+
+  try{
+    const res = await fetch("/api/auth/me", { credentials: "same-origin" });
+    if(res.ok){
+      const data = await res.json();
+      if(data && data.user && data.user.role){
+        try{ localStorage.setItem("tlac_role", JSON.stringify(data.user.role)); }catch{}
+        document.documentElement.dataset.role = data.user.role;
+        return data.user.role;
+      }
+    }
+  }catch{}
+
+  const stored = readStoredRole();
+  if(stored === "pupil"){
+    document.documentElement.dataset.role = stored;
+    return stored;
+  }
+
+  return null;
+}
+
+async function initTeacherToggle(){
   const btn = $("#teacherToggle");
-  if(!btn) return;
-  const on = getTeacherMode();
+  if(btn) btn.style.display = "none";
+  setTeacherMode(false, { persist: false });
+  syncTeacherHubLinks(null);
+  const role = await resolveRole();
+  syncTeacherHubLinks(role);
+  const on = getTeacherMode(role);
+
+  if(!isStaffRole(role)){
+    setTeacherMode(false);
+    if(btn) btn.style.display = "none";
+    return;
+  }
+
   setTeacherMode(on);
+  if(!btn) return;
+  btn.style.display = "";
   btn.textContent = on ? "Teacher mode: ON" : "Teacher mode: OFF";
   btn.addEventListener("click", ()=>{
-    const now = !getTeacherMode();
+    const now = !getTeacherMode(role);
     setTeacherMode(now);
     btn.textContent = now ? "Teacher mode: ON" : "Teacher mode: OFF";
     toast(now ? "Teacher mode enabled" : "Teacher mode disabled");
-    // reveal/hide teacher-only blocks
-    $$(".teacher-only").forEach(e => e.style.display = now ? "" : "none");
   });
-  // initial apply
-  $$(".teacher-only").forEach(e => e.style.display = on ? "" : "none");
 }
 
 function shuffle(arr){

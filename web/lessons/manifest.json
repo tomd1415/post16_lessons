@@ -173,7 +173,7 @@
     {
       "id": "lesson-2",
       "number": 2,
-      "title": "Lesson 2: Placeholder",
+      "title": "Lesson 2: Software Development",
       "summary": "Content coming soon.",
       "status": "placeholder",
       "studentPath": "/lessons/lesson-2/student.html",
@@ -187,7 +187,7 @@
     {
       "id": "lesson-3",
       "number": 3,
-      "title": "Lesson 3: Placeholder",
+      "title": "Lesson 3: Algorithms",
       "summary": "Content coming soon.",
       "status": "placeholder",
       "studentPath": "/lessons/lesson-3/student.html",
@@ -201,7 +201,7 @@
     {
       "id": "lesson-4",
       "number": 4,
-      "title": "Lesson 4: Placeholder",
+      "title": "Lesson 4: Getting Started",
       "summary": "Content coming soon.",
       "status": "placeholder",
       "studentPath": "/lessons/lesson-4/student.html",
@@ -215,7 +215,7 @@
     {
       "id": "lesson-5",
       "number": 5,
-      "title": "Lesson 5: Placeholder",
+      "title": "Lesson 5: Performing Calculations",
       "summary": "Content coming soon.",
       "status": "placeholder",
       "studentPath": "/lessons/lesson-5/student.html",
@@ -229,7 +229,7 @@
     {
       "id": "lesson-6",
       "number": 6,
-      "title": "Lesson 6: Placeholder",
+      "title": "Lesson 6: Data Types and Variables",
       "summary": "Content coming soon.",
       "status": "placeholder",
       "studentPath": "/lessons/lesson-6/student.html",
@@ -243,7 +243,7 @@
     {
       "id": "lesson-7",
       "number": 7,
-      "title": "Lesson 7: Placeholder",
+      "title": "Lesson 7: True or False",
       "summary": "Content coming soon.",
       "status": "placeholder",
       "studentPath": "/lessons/lesson-7/student.html",
@@ -257,7 +257,7 @@
     {
       "id": "lesson-8",
       "number": 8,
-      "title": "Lesson 8: Placeholder",
+      "title": "Lesson 8: Aggregate Data Types",
       "summary": "Content coming soon.",
       "status": "placeholder",
       "studentPath": "/lessons/lesson-8/student.html",
@@ -271,7 +271,7 @@
     {
       "id": "lesson-9",
       "number": 9,
-      "title": "Lesson 9: Placeholder",
+      "title": "Lesson 9: Enhance Your Code",
       "summary": "Content coming soon.",
       "status": "placeholder",
       "studentPath": "/lessons/lesson-9/student.html",
@@ -285,7 +285,7 @@
     {
       "id": "lesson-10",
       "number": 10,
-      "title": "Lesson 10: Placeholder",
+      "title": "Lesson 10: Conditional Statements",
       "summary": "Content coming soon.",
       "status": "placeholder",
       "studentPath": "/lessons/lesson-10/student.html",
@@ -299,7 +299,7 @@
     {
       "id": "lesson-11",
       "number": 11,
-      "title": "Lesson 11: Placeholder",
+      "title": "Lesson 11: Procedures and Functions",
       "summary": "Content coming soon.",
       "status": "placeholder",
       "studentPath": "/lessons/lesson-11/student.html",
@@ -313,7 +313,7 @@
     {
       "id": "lesson-12",
       "number": 12,
-      "title": "Lesson 12: Placeholder",
+      "title": "Lesson 12: Loops",
       "summary": "Content coming soon.",
       "status": "placeholder",
       "studentPath": "/lessons/lesson-12/student.html",
@@ -327,7 +327,7 @@
     {
       "id": "lesson-13",
       "number": 13,
-      "title": "Lesson 13: Placeholder",
+      "title": "Lesson 13: Libraries",
       "summary": "Content coming soon.",
       "status": "placeholder",
       "studentPath": "/lessons/lesson-13/student.html",
@@ -341,7 +341,7 @@
     {
       "id": "lesson-14",
       "number": 14,
-      "title": "Lesson 14: Placeholder",
+      "title": "Lesson 14: Recursion",
       "summary": "Content coming soon.",
       "status": "placeholder",
       "studentPath": "/lessons/lesson-14/student.html",
@@ -355,7 +355,7 @@
     {
       "id": "lesson-15",
       "number": 15,
-      "title": "Lesson 15: Placeholder",
+      "title": "Lesson 15: Testing and Modification",
       "summary": "Content coming soon.",
       "status": "placeholder",
       "studentPath": "/lessons/lesson-15/student.html",
