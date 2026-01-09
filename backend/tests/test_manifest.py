@@ -51,4 +51,24 @@ def test_lessons_3_to_15_have_activity_scaffolds():
             html = activity_path.read_text()
             assert html.count("data-quiz=") >= 3
             assert "Teacher guidance (answer prompts)" in html
-            assert "activity-scaffold.js" in html
+            if "python-runner.js" in html:
+                assert "codeEditor" in html
+            else:
+                assert "activity-scaffold.js" in html
+
+
+def test_python_runner_activity_present():
+    manifest_path = Path(__file__).resolve().parents[2] / "web" / "lessons" / "manifest.json"
+    data = json.loads(manifest_path.read_text())
+    lessons = {lesson["id"]: lesson for lesson in data.get("lessons", [])}
+    lesson4 = lessons.get("lesson-4")
+    assert lesson4 is not None
+    runner = next((a for a in lesson4.get("activities", []) if a.get("id") == "a02"), None)
+    assert runner is not None
+    path = runner.get("path")
+    assert path
+    activity_path = Path(__file__).resolve().parents[2] / "web" / path.lstrip("/")
+    html = activity_path.read_text()
+    assert "python-runner.js" in html
+    assert html.count("data-quiz=") >= 3
+    assert "codeEditor" in html

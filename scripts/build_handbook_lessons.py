@@ -916,7 +916,7 @@ def main() -> None:
         additional_resources = parse_resource_blocks(additional_text)
         exercises = parse_resource_blocks(exercises_text)
 
-        # Build activities in manifest.
+        # Build activities in manifest, preserving any non-handbook entries.
         activities = []
         for idx, resource in enumerate(exercises, start=1):
             slug = slugify(resource["title"])
@@ -932,6 +932,12 @@ def main() -> None:
                     "rubricHook": None,
                 }
             )
+        existing = lesson.get("activities") or []
+        existing_map = {item.get("id"): item for item in existing if item.get("id")}
+        generated_ids = {item.get("id") for item in activities}
+        for item in existing:
+            if item.get("id") not in generated_ids:
+                activities.append(item)
         lesson["activities"] = activities
         if lesson.get("status") == "placeholder":
             lesson["status"] = "draft"

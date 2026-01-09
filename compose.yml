@@ -20,11 +20,28 @@ services:
       - DATABASE_URL=postgresql+psycopg://tlac:tlac@db:5432/tlac
       - SESSION_TTL_MINUTES=480
       - LINK_OVERRIDES_PATH=/data/link-overrides.json
+      - RUNNER_ENABLED=1
+      - RUNNER_IMAGE=post16_lessons-api
+      - RUNNER_DOCKER_HOST=unix:///var/run/docker.sock
+      - RUNNER_DOCKER_API_VERSION=1.50
+      - RUNNER_TIMEOUT_SEC=3
+      - RUNNER_MEMORY_MB=128
+      - RUNNER_CPUS=0.5
+      - RUNNER_PIDS_LIMIT=64
+      - RUNNER_TMPFS_MB=32
+      - RUNNER_MAX_OUTPUT=20000
+      - RUNNER_MAX_CODE_SIZE=20000
+      - RUNNER_MAX_FILES=8
+      - RUNNER_MAX_FILE_BYTES=50000
+      - RUNNER_MAX_ARCHIVE_BYTES=250000
+      - RUNNER_CONCURRENCY=2
+      - RUNNER_AUTO_PULL=0
     expose:
       - "8000"
     volumes:
       - ./web:/srv:ro
       - ./data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       - db
 

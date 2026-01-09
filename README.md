@@ -18,7 +18,7 @@ This repo delivers a containerized, on-prem web platform for the ICDL "Thinking 
 - [x] Phase 3: Server-backed saving + offline-first sync + revision history + role-based menus.
 - [x] Phase 4: Teacher view v1 (filtering, completion, notes, CSV export).
 - [x] Phase 5: Content expansion automation + link registry tooling.
-- [ ] Phase 6: Python runner MVP (safe, isolated execution).
+- [x] Phase 6: Python runner MVP (safe, isolated execution).
 - [ ] Phase 7: Teacher view v2 (stats, attention lists, timing).
 - [ ] Phase 8: Ops hardening (backups, retention purge, audit log, DPIA support).
 
@@ -32,6 +32,7 @@ Detailed requirements and the phase plan are in `plans/prompt_1`.
 - `docs/design-system-inventory.md` Lesson 1 UI/behavior inventory (design system).
 - `docs/lesson-manifest.md` lesson manifest schema and usage.
 - `scripts/` automation tools (lesson pack scaffold, handbook bulk import, link registry checks).
+- `backend/app/python_runner.py` Python execution sandbox (Docker-per-run).
 - `data/` runtime data (link overrides).
 - `plans/TeacherHandbook.pdf` source handbook reference.
 
@@ -129,7 +130,29 @@ Generate draft activity packs for lessons 3-15 from `plans/TeacherHandbook.pdf`:
 ```
 .venv/bin/python scripts/build_handbook_lessons.py
 ```
-Note: this overwrites lesson 3-15 hubs, activities, and teacher resources. Run it before manual edits or when you want to regenerate drafts.
+Note: this overwrites lesson 3-15 hubs, handbook-derived activity pages, and teacher resources. It preserves any extra activities already listed in the manifest.
+
+## Python runner (Phase 6)
+The MVP runner executes Python in a short-lived container with no network access and strict CPU/memory/time limits.
+- Runner activity: `https://localhost:8443/lessons/lesson-4/activities/02-python-runner.html`
+- The activity saves code and run outputs as revisioned activity state.
+- File I/O works inside a per-run virtual folder; use **Save files** to persist outputs.
+- `import turtle` writes `turtle.svg` for preview (SVG stub, no GUI).
+
+Runner configuration (compose envs):
+- `RUNNER_IMAGE` (default `python:3.12-slim`)
+- `RUNNER_DOCKER_HOST` (default `unix:///var/run/docker.sock`)
+- `RUNNER_DOCKER_API_VERSION` (default `1.50`, set lower if your daemon is older)
+- `RUNNER_TIMEOUT_SEC`, `RUNNER_MEMORY_MB`, `RUNNER_CPUS`, `RUNNER_CONCURRENCY`
+- `RUNNER_MAX_OUTPUT`, `RUNNER_MAX_CODE_SIZE`, `RUNNER_MAX_FILES`, `RUNNER_MAX_FILE_BYTES`
+
+Note: The API container needs access to the Docker socket.
+If you are using rootless Docker/Podman, set `RUNNER_DOCKER_HOST` to the correct socket and mount it into the API container.
+If the runner image is not present, set `RUNNER_AUTO_PULL=1` or pre-pull it with `docker pull python:3.12-slim`.
+Offline fallback: set `RUNNER_IMAGE=post16_lessons-api` and `RUNNER_AUTO_PULL=0` to use the locally built API image.
+
+Diagnostics (teacher/admin only):
+- `https://localhost:8443/api/python/diagnostics` shows runner config, socket status, and Docker client errors.
 
 ## Link registry tooling (Phase 5)
 Handbook links live in the manifest `linksRegistry.items`. Teachers can set replacement URLs or local copies in:
@@ -220,7 +243,6 @@ python -m py_compile backend/app/*.py
 - Static changes not visible: hard refresh to bypass cached assets.
 
 ## Known gaps (planned)
-- Python runner sandbox (Phase 6).
 - Teacher view v2 (stats, attention lists, timing) (Phase 7).
 - Backups, retention purge, audit logs (Phase 8).
 - Lesson 2-15 activity wording polish (draft handbook imports).

@@ -662,6 +662,19 @@
           ],
           "expectedEvidence": "Completed task output and written notes.",
           "rubricHook": null
+        },
+        {
+          "id": "a02",
+          "title": "Python runner (MVP)",
+          "path": "/lessons/lesson-4/activities/02-python-runner.html",
+          "objectiveIds": [
+            "L4-O1",
+            "L4-O2",
+            "L4-O3",
+            "L4-O4"
+          ],
+          "expectedEvidence": "Working code output and saved run results.",
+          "rubricHook": null
         }
       ]
     },

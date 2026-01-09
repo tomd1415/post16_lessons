@@ -14,6 +14,7 @@ def test_engine():
     root = Path(__file__).resolve().parents[2]
     os.environ["LESSON_MANIFEST_PATH"] = str(root / "web" / "lessons" / "manifest.json")
     os.environ["LINK_OVERRIDES_PATH"] = str(root / "data" / "test-link-overrides.json")
+    os.environ["RUNNER_ENABLED"] = "0"
     return create_engine(
         "sqlite+pysqlite:///:memory:",
         connect_args={"check_same_thread": False},

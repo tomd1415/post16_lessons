@@ -1,3 +1,4 @@
+import asyncio
 import csv
 import io
 import json
@@ -14,9 +15,16 @@ from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
-from .config import CSRF_HEADER_NAME, LINK_OVERRIDES_PATH, SESSION_COOKIE_NAME, SESSION_TTL_MINUTES
+from .config import (
+    CSRF_HEADER_NAME,
+    LINK_OVERRIDES_PATH,
+    RUNNER_CONCURRENCY,
+    SESSION_COOKIE_NAME,
+    SESSION_TTL_MINUTES,
+)
 from .db import SessionLocal, engine, get_db
 from .models import ActivityMark, ActivityRevision, ActivityState, Base, Session as AuthSession, User
+from .python_runner import RunnerError, RunnerUnavailable, run_python, runner_diagnostics
 from .rate_limit import LoginLimiter, compute_lock_seconds
 from .security import hash_password, verify_password
 
@@ -26,6 +34,7 @@ app = FastAPI(
 )
 
 login_limiter = LoginLimiter()
+runner_semaphore = asyncio.Semaphore(RUNNER_CONCURRENCY)
 MANIFEST_PATH = os.getenv("LESSON_MANIFEST_PATH", "/srv/lessons/manifest.json")
 _manifest_cache = None
 _manifest_mtime = None
@@ -557,6 +566,42 @@ def save_activity_state(
         "updated_at": row.updated_at.isoformat() if row.updated_at else None,
         "revision_id": str(revision.id),
     }
+
+
+@app.post("/api/python/run")
+async def python_run(request: Request, payload: dict):
+    csrf_guard(request)
+    user = request.state.user
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated.")
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="Invalid payload.")
+    lesson_id = payload.get("lesson_id", "")
+    activity_id = payload.get("activity_id", "")
+    code = payload.get("code", "")
+    files = payload.get("files") or []
+    if not valid_lesson_id(lesson_id) or not valid_activity_id(activity_id):
+        raise HTTPException(status_code=400, detail="Invalid lesson or activity id.")
+    if not isinstance(code, str) or not code.strip():
+        raise HTTPException(status_code=400, detail="Code is required.")
+
+    async with runner_semaphore:
+        try:
+            result = await asyncio.to_thread(run_python, code, files)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except RunnerUnavailable as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        except RunnerError as exc:
+            raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+    return {"ok": True, **result}
+
+
+@app.get("/api/python/diagnostics")
+def python_diagnostics(request: Request):
+    require_teacher(request)
+    return runner_diagnostics()
 
 
 @app.get("/api/teacher/users")

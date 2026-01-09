@@ -58,7 +58,7 @@ If a lesson is missing any of these `teacherResources` entries, the script inser
 
 ## Handbook bulk import
 `scripts/build_handbook_lessons.py` parses `plans/TeacherHandbook.pdf` and generates draft activity packs for lessons 3-15.
-It overwrites lesson hubs, activities, and teacher resources, so run it before manual edits or when you need to regenerate drafts.
+It overwrites lesson hubs, handbook-derived activity pages, and teacher resources. Extra activities already in the manifest are preserved.
 
 ## Link registry item
 Fields in `linksRegistry.items`:
