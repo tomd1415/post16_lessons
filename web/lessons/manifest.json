@@ -514,7 +514,7 @@
       "number": 3,
       "title": "Lesson 3: Algorithms",
       "summary": "Introduces step-by-step instructions using flowcharts, with multiple examples.",
-      "status": "placeholder",
+      "status": "draft",
       "studentPath": "/lessons/lesson-3/student.html",
       "teacherPath": "/lessons/lesson-3/index.html",
       "timings": "Not stated in handbook",
@@ -559,14 +559,60 @@
           "path": "/lessons/lesson-3/teacher/answer-key.html"
         }
       ],
-      "activities": []
+      "activities": [
+        {
+          "id": "a01",
+          "title": "Flowchart for Everyday Algorithms",
+          "path": "/lessons/lesson-3/activities/01-flowchart-for-everyday-algorithms.html",
+          "objectiveIds": [
+            "L3-O1",
+            "L3-O2",
+            "L3-O3",
+            "L3-O4",
+            "L3-O5",
+            "L3-O6"
+          ],
+          "expectedEvidence": "Completed task output and written notes.",
+          "rubricHook": null
+        },
+        {
+          "id": "a02",
+          "title": "Inputs and Outputs",
+          "path": "/lessons/lesson-3/activities/02-inputs-and-outputs.html",
+          "objectiveIds": [
+            "L3-O1",
+            "L3-O2",
+            "L3-O3",
+            "L3-O4",
+            "L3-O5",
+            "L3-O6"
+          ],
+          "expectedEvidence": "Completed task output and written notes.",
+          "rubricHook": null
+        },
+        {
+          "id": "a03",
+          "title": "Flowchart for a Machine",
+          "path": "/lessons/lesson-3/activities/03-flowchart-for-a-machine.html",
+          "objectiveIds": [
+            "L3-O1",
+            "L3-O2",
+            "L3-O3",
+            "L3-O4",
+            "L3-O5",
+            "L3-O6"
+          ],
+          "expectedEvidence": "Completed task output and written notes.",
+          "rubricHook": null
+        }
+      ]
     },
     {
       "id": "lesson-4",
       "number": 4,
       "title": "Lesson 4: Getting Started",
       "summary": "Students get early success running and saving simple Python programs in the shell.",
-      "status": "placeholder",
+      "status": "draft",
       "studentPath": "/lessons/lesson-4/student.html",
       "teacherPath": "/lessons/lesson-4/index.html",
       "timings": "Not stated in handbook",
@@ -603,14 +649,28 @@
           "path": "/lessons/lesson-4/teacher/answer-key.html"
         }
       ],
-      "activities": []
+      "activities": [
+        {
+          "id": "a01",
+          "title": "Aliens!",
+          "path": "/lessons/lesson-4/activities/01-aliens.html",
+          "objectiveIds": [
+            "L4-O1",
+            "L4-O2",
+            "L4-O3",
+            "L4-O4"
+          ],
+          "expectedEvidence": "Completed task output and written notes.",
+          "rubricHook": null
+        }
+      ]
     },
     {
       "id": "lesson-5",
       "number": 5,
       "title": "Lesson 5: Performing Calculations",
       "summary": "Use Python as a calculator and learn operator precedence and expression evaluation.",
-      "status": "placeholder",
+      "status": "draft",
       "studentPath": "/lessons/lesson-5/student.html",
       "teacherPath": "/lessons/lesson-5/index.html",
       "timings": "Not stated in handbook",
@@ -647,14 +707,28 @@
           "path": "/lessons/lesson-5/teacher/answer-key.html"
         }
       ],
-      "activities": []
+      "activities": [
+        {
+          "id": "a01",
+          "title": "Four 4's",
+          "path": "/lessons/lesson-5/activities/01-four-4-s.html",
+          "objectiveIds": [
+            "L5-O1",
+            "L5-O2",
+            "L5-O3",
+            "L5-O4"
+          ],
+          "expectedEvidence": "Completed task output and written notes.",
+          "rubricHook": null
+        }
+      ]
     },
     {
       "id": "lesson-6",
       "number": 6,
       "title": "Lesson 6: Data Types and Variables",
       "summary": "Introduce basic data types and variables, including input and output.",
-      "status": "placeholder",
+      "status": "draft",
       "studentPath": "/lessons/lesson-6/student.html",
       "teacherPath": "/lessons/lesson-6/index.html",
       "timings": "Not stated in handbook",
@@ -699,14 +773,30 @@
           "path": "/lessons/lesson-6/teacher/answer-key.html"
         }
       ],
-      "activities": []
+      "activities": [
+        {
+          "id": "a01",
+          "title": "Swapping Two Variables",
+          "path": "/lessons/lesson-6/activities/01-swapping-two-variables.html",
+          "objectiveIds": [
+            "L6-O1",
+            "L6-O2",
+            "L6-O3",
+            "L6-O4",
+            "L6-O5",
+            "L6-O6"
+          ],
+          "expectedEvidence": "Completed task output and written notes.",
+          "rubricHook": null
+        }
+      ]
     },
     {
       "id": "lesson-7",
       "number": 7,
       "title": "Lesson 7: True or False",
       "summary": "Explore Boolean logic, operators, and evaluation order with applied examples.",
-      "status": "placeholder",
+      "status": "draft",
       "studentPath": "/lessons/lesson-7/student.html",
       "teacherPath": "/lessons/lesson-7/index.html",
       "timings": "Not stated in handbook",
@@ -739,14 +829,39 @@
           "path": "/lessons/lesson-7/teacher/answer-key.html"
         }
       ],
-      "activities": []
+      "activities": [
+        {
+          "id": "a01",
+          "title": "Logic in Search Terms",
+          "path": "/lessons/lesson-7/activities/01-logic-in-search-terms.html",
+          "objectiveIds": [
+            "L7-O1",
+            "L7-O2",
+            "L7-O3"
+          ],
+          "expectedEvidence": "Completed task output and written notes.",
+          "rubricHook": null
+        },
+        {
+          "id": "a02",
+          "title": "And and Or in Controlling a Washing Machine",
+          "path": "/lessons/lesson-7/activities/02-and-and-or-in-controlling-a-washing-machine.html",
+          "objectiveIds": [
+            "L7-O1",
+            "L7-O2",
+            "L7-O3"
+          ],
+          "expectedEvidence": "Completed task output and written notes.",
+          "rubricHook": null
+        }
+      ]
     },
     {
       "id": "lesson-8",
       "number": 8,
       "title": "Lesson 8: Aggregate Data Types",
       "summary": "Introduce lists and tuples as aggregate data types for holding multiple items.",
-      "status": "placeholder",
+      "status": "draft",
       "studentPath": "/lessons/lesson-8/student.html",
       "teacherPath": "/lessons/lesson-8/index.html",
       "timings": "Not stated in handbook",
@@ -775,14 +890,26 @@
           "path": "/lessons/lesson-8/teacher/answer-key.html"
         }
       ],
-      "activities": []
+      "activities": [
+        {
+          "id": "a01",
+          "title": "Reversing a list",
+          "path": "/lessons/lesson-8/activities/01-reversing-a-list.html",
+          "objectiveIds": [
+            "L8-O1",
+            "L8-O2"
+          ],
+          "expectedEvidence": "Completed task output and written notes.",
+          "rubricHook": null
+        }
+      ]
     },
     {
       "id": "lesson-9",
       "number": 9,
       "title": "Lesson 9: Enhance Your Code",
       "summary": "Best practice for structuring and documenting code, with Python examples.",
-      "status": "placeholder",
+      "status": "draft",
       "studentPath": "/lessons/lesson-9/student.html",
       "teacherPath": "/lessons/lesson-9/index.html",
       "timings": "Not stated in handbook",
@@ -815,14 +942,27 @@
           "path": "/lessons/lesson-9/teacher/answer-key.html"
         }
       ],
-      "activities": []
+      "activities": [
+        {
+          "id": "a01",
+          "title": "Reading code comments",
+          "path": "/lessons/lesson-9/activities/01-reading-code-comments.html",
+          "objectiveIds": [
+            "L9-O1",
+            "L9-O2",
+            "L9-O3"
+          ],
+          "expectedEvidence": "Completed task output and written notes.",
+          "rubricHook": null
+        }
+      ]
     },
     {
       "id": "lesson-10",
       "number": 10,
       "title": "Lesson 10: Conditional Statements",
       "summary": "Build logic into programs with conditionals and logic tests.",
-      "status": "placeholder",
+      "status": "draft",
       "studentPath": "/lessons/lesson-10/student.html",
       "teacherPath": "/lessons/lesson-10/index.html",
       "timings": "Not stated in handbook",
@@ -859,14 +999,28 @@
           "path": "/lessons/lesson-10/teacher/answer-key.html"
         }
       ],
-      "activities": []
+      "activities": [
+        {
+          "id": "a01",
+          "title": "Multiple IFs",
+          "path": "/lessons/lesson-10/activities/01-multiple-ifs.html",
+          "objectiveIds": [
+            "L10-O1",
+            "L10-O2",
+            "L10-O3",
+            "L10-O4"
+          ],
+          "expectedEvidence": "Completed task output and written notes.",
+          "rubricHook": null
+        }
+      ]
     },
     {
       "id": "lesson-11",
       "number": 11,
       "title": "Lesson 11: Procedures and Functions",
       "summary": "Reuse code with procedures and functions; build toward later examples.",
-      "status": "placeholder",
+      "status": "draft",
       "studentPath": "/lessons/lesson-11/student.html",
       "teacherPath": "/lessons/lesson-11/index.html",
       "timings": "Not stated in handbook",
@@ -907,14 +1061,29 @@
           "path": "/lessons/lesson-11/teacher/answer-key.html"
         }
       ],
-      "activities": []
+      "activities": [
+        {
+          "id": "a01",
+          "title": "Fizz Buzz",
+          "path": "/lessons/lesson-11/activities/01-fizz-buzz.html",
+          "objectiveIds": [
+            "L11-O1",
+            "L11-O2",
+            "L11-O3",
+            "L11-O4",
+            "L11-O5"
+          ],
+          "expectedEvidence": "Completed task output and written notes.",
+          "rubricHook": null
+        }
+      ]
     },
     {
       "id": "lesson-12",
       "number": 12,
       "title": "Lesson 12: Loops",
       "summary": "Introduce looping structures and iteration with practical examples.",
-      "status": "placeholder",
+      "status": "draft",
       "studentPath": "/lessons/lesson-12/student.html",
       "teacherPath": "/lessons/lesson-12/index.html",
       "timings": "Not stated in handbook",
@@ -951,14 +1120,41 @@
           "path": "/lessons/lesson-12/teacher/answer-key.html"
         }
       ],
-      "activities": []
+      "activities": [
+        {
+          "id": "a01",
+          "title": "How big can a Python integer be?",
+          "path": "/lessons/lesson-12/activities/01-how-big-can-a-python-integer-be.html",
+          "objectiveIds": [
+            "L12-O1",
+            "L12-O2",
+            "L12-O3",
+            "L12-O4"
+          ],
+          "expectedEvidence": "Completed task output and written notes.",
+          "rubricHook": null
+        },
+        {
+          "id": "a02",
+          "title": "Horizontal Arrow",
+          "path": "/lessons/lesson-12/activities/02-horizontal-arrow.html",
+          "objectiveIds": [
+            "L12-O1",
+            "L12-O2",
+            "L12-O3",
+            "L12-O4"
+          ],
+          "expectedEvidence": "Completed task output and written notes.",
+          "rubricHook": null
+        }
+      ]
     },
     {
       "id": "lesson-13",
       "number": 13,
       "title": "Lesson 13: Libraries",
       "summary": "Explore libraries and event handling using Pygame examples.",
-      "status": "placeholder",
+      "status": "draft",
       "studentPath": "/lessons/lesson-13/student.html",
       "teacherPath": "/lessons/lesson-13/index.html",
       "timings": "Not stated in handbook",
@@ -991,14 +1187,27 @@
           "path": "/lessons/lesson-13/teacher/answer-key.html"
         }
       ],
-      "activities": []
+      "activities": [
+        {
+          "id": "a01",
+          "title": "Python libraries",
+          "path": "/lessons/lesson-13/activities/01-python-libraries.html",
+          "objectiveIds": [
+            "L13-O1",
+            "L13-O2",
+            "L13-O3"
+          ],
+          "expectedEvidence": "Completed task output and written notes.",
+          "rubricHook": null
+        }
+      ]
     },
     {
       "id": "lesson-14",
       "number": 14,
       "title": "Lesson 14: Recursion",
       "summary": "Introduce recursion as functions calling themselves, with example applications.",
-      "status": "placeholder",
+      "status": "draft",
       "studentPath": "/lessons/lesson-14/student.html",
       "teacherPath": "/lessons/lesson-14/index.html",
       "timings": "Not stated in handbook",
@@ -1043,14 +1252,30 @@
           "path": "/lessons/lesson-14/teacher/answer-key.html"
         }
       ],
-      "activities": []
+      "activities": [
+        {
+          "id": "a01",
+          "title": "Tower of Hanoi",
+          "path": "/lessons/lesson-14/activities/01-tower-of-hanoi.html",
+          "objectiveIds": [
+            "L14-O1",
+            "L14-O2",
+            "L14-O3",
+            "L14-O4",
+            "L14-O5",
+            "L14-O6"
+          ],
+          "expectedEvidence": "Completed task output and written notes.",
+          "rubricHook": null
+        }
+      ]
     },
     {
       "id": "lesson-15",
       "number": 15,
       "title": "Lesson 15: Testing and Modification",
       "summary": "Cover testing, debugging, and improving programs against requirements.",
-      "status": "placeholder",
+      "status": "draft",
       "studentPath": "/lessons/lesson-15/student.html",
       "teacherPath": "/lessons/lesson-15/index.html",
       "timings": "Not stated in handbook",
@@ -1099,7 +1324,24 @@
           "path": "/lessons/lesson-15/teacher/answer-key.html"
         }
       ],
-      "activities": []
+      "activities": [
+        {
+          "id": "a01",
+          "title": "Annotate this",
+          "path": "/lessons/lesson-15/activities/01-annotate-this.html",
+          "objectiveIds": [
+            "L15-O1",
+            "L15-O2",
+            "L15-O3",
+            "L15-O4",
+            "L15-O5",
+            "L15-O6",
+            "L15-O7"
+          ],
+          "expectedEvidence": "Completed task output and written notes.",
+          "rubricHook": null
+        }
+      ]
     }
   ]
 }

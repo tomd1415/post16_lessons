@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>a01 - Fizz Buzz</title>
+  <link rel="stylesheet" href="../../../core/app.css" />
+</head>
+<body data-lesson-id="lesson-11" data-activity-id="a01">
+  <div class="topbar no-print">
+    <div class="container">
+      <div class="brand">
+        <b>a01 - Fizz Buzz</b>
+        <span>Activity scaffold (structured steps + instant feedback)</span>
+      </div>
+      <div class="row">
+        <a class="pill" href="../index.html"><strong>HOME</strong> <span>Teacher hub</span></a>
+        <a class="pill" href="../student.html"><strong>STUDENT</strong> <span>Student hub</span></a>
+        <button class="btn" id="teacherToggle" type="button">Teacher mode: OFF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>a01 - Fizz Buzz</h1>
+    <div class="note">
+      <b>How this works:</b> This activity is broken into small steps with quick checks and spaces to add your own ideas.
+    </div>
+
+    <div class="grid cols2" style="margin-top:12px">
+      <div class="card">
+        <h2>Step 1: Quick checks</h2>
+        <p><b>Prompt 1:</b> A parameter is...</p>
+        <div data-quiz="q1" data-correct="a">
+          <label class="choice"><input type="radio" name="q1" value="a"> an input to a function</label>
+          <label class="choice"><input type="radio" name="q1" value="b"> a loop</label>
+          <label class="choice"><input type="radio" name="q1" value="c"> an error</label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn good" data-quiz-check="q1" type="button">Check</button>
+        </div>
+        <div class="note" data-quiz-feedback="q1" style="margin-top:10px; display:none"></div>
+
+        <div style="height:10px"></div>
+        <p><b>Prompt 2:</b> A function typically...</p>
+        <div data-quiz="q2" data-correct="a">
+          <label class="choice"><input type="radio" name="q2" value="a"> returns a value</label>
+          <label class="choice"><input type="radio" name="q2" value="b"> prints only</label>
+          <label class="choice"><input type="radio" name="q2" value="c"> never uses parameters</label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn good" data-quiz-check="q2" type="button">Check</button>
+        </div>
+        <div class="note" data-quiz-feedback="q2" style="margin-top:10px; display:none"></div>
+
+        <div style="height:10px"></div>
+        <p><b>Prompt 3:</b> A procedure is usually a named block that...</p>
+        <div data-quiz="q3" data-correct="a">
+          <label class="choice"><input type="radio" name="q3" value="a"> performs a task</label>
+          <label class="choice"><input type="radio" name="q3" value="b"> stores a list</label>
+          <label class="choice"><input type="radio" name="q3" value="c"> opens files only</label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn good" data-quiz-check="q3" type="button">Check</button>
+        </div>
+        <div class="note" data-quiz-feedback="q3" style="margin-top:10px; display:none"></div>
+      </div>
+
+      <div class="card">
+        <h2>Step 2: Key ideas in your own words</h2>
+        <p>Explain the main idea of <b>Fizz Buzz</b> in one or two sentences.</p>
+        <textarea data-field="step2_notes" placeholder="Write your notes here..."></textarea>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 3: Build the main task</h2>
+      <div class="note"><b>Learning objective:</b> Consolidation of lessons 6-12</div>
+<p><b>Suggested use:</b> Student activity</p>
+<p>program/</p>
+<p>Solution File: FizzBuzz.py located in the lesson 11 folder in the</p>
+<p>TeacherCodeFiles folder</p>
+<p>This resource suggests an interview question to determine if programmers</p>
+<p>understand the basics.</p>
+<p>'Write a program that prints the numbers from 1 to 100. But for multiples of</p>
+<p>three print "Fizz" instead of the number and for the multiples of five print</p>
+<p>"Buzz". For numbers which are multiples of both three and five print</p>
+<p>"FizzBuzz".'</p>
+<p>The resource claims that many applicants for programming jobs do not</p>
+<p>understand the basics.</p>
+<p>The learning occurring during lessons 6 - 12 contribute to being able to solve the</p>
+<p>Fizz Buzz problem.  By lesson 12, students will have just enough knowledge to</p>
+<p>write the FizzBuzz program themselves.   You can break down the Fizz Buzz</p>
+<p>program and introduce incrementally during lesson 11 and lesson 12.</p>
+<p>Q: Can you write a logic test to see if a number is divisible by 3?</p>
+<p>A:</p>
+<p>Running this with three different inputs gives the following results:</p>
+<p>Students will probably need hints to find some way to test for whether a number is</p>
+<p>exactly divisible by 3.  A hint could be "What is int(35.5) equal to?".  If they don't</p>
+<p>know, they can try out int(35.5) using the Python shell as a calculator.</p>
+<p>Once students have the idea of using int, they may find other solutions using it.</p>
+<p>When students understand loops in this lesson, they are ready for this question:</p>
+<p>Q: Can you solve the 'Fizz' part of the 'FizzBuzz' problem on its own?</p>
+<p>A:</p>
+<p>Running this gives:</p>
+<p>The program answers the Fizz part of the FizzBuzz question, except it runs from 0</p>
+<p>to 99 rather than 1 to 100.  Students could fix that using an additional variable,</p>
+<p>y=x+1.  (similar to the arrow head example in lesson 11)</p>
+<p>range() can have a start and a count, so range(1,101) will generate numbers 1 to</p>
+<p>100.</p>
+<p>Once the students have completed lesson 11 on functions, develop the FizzBuzz</p>
+<p>challenge further with a question such as this:</p>
+<p>Q: Can you put the 'is it divisible by' logic test into a function that gives a Boolean</p>
+<p>result?</p>
+<p>(Remind students to put a comment before the function to enhance their code.)</p>
+<p>A:</p>
+<p>Finally, at the end of Lesson 11, students can put it all together to get FizzBuzz:</p>
+<p>Which when run gives:</p>
+<p>The use of IF within an IF will be new to the students.</p>
+<p>There is another solution that does not use IF within an IF.  Instead it uses AND</p>
+<p>and NOT.  It's shown here:</p>
+<p>This solution isn't as efficient as the previous solution, but still solves the</p>
+<p>'FizzBuzz' problem.</p>
+      <ul class="list checklist">
+        <li><label><input type="checkbox" data-check="goal"> I can describe the goal in one clear sentence.</label></li>
+        <li><label><input type="checkbox" data-check="inputs"> I can list the inputs or information needed.</label></li>
+        <li><label><input type="checkbox" data-check="steps"> I can outline the main steps in order.</label></li>
+        <li><label><input type="checkbox" data-check="test"> I can describe how to test if it works.</label></li>
+      </ul>
+      <div style="margin-top:10px"></div>
+      <label for="taskNotes"><b>Your structured notes</b></label>
+      <textarea id="taskNotes" data-field="task_notes" placeholder="Requirement 1: ...
+Requirement 2: ..."></textarea>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 4: Reflection</h2>
+      <p>Encourage pupils to note what was easy, what was tricky, and what they would change.</p>
+      <textarea data-field="reflection" placeholder="What went well? What would you do differently next time?"></textarea>
+    </div>
+
+    <div class="teacher-only card" style="margin-top:12px; display:none">
+      <h2>Teacher guidance (answer prompts)</h2>
+      <ul class="list">
+        <li>Quick check 1: an input to a function</li>
+<li>Quick check 2: returns a value</li>
+<li>Quick check 3: performs a task</li>
+<li>Learning objective focus: Consolidation of lessons 6-12</li>
+<li>Look for clear steps and correct use of key terms.</li>
+      </ul>
+    </div>
+
+    <div class="footer">
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      <div class="no-print">
+        <hr class="sep"/>
+        <small>
+          Tip: add <span class="kbd">?teacher=1</span> to the URL to force teacher mode on.
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../../core/app.js"></script>
+  <script src="../../../core/activity-scaffold.js"></script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>a01 - Aliens!</title>
+  <link rel="stylesheet" href="../../../core/app.css" />
+</head>
+<body data-lesson-id="lesson-4" data-activity-id="a01">
+  <div class="topbar no-print">
+    <div class="container">
+      <div class="brand">
+        <b>a01 - Aliens!</b>
+        <span>Activity scaffold (structured steps + instant feedback)</span>
+      </div>
+      <div class="row">
+        <a class="pill" href="../index.html"><strong>HOME</strong> <span>Teacher hub</span></a>
+        <a class="pill" href="../student.html"><strong>STUDENT</strong> <span>Student hub</span></a>
+        <button class="btn" id="teacherToggle" type="button">Teacher mode: OFF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>a01 - Aliens!</h1>
+    <div class="note">
+      <b>How this works:</b> This activity is broken into small steps with quick checks and spaces to add your own ideas.
+    </div>
+
+    <div class="grid cols2" style="margin-top:12px">
+      <div class="card">
+        <h2>Step 1: Quick checks</h2>
+        <p><b>Prompt 1:</b> What file extension is used for Python programs?</p>
+        <div data-quiz="q1" data-correct="b">
+          <label class="choice"><input type="radio" name="q1" value="a"> .txt</label>
+          <label class="choice"><input type="radio" name="q1" value="b"> .py</label>
+          <label class="choice"><input type="radio" name="q1" value="c"> .doc</label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn good" data-quiz-check="q1" type="button">Check</button>
+        </div>
+        <div class="note" data-quiz-feedback="q1" style="margin-top:10px; display:none"></div>
+
+        <div style="height:10px"></div>
+        <p><b>Prompt 2:</b> Which action runs a program?</p>
+        <div data-quiz="q2" data-correct="a">
+          <label class="choice"><input type="radio" name="q2" value="a"> Run/Execute</label>
+          <label class="choice"><input type="radio" name="q2" value="b"> Save</label>
+          <label class="choice"><input type="radio" name="q2" value="c"> Close</label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn good" data-quiz-check="q2" type="button">Check</button>
+        </div>
+        <div class="note" data-quiz-feedback="q2" style="margin-top:10px; display:none"></div>
+
+        <div style="height:10px"></div>
+        <p><b>Prompt 3:</b> Saving a program means...</p>
+        <div data-quiz="q3" data-correct="a">
+          <label class="choice"><input type="radio" name="q3" value="a"> storing the code so it can be opened again</label>
+          <label class="choice"><input type="radio" name="q3" value="b"> printing the code to paper</label>
+          <label class="choice"><input type="radio" name="q3" value="c"> deleting the code after running</label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn good" data-quiz-check="q3" type="button">Check</button>
+        </div>
+        <div class="note" data-quiz-feedback="q3" style="margin-top:10px; display:none"></div>
+      </div>
+
+      <div class="card">
+        <h2>Step 2: Key ideas in your own words</h2>
+        <p>Explain the main idea of <b>Aliens!</b> in one or two sentences.</p>
+        <textarea data-field="step2_notes" placeholder="Write your notes here..."></textarea>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 3: Build the main task</h2>
+      <div class="note"><b>Learning objective:</b> Getting started with Python programs</div>
+<p><b>Suggested use:</b> Student activity</p>
+<p>Open and run this 'Alien Invaders' example that comes with Pygame.</p>
+<p>C:\Python32\Lib\site-packages\pygame\examples and choose aliens.py.</p>
+<p>__file__ = "junk"</p>
+<p>As shown in the screenshot:</p>
+<p>(Note: There are two _ characters, not one, before and after the word</p>
+<p>'file'.)</p>
+<p>Alternatively, you can make the exercise easier for students by modifying and</p>
+<p>saving the file aliens.py before the lesson.</p>
+<ol>
+  <li>Use the File->Open menu item, and navigate to:</li>
+  <li>Open and edit the file to add this line:</li>
+  <li>Run the program using F5 to start this game:</li>
+</ol>
+      <ul class="list checklist">
+        <li><label><input type="checkbox" data-check="goal"> I can describe the goal in one clear sentence.</label></li>
+        <li><label><input type="checkbox" data-check="inputs"> I can list the inputs or information needed.</label></li>
+        <li><label><input type="checkbox" data-check="steps"> I can outline the main steps in order.</label></li>
+        <li><label><input type="checkbox" data-check="test"> I can describe how to test if it works.</label></li>
+      </ul>
+      <div style="margin-top:10px"></div>
+      <label for="taskNotes"><b>Your structured notes</b></label>
+      <textarea id="taskNotes" data-field="task_notes" placeholder="Requirement 1: ...
+Requirement 2: ..."></textarea>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 4: Reflection</h2>
+      <p>Encourage pupils to note what was easy, what was tricky, and what they would change.</p>
+      <textarea data-field="reflection" placeholder="What went well? What would you do differently next time?"></textarea>
+    </div>
+
+    <div class="teacher-only card" style="margin-top:12px; display:none">
+      <h2>Teacher guidance (answer prompts)</h2>
+      <ul class="list">
+        <li>Quick check 1: .py</li>
+<li>Quick check 2: Run/Execute</li>
+<li>Quick check 3: storing the code so it can be opened again</li>
+<li>Learning objective focus: Getting started with Python programs</li>
+<li>Look for clear steps and correct use of key terms.</li>
+      </ul>
+    </div>
+
+    <div class="footer">
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      <div class="no-print">
+        <hr class="sep"/>
+        <small>
+          Tip: add <span class="kbd">?teacher=1</span> to the URL to force teacher mode on.
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../../core/app.js"></script>
+  <script src="../../../core/activity-scaffold.js"></script>
+</body>
+</html>

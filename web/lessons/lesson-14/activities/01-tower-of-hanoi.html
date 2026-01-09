@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>a01 - Tower of Hanoi</title>
+  <link rel="stylesheet" href="../../../core/app.css" />
+</head>
+<body data-lesson-id="lesson-14" data-activity-id="a01">
+  <div class="topbar no-print">
+    <div class="container">
+      <div class="brand">
+        <b>a01 - Tower of Hanoi</b>
+        <span>Activity scaffold (structured steps + instant feedback)</span>
+      </div>
+      <div class="row">
+        <a class="pill" href="../index.html"><strong>HOME</strong> <span>Teacher hub</span></a>
+        <a class="pill" href="../student.html"><strong>STUDENT</strong> <span>Student hub</span></a>
+        <button class="btn" id="teacherToggle" type="button">Teacher mode: OFF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>a01 - Tower of Hanoi</h1>
+    <div class="note">
+      <b>How this works:</b> This activity is broken into small steps with quick checks and spaces to add your own ideas.
+    </div>
+
+    <div class="grid cols2" style="margin-top:12px">
+      <div class="card">
+        <h2>Step 1: Quick checks</h2>
+        <p><b>Prompt 1:</b> Recursion means...</p>
+        <div data-quiz="q1" data-correct="a">
+          <label class="choice"><input type="radio" name="q1" value="a"> a function calls itself</label>
+          <label class="choice"><input type="radio" name="q1" value="b"> a loop stops immediately</label>
+          <label class="choice"><input type="radio" name="q1" value="c"> a variable never changes</label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn good" data-quiz-check="q1" type="button">Check</button>
+        </div>
+        <div class="note" data-quiz-feedback="q1" style="margin-top:10px; display:none"></div>
+
+        <div style="height:10px"></div>
+        <p><b>Prompt 2:</b> A base case is used to...</p>
+        <div data-quiz="q2" data-correct="a">
+          <label class="choice"><input type="radio" name="q2" value="a"> stop recursion</label>
+          <label class="choice"><input type="radio" name="q2" value="b"> start a loop</label>
+          <label class="choice"><input type="radio" name="q2" value="c"> print a file</label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn good" data-quiz-check="q2" type="button">Check</button>
+        </div>
+        <div class="note" data-quiz-feedback="q2" style="margin-top:10px; display:none"></div>
+
+        <div style="height:10px"></div>
+        <p><b>Prompt 3:</b> Each recursive call should...</p>
+        <div data-quiz="q3" data-correct="a">
+          <label class="choice"><input type="radio" name="q3" value="a"> move closer to the base case</label>
+          <label class="choice"><input type="radio" name="q3" value="b"> restart from the beginning</label>
+          <label class="choice"><input type="radio" name="q3" value="c"> ignore the previous call</label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn good" data-quiz-check="q3" type="button">Check</button>
+        </div>
+        <div class="note" data-quiz-feedback="q3" style="margin-top:10px; display:none"></div>
+      </div>
+
+      <div class="card">
+        <h2>Step 2: Key ideas in your own words</h2>
+        <p>Explain the main idea of <b>Tower of Hanoi</b> in one or two sentences.</p>
+        <textarea data-field="step2_notes" placeholder="Write your notes here..."></textarea>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 3: Build the main task</h2>
+      <div class="note"><b>Learning objective:</b> Understand recursion</div>
+<p><b>Suggested use:</b> Student activity</p>
+<p>Topic: Recursion</p>
+<p>Pseudocode</p>
+<p>problem.</p>
+<p>works.</p>
+<p>One piece of learning from this is that a problem that has a recursive nature to it</p>
+<p>can often be solved either by a recursive algorithm or by an iterative one.</p>
+<p>Title: Recursion in Board Games</p>
+<p>beta-search.html</p>
+<p>Any students who play board games such as chess and 'Go' are already familiar</p>
+<p>with an example of recursive thinking.  Often players will consider what could the</p>
+<p>game board look like in 6 moves time?  This involves thinking about current</p>
+<p>moves, and then following them by 5 further moves, and so on...</p>
+<p>This resource is suitable for chess playing students who are really keen on</p>
+<p>understanding how computers can use recursive algorithms to play chess.</p>
+<p>In pseudocode, a recursive algorithm to print possible board positions could be:</p>
+<p>print_possible_positions_from( position, number_of_moves_left):</p>
+<p>if( number_of_moves_left == 0 ):</p>
+<p>print position</p>
+<p>return</p>
+<p>for move in valid_moves_from( position ):</p>
+<p>print_possible_positions_from( position + move, number_of_moves_left -1)</p>
+<p>The structure is the same as other recursions.  There is a logic test to stop</p>
+<p>recursing if looking zero moves ahead.  There is code to make one move and</p>
+<p>then look ahead one fewer moves, by the function calling itself recursively.</p>
+<p>A difference between the chess algorithm and the fractal fern algorithm is that</p>
+<p>instead of the function calling itself four times, it has a loop, and calls itself once</p>
+<p>for each available move.</p>
+<p>Real chess and 'Go' programs use a more complex recursion that takes account</p>
+<p>of how good or bad the moves seem to be.  This reduces the number of positions</p>
+<p>considered when looking ahead, an action called 'pruning'. The resource URL</p>
+<p>includes a link to a description of pruning.</p>
+<ol>
+  <li>Students work in pairs to find a description online of the Tower of Hanoi</li>
+  <li>Students work to solve the problem.</li>
+  <li>Students explain their strategy and more importantly, why their strategy</li>
+</ol>
+      <ul class="list checklist">
+        <li><label><input type="checkbox" data-check="goal"> I can describe the goal in one clear sentence.</label></li>
+        <li><label><input type="checkbox" data-check="inputs"> I can list the inputs or information needed.</label></li>
+        <li><label><input type="checkbox" data-check="steps"> I can outline the main steps in order.</label></li>
+        <li><label><input type="checkbox" data-check="test"> I can describe how to test if it works.</label></li>
+      </ul>
+      <div style="margin-top:10px"></div>
+      <label for="taskNotes"><b>Your structured notes</b></label>
+      <textarea id="taskNotes" data-field="task_notes" placeholder="Requirement 1: ...
+Requirement 2: ..."></textarea>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 4: Reflection</h2>
+      <p>Encourage pupils to note what was easy, what was tricky, and what they would change.</p>
+      <textarea data-field="reflection" placeholder="What went well? What would you do differently next time?"></textarea>
+    </div>
+
+    <div class="teacher-only card" style="margin-top:12px; display:none">
+      <h2>Teacher guidance (answer prompts)</h2>
+      <ul class="list">
+        <li>Quick check 1: a function calls itself</li>
+<li>Quick check 2: stop recursion</li>
+<li>Quick check 3: move closer to the base case</li>
+<li>Learning objective focus: Understand recursion</li>
+<li>Look for clear steps and correct use of key terms.</li>
+      </ul>
+    </div>
+
+    <div class="footer">
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      <div class="no-print">
+        <hr class="sep"/>
+        <small>
+          Tip: add <span class="kbd">?teacher=1</span> to the URL to force teacher mode on.
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../../core/app.js"></script>
+  <script src="../../../core/activity-scaffold.js"></script>
+</body>
+</html>

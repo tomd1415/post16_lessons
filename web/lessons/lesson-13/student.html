@@ -3,15 +3,15 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Lesson 13 - Libraries - Student hub</title>
+  <title>Lesson 13: Libraries - Student hub</title>
   <link rel="stylesheet" href="../../core/app.css" />
 </head>
-<body>
+<body data-lesson-id="lesson-13" data-lesson-role="student">
   <div class="topbar no-print">
     <div class="container">
       <div class="brand">
-        <b>Thinking like a Coder - Lesson 13: Libraries</b>
-        <span>Placeholder resources (content coming soon)</span>
+        <b data-lesson-title>Lesson 13: Libraries</b>
+        <span data-lesson-summary>Lesson overview loading...</span>
       </div>
       <div class="row">
         <button class="btn" id="teacherToggle" type="button">Teacher mode: OFF</button>
@@ -20,17 +20,25 @@
   </div>
 
   <div class="container">
-    <h1>Student hub - Lesson 13: Libraries</h1>
-    <div class="note warn">
-      This lesson is a placeholder. Content will be added soon.
+    <h1 data-lesson-title>Lesson 13: Libraries</h1>
+    <div class="note">
+      <b>Timings:</b> <span data-lesson-timings>Loading...</span>
     </div>
 
-    <div class="card">
-      <h2>Next steps</h2>
-      <ul class="list">
-        <li>Return to the <a href="../../index.html">course student hub</a>.</li>
-        <li>Continue with Lesson 1 if needed.</li>
-      </ul>
+    <div class="grid cols2" style="margin-top:12px">
+      <div class="card">
+        <h2>Lesson overview</h2>
+        <p data-lesson-summary>Loading...</p>
+      </div>
+      <div class="card">
+        <h2>Objectives</h2>
+        <ul class="list" data-lesson-objectives></ul>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Activities</h2>
+      <ul class="list" data-lesson-activities></ul>
     </div>
 
     <div class="footer">
@@ -39,5 +47,6 @@
   </div>
 
   <script src="../../core/app.js"></script>
+  <script src="../../core/lesson-pack.js"></script>
 </body>
 </html>

@@ -23,3 +23,32 @@ def test_lesson2_activity_scaffold_entries():
         assert html.count("data-quiz=") >= 3
         assert "Teacher guidance (answer prompts)" in html
         assert "activity-scaffold.js" in html
+
+
+def test_lessons_3_to_15_have_activity_scaffolds():
+    manifest_path = Path(__file__).resolve().parents[2] / "web" / "lessons" / "manifest.json"
+    data = json.loads(manifest_path.read_text())
+    lessons = {lesson["id"]: lesson for lesson in data.get("lessons", [])}
+
+    for lesson_num in range(3, 16):
+        lesson = lessons.get(f"lesson-{lesson_num}")
+        assert lesson is not None
+        activities = lesson.get("activities", [])
+        assert activities
+        teacher_resources = lesson.get("teacherResources", [])
+        assert teacher_resources
+
+        for resource in teacher_resources:
+            path = resource.get("path")
+            assert path
+            resource_path = Path(__file__).resolve().parents[2] / "web" / path.lstrip("/")
+            assert resource_path.exists()
+
+        for activity in activities:
+            path = activity.get("path")
+            assert path
+            activity_path = Path(__file__).resolve().parents[2] / "web" / path.lstrip("/")
+            html = activity_path.read_text()
+            assert html.count("data-quiz=") >= 3
+            assert "Teacher guidance (answer prompts)" in html
+            assert "activity-scaffold.js" in html

@@ -3,15 +3,15 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Lesson 3 - Algorithms - Teacher hub</title>
+  <title>Lesson 3: Algorithms - Teacher hub</title>
   <link rel="stylesheet" href="../../core/app.css" />
 </head>
-<body>
+<body data-lesson-id="lesson-3" data-lesson-role="teacher">
   <div class="topbar no-print">
     <div class="container">
       <div class="brand">
-        <b>Thinking like a Coder - Lesson 3: Algorithms</b>
-        <span>Placeholder resources (content coming soon)</span>
+        <b data-lesson-title>Lesson 3: Algorithms</b>
+        <span data-lesson-summary>Lesson overview loading...</span>
       </div>
       <div class="row">
         <button class="btn" id="teacherToggle" type="button">Teacher mode: OFF</button>
@@ -20,26 +20,30 @@
   </div>
 
   <div class="container">
-    <h1>Teacher hub - Lesson 3: Algorithms</h1>
-    <div class="note warn">
-      This lesson is a placeholder. Activities and materials will be added in Phase 5.
+    <h1 data-lesson-title>Lesson 3: Algorithms</h1>
+    <div class="note">
+      <b>Timings:</b> <span data-lesson-timings>Loading...</span>
     </div>
 
-    <div class="grid cols2">
+    <div class="grid cols2" style="margin-top:12px">
       <div class="card">
-        <h2>What will live here</h2>
-        <ul class="list">
-          <li>Lesson objectives and timings</li>
-          <li>Interactive activities</li>
-          <li>Printable resources</li>
-        </ul>
+        <h2>Objectives</h2>
+        <ul class="list" data-lesson-objectives></ul>
       </div>
       <div class="card">
-        <h2>Quick links</h2>
-        <ul class="list">
-          <li><a href="./student.html">Student hub (placeholder)</a></li>
-          <li><a href="../../teacher.html">Course teacher hub</a></li>
-        </ul>
+        <h2>Teacher resources</h2>
+        <ul class="list" data-lesson-teacher-resources></ul>
+      </div>
+    </div>
+
+    <div class="grid cols2" style="margin-top:12px">
+      <div class="card">
+        <h2>Activities</h2>
+        <ul class="list" data-lesson-activities></ul>
+      </div>
+      <div class="card">
+        <h2>External links</h2>
+        <ul class="list" data-lesson-links></ul>
       </div>
     </div>
 
@@ -49,5 +53,6 @@
   </div>
 
   <script src="../../core/app.js"></script>
+  <script src="../../core/lesson-pack.js"></script>
 </body>
 </html>
