@@ -66,6 +66,8 @@
   
 <script>
 document.addEventListener("DOMContentLoaded", ()=>{
+  const ready = window.tlacReady || Promise.resolve();
+  ready.then(()=>{
   const quiz = window.LESSON1_DATA.quiz;
   const stateKey = "tlac_l1_a08_state";
   const state = store.get(stateKey, { answers: {}, submitted:false, short:{} });
@@ -183,6 +185,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
   }
 
   render();
+  });
 });
 </script>
 

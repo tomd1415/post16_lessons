@@ -2,8 +2,8 @@ import enum
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import DeclarativeBase, relationship
 
 
@@ -39,6 +39,7 @@ class User(Base):
     active = Column(Boolean, default=True, nullable=False)
 
     sessions = relationship("Session", back_populates="user", cascade="all, delete-orphan")
+    activity_states = relationship("ActivityState", back_populates="user", cascade="all, delete-orphan")
 
 
 class Session(Base):
@@ -53,3 +54,38 @@ class Session(Base):
     user_agent = Column(String(255), nullable=True)
 
     user = relationship("User", back_populates="sessions")
+
+
+class ActivityState(Base):
+    __tablename__ = "activity_states"
+    __table_args__ = (
+        UniqueConstraint("user_id", "lesson_id", "activity_id", name="uq_activity_state"),
+    )
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
+    lesson_id = Column(String(64), nullable=False)
+    activity_id = Column(String(64), nullable=False)
+    state = Column(JSONB, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)
+    last_client_at = Column(DateTime(timezone=True), nullable=True)
+
+    user = relationship("User", back_populates="activity_states")
+    revisions = relationship("ActivityRevision", back_populates="activity_state", cascade="all, delete-orphan")
+
+
+class ActivityRevision(Base):
+    __tablename__ = "activity_revisions"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    activity_state_id = Column(UUID(as_uuid=True), ForeignKey("activity_states.id"), nullable=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
+    lesson_id = Column(String(64), nullable=False)
+    activity_id = Column(String(64), nullable=False)
+    state = Column(JSONB, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
+    client_saved_at = Column(DateTime(timezone=True), nullable=True)
+
+    activity_state = relationship("ActivityState", back_populates="revisions")
+    user = relationship("User")

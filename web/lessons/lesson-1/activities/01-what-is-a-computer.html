@@ -109,6 +109,8 @@
   
 <script>
 document.addEventListener("DOMContentLoaded", ()=>{
+  const ready = window.tlacReady || Promise.resolve();
+  ready.then(()=>{
   const data = window.LESSON1_DATA;
   const cardsWrap = document.getElementById("cards");
   const bins = {
@@ -225,6 +227,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
   });
 
   render(); highlight();
+  });
 });
 </script>
 

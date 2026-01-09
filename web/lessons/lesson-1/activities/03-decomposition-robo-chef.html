@@ -100,6 +100,8 @@
   
 <script>
 document.addEventListener("DOMContentLoaded", ()=>{
+  const ready = window.tlacReady || Promise.resolve();
+  ready.then(()=>{
   const stateKey = "tlac_l1_a03_state";
   const state = store.get(stateKey, {
     teamName: "",
@@ -230,6 +232,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
   $("#print").addEventListener("click", ()=> printPage());
 
   render();
+  });
 });
 </script>
 

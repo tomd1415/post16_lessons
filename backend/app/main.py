@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 
 from .config import CSRF_HEADER_NAME, SESSION_COOKIE_NAME, SESSION_TTL_MINUTES
 from .db import SessionLocal, engine, get_db
-from .models import Base, Session as AuthSession, User
+from .models import ActivityRevision, ActivityState, Base, Session as AuthSession, User
 from .rate_limit import LoginLimiter, compute_lock_seconds
 from .security import hash_password, verify_password
 
@@ -49,6 +49,51 @@ def user_public(user: User) -> dict:
         "role": user.role,
         "cohort_year": user.cohort_year,
     }
+
+
+def activity_state_public(state: ActivityState) -> dict:
+    return {
+        "lesson_id": state.lesson_id,
+        "activity_id": state.activity_id,
+        "state": state.state,
+        "updated_at": state.updated_at.isoformat() if state.updated_at else None,
+        "last_client_at": state.last_client_at.isoformat() if state.last_client_at else None,
+    }
+
+
+def activity_revision_public(rev: ActivityRevision) -> dict:
+    return {
+        "id": str(rev.id),
+        "lesson_id": rev.lesson_id,
+        "activity_id": rev.activity_id,
+        "state": rev.state,
+        "created_at": rev.created_at.isoformat() if rev.created_at else None,
+        "client_saved_at": rev.client_saved_at.isoformat() if rev.client_saved_at else None,
+    }
+
+
+def valid_lesson_id(lesson_id: str) -> bool:
+    return bool(re.match(r"^lesson-\d+$", lesson_id))
+
+
+def valid_activity_id(activity_id: str) -> bool:
+    return bool(re.match(r"^a\d+$", activity_id))
+
+
+def parse_client_time(value):
+    if not value:
+        return None
+    if isinstance(value, (int, float)):
+        try:
+            return datetime.fromtimestamp(float(value) / 1000, tz=timezone.utc)
+        except Exception:
+            return None
+    if isinstance(value, str):
+        try:
+            return datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except Exception:
+            return None
+    return None
 
 
 def create_session(db: Session, user: User, request: Request) -> AuthSession:
@@ -103,6 +148,13 @@ def csrf_guard(request: Request) -> None:
         raise HTTPException(status_code=403, detail="Invalid CSRF token.")
 
 
+def require_teacher(request: Request) -> User:
+    user = request.state.user
+    if not user or user.role not in {"teacher", "admin"}:
+        raise HTTPException(status_code=403, detail="Teacher or admin required.")
+    return user
+
+
 def forbidden_page() -> HTMLResponse:
     html = """<!doctype html>
 <html lang="en">
@@ -138,7 +190,7 @@ def is_public_path(path: str) -> bool:
 
 
 def is_teacher_path(path: str) -> bool:
-    if path == "/teacher.html" or "/teacher/" in path:
+    if path.startswith("/teacher") or "/teacher/" in path:
         return True
     if re.match(r"^/lessons/lesson-\d+/?$", path):
         return True
@@ -289,6 +341,155 @@ def logout(request: Request, db: Session = Depends(get_db)):
     response = JSONResponse({"ok": True})
     clear_session_cookie(response)
     return response
+
+
+@app.get("/api/activity/state")
+def list_activity_state(request: Request, db: Session = Depends(get_db)):
+    user = request.state.user
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated.")
+    rows = (
+        db.query(ActivityState)
+        .filter(ActivityState.user_id == user.id)
+        .order_by(ActivityState.updated_at.desc())
+        .all()
+    )
+    return {"items": [activity_state_public(row) for row in rows]}
+
+
+@app.get("/api/activity/state/{lesson_id}/{activity_id}")
+def get_activity_state(
+    request: Request,
+    lesson_id: str,
+    activity_id: str,
+    db: Session = Depends(get_db),
+):
+    user = request.state.user
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated.")
+    if not valid_lesson_id(lesson_id) or not valid_activity_id(activity_id):
+        raise HTTPException(status_code=400, detail="Invalid lesson or activity id.")
+    row = (
+        db.query(ActivityState)
+        .filter(
+            ActivityState.user_id == user.id,
+            ActivityState.lesson_id == lesson_id,
+            ActivityState.activity_id == activity_id,
+        )
+        .first()
+    )
+    if not row:
+        return {"state": None}
+    return activity_state_public(row)
+
+
+@app.post("/api/activity/state/{lesson_id}/{activity_id}")
+def save_activity_state(
+    request: Request,
+    lesson_id: str,
+    activity_id: str,
+    payload: dict,
+    db: Session = Depends(get_db),
+):
+    csrf_guard(request)
+    user = request.state.user
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated.")
+    if not valid_lesson_id(lesson_id) or not valid_activity_id(activity_id):
+        raise HTTPException(status_code=400, detail="Invalid lesson or activity id.")
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="Invalid payload.")
+    state = payload.get("state")
+    if state is None:
+        raise HTTPException(status_code=400, detail="Missing state.")
+
+    client_saved_at = parse_client_time(payload.get("client_saved_at"))
+    now = utcnow()
+
+    row = (
+        db.query(ActivityState)
+        .filter(
+            ActivityState.user_id == user.id,
+            ActivityState.lesson_id == lesson_id,
+            ActivityState.activity_id == activity_id,
+        )
+        .first()
+    )
+    if row:
+        row.state = state
+        row.last_client_at = client_saved_at
+        row.updated_at = now
+    else:
+        row = ActivityState(
+            user_id=user.id,
+            lesson_id=lesson_id,
+            activity_id=activity_id,
+            state=state,
+            last_client_at=client_saved_at,
+        )
+        db.add(row)
+        db.flush()
+
+    revision = ActivityRevision(
+        activity_state_id=row.id,
+        user_id=user.id,
+        lesson_id=lesson_id,
+        activity_id=activity_id,
+        state=state,
+        client_saved_at=client_saved_at,
+        created_at=now,
+    )
+    db.add(revision)
+    db.commit()
+    return {
+        "ok": True,
+        "updated_at": row.updated_at.isoformat() if row.updated_at else None,
+        "revision_id": str(revision.id),
+    }
+
+
+@app.get("/api/teacher/users")
+def list_pupils(request: Request, db: Session = Depends(get_db)):
+    require_teacher(request)
+    pupils = (
+        db.query(User)
+        .filter(User.role == "pupil", User.active.is_(True))
+        .order_by(User.username.asc())
+        .all()
+    )
+    return {"items": [user_public(pupil) for pupil in pupils]}
+
+
+@app.get("/api/teacher/revisions")
+def teacher_revisions(
+    request: Request,
+    username: str,
+    lesson_id: str = "",
+    activity_id: str = "",
+    limit: int = 50,
+    db: Session = Depends(get_db),
+):
+    require_teacher(request)
+    username = normalize_username(username)
+    if not username:
+        raise HTTPException(status_code=400, detail="Username is required.")
+    if lesson_id and not valid_lesson_id(lesson_id):
+        raise HTTPException(status_code=400, detail="Invalid lesson id.")
+    if activity_id and not valid_activity_id(activity_id):
+        raise HTTPException(status_code=400, detail="Invalid activity id.")
+
+    pupil = db.query(User).filter(User.username == username).first()
+    if not pupil:
+        raise HTTPException(status_code=404, detail="Pupil not found.")
+
+    limit = max(1, min(int(limit or 50), 200))
+    query = db.query(ActivityRevision).filter(ActivityRevision.user_id == pupil.id)
+    if lesson_id:
+        query = query.filter(ActivityRevision.lesson_id == lesson_id)
+    if activity_id:
+        query = query.filter(ActivityRevision.activity_id == activity_id)
+    revisions = query.order_by(ActivityRevision.created_at.desc()).limit(limit).all()
+    return {"items": [activity_revision_public(rev) for rev in revisions]}
 
 
 @app.post("/api/admin/bootstrap")

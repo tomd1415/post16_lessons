@@ -81,6 +81,8 @@
   
 <script>
 document.addEventListener("DOMContentLoaded", ()=>{
+  const ready = window.tlacReady || Promise.resolve();
+  ready.then(()=>{
   const data = window.LESSON1_DATA;
   const stateKey = "tlac_l1_a04_state";
   const state = store.get(stateKey, { selected: {}, patternName: "Baked recipe pattern", notes:"" });
@@ -194,6 +196,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
   $("#print").addEventListener("click", ()=> printPage());
 
   render();
+  });
 });
 </script>
 

@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Thinking like a Coder - Revision history</title>
+  <link rel="stylesheet" href="./core/app.css" />
+</head>
+<body data-requires-role="teacher">
+  <div class="topbar no-print">
+    <div class="container">
+      <div class="brand">
+        <b>Thinking like a Coder - Teacher tools</b>
+        <span>Revision history viewer</span>
+      </div>
+      <div class="row">
+        <a class="pill" href="./teacher.html"><strong>TEACHER</strong> <span>Teacher hub</span></a>
+        <a class="pill" href="./index.html"><strong>STUDENT</strong> <span>Student hub</span></a>
+        <a class="pill" id="adminLink" href="./admin.html" style="display:none"><strong>ADMIN</strong> <span>Admin</span></a>
+        <span id="userBadge" class="badge" style="display:none"></span>
+        <button class="btn" id="logoutBtn" type="button">Logout</button>
+        <button class="btn" id="teacherToggle" type="button">Teacher mode: OFF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>Revision history</h1>
+    <div class="note">
+      <b>Purpose:</b> Review pupil activity revisions. Pupils only see their latest state; teachers can review history here.
+    </div>
+
+    <div id="roleMenu" class="card" data-menu="teacher" style="margin-top:12px"></div>
+
+    <div class="grid cols2" style="margin-top:12px">
+      <div class="card">
+        <h2>Filters</h2>
+        <label for="pupilSelect"><b>Pupil</b></label>
+        <select id="pupilSelect"></select>
+        <div style="height:10px"></div>
+        <label for="lessonSelect"><b>Lesson</b></label>
+        <select id="lessonSelect"></select>
+        <div style="height:10px"></div>
+        <label for="activitySelect"><b>Activity</b></label>
+        <select id="activitySelect"></select>
+        <div style="height:12px"></div>
+        <button class="btn primary" id="loadBtn" type="button">Load history</button>
+      </div>
+
+      <div class="card">
+        <h2>Latest state</h2>
+        <pre id="latestState" style="white-space:pre-wrap; margin:0; min-height:120px"></pre>
+      </div>
+    </div>
+
+    <h2>Revisions</h2>
+    <div id="historyList" class="grid" style="grid-template-columns: 1fr; gap:12px"></div>
+
+    <div class="footer">
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <script src="./core/app.js"></script>
+  <script src="./core/auth.js"></script>
+  <script src="./core/menu.js"></script>
+  <script>
+    const pupilSelect = document.getElementById("pupilSelect");
+    const lessonSelect = document.getElementById("lessonSelect");
+    const activitySelect = document.getElementById("activitySelect");
+    const historyList = document.getElementById("historyList");
+    const latestState = document.getElementById("latestState");
+
+    let lessonIndex = {};
+
+    function setLatestState(value){
+      latestState.textContent = value || "";
+    }
+
+    function renderHistory(items){
+      historyList.innerHTML = "";
+      if(!items.length){
+        historyList.innerHTML = "<div class='card'><b>No revisions yet.</b></div>";
+        setLatestState("");
+        return;
+      }
+      const newest = items[0];
+      setLatestState(JSON.stringify(newest.state, null, 2));
+
+      items.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "card";
+        const created = item.created_at ? new Date(item.created_at).toLocaleString() : "Unknown";
+        const client = item.client_saved_at ? new Date(item.client_saved_at).toLocaleString() : "Unknown";
+        const summary = document.createElement("div");
+        summary.innerHTML = `<b>Saved:</b> ${created}<br/><small>Client time: ${client}</small>`;
+        const details = document.createElement("details");
+        const summaryEl = document.createElement("summary");
+        summaryEl.textContent = "View state snapshot";
+        const pre = document.createElement("pre");
+        pre.style.whiteSpace = "pre-wrap";
+        pre.style.margin = "10px 0 0";
+        pre.textContent = JSON.stringify(item.state, null, 2);
+        details.appendChild(summaryEl);
+        details.appendChild(pre);
+        card.appendChild(summary);
+        card.appendChild(details);
+        historyList.appendChild(card);
+      });
+    }
+
+    function populateActivities(lessonId){
+      activitySelect.innerHTML = "";
+      const lesson = lessonIndex[lessonId];
+      if(!lesson || !lesson.activities || !lesson.activities.length){
+        const opt = document.createElement("option");
+        opt.value = "";
+        opt.textContent = "No activities available";
+        activitySelect.appendChild(opt);
+        activitySelect.disabled = true;
+        return;
+      }
+      activitySelect.disabled = false;
+      lesson.activities.forEach(activity => {
+        const opt = document.createElement("option");
+        opt.value = activity.id;
+        opt.textContent = `${activity.id} - ${activity.title}`;
+        activitySelect.appendChild(opt);
+      });
+    }
+
+    async function loadPupils(){
+      const res = await fetch("/api/teacher/users", { credentials: "same-origin" });
+      if(!res.ok){
+        pupilSelect.innerHTML = "<option value=''>Unable to load pupils</option>";
+        return;
+      }
+      const data = await res.json().catch(()=>({}));
+      const items = Array.isArray(data.items) ? data.items : [];
+      pupilSelect.innerHTML = "";
+      if(!items.length){
+        pupilSelect.innerHTML = "<option value=''>No pupils found</option>";
+        return;
+      }
+      items.forEach(pupil => {
+        const opt = document.createElement("option");
+        opt.value = pupil.username;
+        opt.textContent = `${pupil.username} - ${pupil.name}`;
+        pupilSelect.appendChild(opt);
+      });
+    }
+
+    async function loadManifest(){
+      const res = await fetch("/lessons/manifest.json", { credentials: "same-origin" });
+      if(!res.ok){
+        lessonSelect.innerHTML = "<option value=''>Manifest unavailable</option>";
+        activitySelect.innerHTML = "<option value=''>No activities</option>";
+        activitySelect.disabled = true;
+        return;
+      }
+      const data = await res.json().catch(()=>({}));
+      const lessons = Array.isArray(data.lessons) ? data.lessons : [];
+      lessons.sort((a,b)=> (a.number || 0) - (b.number || 0));
+      lessonIndex = {};
+      lessonSelect.innerHTML = "";
+      lessons.forEach(lesson => {
+        lessonIndex[lesson.id] = lesson;
+        const opt = document.createElement("option");
+        opt.value = lesson.id;
+        opt.textContent = `Lesson ${lesson.number}: ${lesson.title}`;
+        lessonSelect.appendChild(opt);
+      });
+      populateActivities(lessonSelect.value);
+    }
+
+    async function loadHistory(){
+      const username = pupilSelect.value;
+      const lessonId = lessonSelect.value;
+      const activityId = activitySelect.value;
+      if(!username || !lessonId || !activityId){
+        toast("Select a pupil, lesson, and activity.");
+        return;
+      }
+      historyList.innerHTML = "<div class='card'><b>Loading...</b></div>";
+      setLatestState("");
+      const url = `/api/teacher/revisions?username=${encodeURIComponent(username)}&lesson_id=${encodeURIComponent(lessonId)}&activity_id=${encodeURIComponent(activityId)}&limit=50`;
+      const res = await fetch(url, { credentials: "same-origin" });
+      if(!res.ok){
+        historyList.innerHTML = "<div class='card'><b>Unable to load revisions.</b></div>";
+        return;
+      }
+      const data = await res.json().catch(()=>({}));
+      const items = Array.isArray(data.items) ? data.items : [];
+      renderHistory(items);
+    }
+
+    lessonSelect.addEventListener("change", ()=> populateActivities(lessonSelect.value));
+    document.getElementById("loadBtn").addEventListener("click", loadHistory);
+
+    loadPupils();
+    loadManifest();
+  </script>
+</body>
+</html>

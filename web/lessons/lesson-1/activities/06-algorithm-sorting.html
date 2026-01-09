@@ -113,6 +113,8 @@
   
 <script>
 document.addEventListener("DOMContentLoaded", ()=>{
+  const ready = window.tlacReady || Promise.resolve();
+  ready.then(()=>{
   const stateKey = "tlac_l1_a06_state";
   const state = store.get(stateKey, { roster: null, circle: null, mode:"line" });
 
@@ -337,6 +339,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
   });
 
   ensure(); resetDemo(); render();
+  });
 });
 </script>
 
