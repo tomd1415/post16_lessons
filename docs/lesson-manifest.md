@@ -35,10 +35,10 @@ Purpose: Provide a single source of truth for the course catalogue, lesson metad
 
 ## Notes
 - Lesson 1 is populated with real metadata and activity mappings.
-- Lessons 2-15 are populated from the teacher handbook; lesson shells remain placeholders until packs are built.
+- Lessons 2-15 are draft packs generated from the teacher handbook exercises.
 - The catalogue UI uses the manifest directly; there is no additional build step.
 
-## Activity scaffold convention (future lessons)
+## Activity scaffold convention
 New activity pages should follow the scaffold template produced by `scripts/new_lesson_pack.py`.
 This template:
 - Breaks the task into structured steps (quick checks, guided notes, main task, reflection).
@@ -55,6 +55,10 @@ Use `web/core/activity-scaffold.js` to handle quick checks + autosave for scaffo
 - `/lessons/<lesson-id>/teacher/answer-key.html`
 
 If a lesson is missing any of these `teacherResources` entries, the script inserts the defaults in the manifest.
+
+## Handbook bulk import
+`scripts/build_handbook_lessons.py` parses `plans/TeacherHandbook.pdf` and generates draft activity packs for lessons 3-15.
+It overwrites lesson hubs, activities, and teacher resources, so run it before manual edits or when you need to regenerate drafts.
 
 ## Link registry item
 Fields in `linksRegistry.items`:
