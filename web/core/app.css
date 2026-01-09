@@ -203,6 +203,55 @@ textarea{min-height: 110px; resize: vertical}
 }
 .toast.show{display:block}
 
+.role-menu{
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.04);
+  border-radius: 14px;
+  padding: 6px 10px;
+  position: relative;
+}
+.role-menu[open]{padding: 10px 12px}
+.role-menu summary{
+  list-style: none;
+  cursor: pointer;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  font-size: 15px;
+}
+.role-menu summary::-webkit-details-marker{display:none}
+.role-menu summary:focus{outline:none; box-shadow: var(--focus); border-radius: 10px}
+.role-menu .menu-label{
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--muted);
+  letter-spacing: .02em;
+  text-transform: uppercase;
+}
+.role-menu .menu-items{margin: 10px 0 0}
+.role-menu .menu-items li{margin: 6px 0}
+
+.topbar .role-menu{
+  padding: 4px 8px;
+  background: rgba(255,255,255,.03);
+}
+.topbar .role-menu[open]{padding: 8px 10px}
+.topbar .role-menu summary{font-size: 14px}
+.topbar .role-menu nav{
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  min-width: 220px;
+  background: rgba(18,24,36,.98);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 10px 12px;
+  z-index: 20;
+}
+.topbar .role-menu .menu-items{margin: 0}
+
 @media print{
   :root{ --bg: #fff; --text: #000; --muted: #444; --border: rgba(0,0,0,.25); --shadow: none;}
   body{background:#fff; color:#000}

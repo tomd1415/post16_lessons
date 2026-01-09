@@ -17,6 +17,40 @@ const store = {
   del(key){ try{ localStorage.removeItem(key); }catch{} }
 };
 
+const ROLE_MENUS = {
+  pupil: {
+    label: "Pupil",
+    items: [
+      { label: "Student hub", href: "/index.html" },
+      { label: "Course catalogue", href: "/index.html#catalog" },
+      { label: "Lesson 1 student hub", href: "/lessons/lesson-1/student.html" }
+    ]
+  },
+  teacher: {
+    label: "Teacher",
+    items: [
+      { label: "Teacher hub", href: "/teacher.html" },
+      { label: "Revision history", href: "/teacher-history.html" },
+      { label: "Lesson 1 teacher hub", href: "/lessons/lesson-1/index.html" },
+      { label: "Lesson 1 lesson plan", href: "/lessons/lesson-1/teacher/lesson-plan.html" },
+      { label: "Lesson 1 print cards", href: "/lessons/lesson-1/teacher/print-cards.html" },
+      { label: "Lesson 1 answer key", href: "/lessons/lesson-1/teacher/answer-key.html" },
+      { label: "Student hub", href: "/index.html" }
+    ]
+  },
+  admin: {
+    label: "Admin",
+    items: [
+      { label: "Admin hub", href: "/admin.html" },
+      { label: "Create user", href: "/admin.html#admin-create-user" },
+      { label: "Import CSV", href: "/admin.html#admin-import" },
+      { label: "Revision history", href: "/teacher-history.html" },
+      { label: "Teacher hub", href: "/teacher.html" },
+      { label: "Student hub", href: "/index.html" }
+    ]
+  }
+};
+
 const SYNC_PENDING_KEY = "tlac_sync_pending";
 const SYNC_META_PREFIX = "tlac_meta_";
 const SYNC_DEBOUNCE_MS = 1200;
@@ -74,6 +108,81 @@ function readStoredRole(){
   }catch{
     return null;
   }
+}
+
+function escapeHtml(s){
+  return String(s)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+function roleToMenu(role){
+  if(role === "admin") return "admin";
+  if(role === "teacher") return "teacher";
+  return "pupil";
+}
+
+function preferredMenuFromPath(){
+  const path = window.location.pathname || "";
+  if(path.startsWith("/admin")) return "admin";
+  if(path.startsWith("/teacher")) return "teacher";
+  if(path.includes("/teacher/")) return "teacher";
+  if(path.includes("/activities/")) return "pupil";
+  if(path.endsWith("/student.html")) return "pupil";
+  if(/\/lessons\/lesson-\d+\/index\.html$/.test(path)) return "teacher";
+  if(/\/lessons\/lesson-\d+\/?$/.test(path)) return "teacher";
+  return "pupil";
+}
+
+let roleMenuHost = null;
+
+function renderRoleMenu(menuKey){
+  if(!roleMenuHost) return;
+  const menu = ROLE_MENUS[menuKey] || ROLE_MENUS.pupil;
+  const items = menu.items
+    .map(item => `<li><a href="${escapeHtml(item.href)}">${escapeHtml(item.label)}</a></li>`)
+    .join("");
+  roleMenuHost.innerHTML = `
+    <details class="role-menu">
+      <summary>
+        <span class="menu-label">Menu</span>
+        <span class="tag">${escapeHtml(menu.label)}</span>
+      </summary>
+      <nav aria-label="${escapeHtml(menu.label)} menu">
+        <ul class="list menu-items">
+          ${items}
+        </ul>
+      </nav>
+    </details>
+  `;
+}
+
+function initRoleMenu(){
+  const container = $(".topbar .container");
+  if(!container) return;
+  let row = container.querySelector(".row");
+  if(!row){
+    row = document.createElement("div");
+    row.className = "row";
+    container.appendChild(row);
+  }
+  roleMenuHost = row.querySelector("#roleMenu");
+  if(!roleMenuHost){
+    roleMenuHost = document.createElement("div");
+    roleMenuHost.id = "roleMenu";
+    row.appendChild(roleMenuHost);
+  }
+  const stored = readStoredRole();
+  const menuKey = stored ? roleToMenu(stored) : preferredMenuFromPath();
+  renderRoleMenu(menuKey);
+}
+
+function updateRoleMenu(role){
+  if(!roleMenuHost) return;
+  const menuKey = role ? roleToMenu(role) : preferredMenuFromPath();
+  renderRoleMenu(menuKey);
 }
 
 function applyTeacherMode(on){
@@ -267,6 +376,7 @@ async function initTeacherToggle(){
   syncTeacherHubLinks(null);
   const role = await resolveRole();
   syncTeacherHubLinks(role);
+  updateRoleMenu(role);
   const on = getTeacherMode(role);
 
   if(!isStaffRole(role)){
@@ -314,5 +424,6 @@ function printPage(){
 }
 
 document.addEventListener("DOMContentLoaded", ()=>{
+  initRoleMenu();
   initTeacherToggle();
 });
