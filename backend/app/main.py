@@ -6,6 +6,7 @@ import re
 import secrets
 import time
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from urllib.parse import quote
 
 from fastapi import Depends, FastAPI, File, HTTPException, Request, Response, UploadFile
@@ -13,7 +14,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
-from .config import CSRF_HEADER_NAME, SESSION_COOKIE_NAME, SESSION_TTL_MINUTES
+from .config import CSRF_HEADER_NAME, LINK_OVERRIDES_PATH, SESSION_COOKIE_NAME, SESSION_TTL_MINUTES
 from .db import SessionLocal, engine, get_db
 from .models import ActivityMark, ActivityRevision, ActivityState, Base, Session as AuthSession, User
 from .rate_limit import LoginLimiter, compute_lock_seconds
@@ -28,6 +29,8 @@ login_limiter = LoginLimiter()
 MANIFEST_PATH = os.getenv("LESSON_MANIFEST_PATH", "/srv/lessons/manifest.json")
 _manifest_cache = None
 _manifest_mtime = None
+_link_overrides_cache = None
+_link_overrides_mtime = None
 
 
 def utcnow():
@@ -127,6 +130,41 @@ def load_manifest():
         return None
 
 
+def load_link_overrides():
+    global _link_overrides_cache, _link_overrides_mtime
+    path = Path(LINK_OVERRIDES_PATH)
+    try:
+        mtime = path.stat().st_mtime
+    except FileNotFoundError:
+        _link_overrides_cache = {}
+        _link_overrides_mtime = None
+        return {}
+    except OSError:
+        return {}
+    if _link_overrides_cache is not None and _link_overrides_mtime == mtime:
+        return _link_overrides_cache
+    try:
+        data = json.loads(path.read_text())
+        if not isinstance(data, dict):
+            data = {}
+        _link_overrides_cache = data
+        _link_overrides_mtime = mtime
+        return data
+    except Exception:
+        return {}
+
+
+def save_link_overrides(overrides: dict) -> None:
+    path = Path(LINK_OVERRIDES_PATH)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = path.with_suffix(".tmp")
+    tmp_path.write_text(json.dumps(overrides, indent=2))
+    tmp_path.replace(path)
+    global _link_overrides_cache, _link_overrides_mtime
+    _link_overrides_cache = overrides
+    _link_overrides_mtime = path.stat().st_mtime
+
+
 def lesson_index(manifest):
     lessons = (manifest or {}).get("lessons") or []
     return {lesson.get("id"): lesson for lesson in lessons if lesson.get("id")}
@@ -140,6 +178,29 @@ def objective_texts_for_activity(lesson, activity):
     objective_lookup = {obj.get("id"): obj.get("text") for obj in (lesson or {}).get("objectives") or []}
     ids = (activity or {}).get("objectiveIds") or []
     return [objective_lookup.get(obj_id, obj_id) for obj_id in ids]
+
+
+def link_item_public(item: dict, override: dict | None) -> dict:
+    override = override or {}
+    replacement_url = (override.get("replacement_url") or item.get("replacementUrl") or "").strip()
+    local_path = (override.get("local_path") or item.get("localPath") or "").strip()
+    disabled = bool(override.get("disabled") or item.get("disabled"))
+    effective_url = ""
+    if not disabled:
+        effective_url = local_path or replacement_url or item.get("url") or ""
+    return {
+        "id": item.get("id"),
+        "lesson_id": item.get("lessonId"),
+        "title": item.get("title"),
+        "url": item.get("url"),
+        "section": item.get("section"),
+        "status": item.get("status"),
+        "last_checked": item.get("lastChecked"),
+        "replacement_url": replacement_url,
+        "local_path": local_path,
+        "disabled": disabled,
+        "effective_url": effective_url,
+    }
 
 
 def create_session(db: Session, user: User, request: Request) -> AuthSession:
@@ -842,6 +903,62 @@ def export_pupil_csv(
         media_type="text/csv",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
+
+
+@app.get("/api/teacher/links")
+def teacher_links(request: Request):
+    require_teacher(request)
+    manifest = load_manifest() or {}
+    items = (manifest.get("linksRegistry") or {}).get("items") or []
+    overrides = load_link_overrides()
+    merged = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        link_id = item.get("id")
+        override = overrides.get(link_id, {}) if link_id else {}
+        merged.append(link_item_public(item, override))
+    return {"items": merged}
+
+
+@app.post("/api/teacher/links/{link_id}")
+def update_link_override(
+    request: Request,
+    link_id: str,
+    payload: dict,
+):
+    csrf_guard(request)
+    require_teacher(request)
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="Invalid payload.")
+    manifest = load_manifest() or {}
+    items = (manifest.get("linksRegistry") or {}).get("items") or []
+    known_ids = {item.get("id") for item in items if isinstance(item, dict)}
+    if link_id not in known_ids:
+        raise HTTPException(status_code=404, detail="Link not found.")
+
+    overrides = load_link_overrides()
+    replacement_url = (payload.get("replacement_url") or "").strip() or None
+    local_path = (payload.get("local_path") or "").strip() or None
+    disabled = bool(payload.get("disabled"))
+    notes = (payload.get("notes") or "").strip() or None
+
+    if not any([replacement_url, local_path, disabled, notes]):
+        overrides.pop(link_id, None)
+        save_link_overrides(overrides)
+    else:
+        overrides[link_id] = {
+            "replacement_url": replacement_url,
+            "local_path": local_path,
+            "disabled": disabled,
+            "notes": notes,
+            "updated_at": utcnow().isoformat(),
+        }
+        save_link_overrides(overrides)
+
+    override = overrides.get(link_id)
+    item = next((item for item in items if item.get("id") == link_id), None)
+    return {"ok": True, "item": link_item_public(item or {}, override)}
 
 
 @app.post("/api/admin/bootstrap")

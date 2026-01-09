@@ -13,6 +13,7 @@ def test_engine():
     os.environ["DATABASE_URL"] = "sqlite+pysqlite:///:memory:"
     root = Path(__file__).resolve().parents[2]
     os.environ["LESSON_MANIFEST_PATH"] = str(root / "web" / "lessons" / "manifest.json")
+    os.environ["LINK_OVERRIDES_PATH"] = str(root / "data" / "test-link-overrides.json")
     return create_engine(
         "sqlite+pysqlite:///:memory:",
         connect_args={"check_same_thread": False},
@@ -42,6 +43,9 @@ def reset_db(test_engine):
 
     models.Base.metadata.drop_all(bind=test_engine)
     models.Base.metadata.create_all(bind=test_engine)
+    overrides_path = Path(os.environ["LINK_OVERRIDES_PATH"])
+    if overrides_path.exists():
+        overrides_path.unlink()
     yield
 
 

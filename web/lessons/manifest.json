@@ -7,50 +7,303 @@
     "lessonsTotal": 15
   },
   "linksRegistry": {
-    "items": []
+    "items": [
+      {
+        "id": "L1-R1",
+        "lessonId": "lesson-1",
+        "title": "BBC Bitesize Guide to Computational Thinking",
+        "url": "http://www.bbc.co.uk/education/guides/zp92mp3/revision",
+        "section": "additional"
+      },
+      {
+        "id": "L1-R2",
+        "lessonId": "lesson-1",
+        "title": "Google's Exploring Computational Thinking",
+        "url": "https://www.google.com/edu/resources/programs/exploring-computational-thinking/index.html#!ct-materials",
+        "section": "additional"
+      },
+      {
+        "id": "L1-R3",
+        "lessonId": "lesson-1",
+        "title": "Algorithmic Thinking worksheet (Google Doc)",
+        "url": "https://docs.google.com/document/d/1Qouj-ZxcPVmYehvIvLGnNV0X_4E_9YNyjXEeCOmmBaI/edit",
+        "section": "additional"
+      },
+      {
+        "id": "L1-R4",
+        "lessonId": "lesson-1",
+        "title": "CSUnplugged",
+        "url": "http://csunplugged.org/",
+        "section": "additional"
+      },
+      {
+        "id": "L1-R5",
+        "lessonId": "lesson-1",
+        "title": "CSUnplugged image representation",
+        "url": "http://csunplugged.org/image-representation/",
+        "section": "additional"
+      },
+      {
+        "id": "L1-R6",
+        "lessonId": "lesson-1",
+        "title": "Sugar, Sugar logic game",
+        "url": "http://www.mathplayground.com/logic_sugarsugar.html",
+        "section": "additional"
+      },
+      {
+        "id": "L2-R1",
+        "lessonId": "lesson-2",
+        "title": "6502 Machine Code",
+        "url": "http://www.e-tradition.net/bytes/6502/6502_instruction_set.html",
+        "section": "additional"
+      },
+      {
+        "id": "L2-R2",
+        "lessonId": "lesson-2",
+        "title": "Visual 6502 simulator",
+        "url": "http://visual6502.org/JSSim/index.html",
+        "section": "additional"
+      },
+      {
+        "id": "L2-R3",
+        "lessonId": "lesson-2",
+        "title": "History of compiler construction (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/History_of_compiler_construction",
+        "section": "additional"
+      },
+      {
+        "id": "L2-R4",
+        "lessonId": "lesson-2",
+        "title": "Project Cartoon",
+        "url": "http://www.projectcartoon.com",
+        "section": "exercise"
+      },
+      {
+        "id": "L3-R1",
+        "lessonId": "lesson-3",
+        "title": "Everyday Machines",
+        "url": "http://www.explainthatstuff.com",
+        "section": "additional"
+      },
+      {
+        "id": "L3-R2",
+        "lessonId": "lesson-3",
+        "title": "ExplainThatStuff: Digital cameras",
+        "url": "http://www.explainthatstuff.com/digitalcameras.html",
+        "section": "additional"
+      },
+      {
+        "id": "L3-R3",
+        "lessonId": "lesson-3",
+        "title": "ExplainThatStuff: Washing machines",
+        "url": "http://www.explainthatstuff.com/washingmachine.html",
+        "section": "additional"
+      },
+      {
+        "id": "L3-R4",
+        "lessonId": "lesson-3",
+        "title": "ExplainThatStuff: Microwave ovens",
+        "url": "http://www.explainthatstuff.com/microwaveovens.html",
+        "section": "additional"
+      },
+      {
+        "id": "L4-R1",
+        "lessonId": "lesson-4",
+        "title": "Pygame examples",
+        "url": "http://www.pygame.org/tags/example",
+        "section": "additional"
+      },
+      {
+        "id": "L4-R2",
+        "lessonId": "lesson-4",
+        "title": "PyClock2D example",
+        "url": "http://jestermon.weebly.com/pyclock2d.html",
+        "section": "additional"
+      },
+      {
+        "id": "L5-R1",
+        "lessonId": "lesson-5",
+        "title": "Python operator precedence",
+        "url": "https://docs.python.org/3/reference/expressions.html#operator-precedence",
+        "section": "additional"
+      },
+      {
+        "id": "L6-R1",
+        "lessonId": "lesson-6",
+        "title": "Python variable types (TutorialsPoint)",
+        "url": "https://www.tutorialspoint.com/python/python_variable_types.htm",
+        "section": "additional"
+      },
+      {
+        "id": "L7-R1",
+        "lessonId": "lesson-7",
+        "title": "Boolean operators in search",
+        "url": "http://library.alliant.edu/screens/boolean.pdf",
+        "section": "additional"
+      },
+      {
+        "id": "L7-R2",
+        "lessonId": "lesson-7",
+        "title": "Google advanced search",
+        "url": "https://www.google.com/advanced_search",
+        "section": "exercise"
+      },
+      {
+        "id": "L8-R1",
+        "lessonId": "lesson-8",
+        "title": "Lists vs tuples (StackOverflow)",
+        "url": "http://stackoverflow.com/questions/626759/whats-the-difference-between-lists-and-tuples",
+        "section": "additional"
+      },
+      {
+        "id": "L9-R1",
+        "lessonId": "lesson-9",
+        "title": "Python Style Guide (PEP 8)",
+        "url": "http://legacy.python.org/dev/peps/pep-0008/",
+        "section": "additional"
+      },
+      {
+        "id": "L10-R1",
+        "lessonId": "lesson-10",
+        "title": "Python tutorial",
+        "url": "https://docs.python.org/3.5/tutorial/index.html",
+        "section": "additional"
+      },
+      {
+        "id": "L11-R1",
+        "lessonId": "lesson-11",
+        "title": "Python functions tutorial",
+        "url": "https://www.tutorialspoint.com/python/python_functions.htm",
+        "section": "additional"
+      },
+      {
+        "id": "L11-R2",
+        "lessonId": "lesson-11",
+        "title": "Why can't programmers program?",
+        "url": "https://blog.codinghorror.com/why-cant-programmers-program/",
+        "section": "additional"
+      },
+      {
+        "id": "L12-R1",
+        "lessonId": "lesson-12",
+        "title": "Advanced looping (Python Wiki)",
+        "url": "https://wiki.python.org/moin/ForLoop",
+        "section": "additional"
+      },
+      {
+        "id": "L13-R1",
+        "lessonId": "lesson-13",
+        "title": "Pygame documentation",
+        "url": "http://www.pygame.org/docs",
+        "section": "additional"
+      },
+      {
+        "id": "L13-R2",
+        "lessonId": "lesson-13",
+        "title": "Pygame draw reference",
+        "url": "http://www.pygame.org/docs/ref/draw.html",
+        "section": "additional"
+      },
+      {
+        "id": "L13-R3",
+        "lessonId": "lesson-13",
+        "title": "Pygame music reference",
+        "url": "http://www.pygame.org/docs/ref/music.html",
+        "section": "additional"
+      },
+      {
+        "id": "L13-R4",
+        "lessonId": "lesson-13",
+        "title": "Pygame event reference",
+        "url": "http://www.pygame.org/docs/ref/event.html",
+        "section": "additional"
+      },
+      {
+        "id": "L14-R1",
+        "lessonId": "lesson-14",
+        "title": "Recursive Drawing",
+        "url": "http://recursivedrawing.com/",
+        "section": "additional"
+      },
+      {
+        "id": "L14-R2",
+        "lessonId": "lesson-14",
+        "title": "Recursion explanation",
+        "url": "http://www.programmerinterview.com/index.php/recursion/explanation-of-recursion/",
+        "section": "additional"
+      },
+      {
+        "id": "L14-R3",
+        "lessonId": "lesson-14",
+        "title": "Alpha-beta search guide",
+        "url": "http://mediocrechess.blogspot.ie/2006/12/guide-alpha-beta-search.html",
+        "section": "exercise"
+      },
+      {
+        "id": "L15-R1",
+        "lessonId": "lesson-15",
+        "title": "Well-defined software specifications",
+        "url": "https://belitsoft.com/software-requirements-specification-helps-protect-it-projects-failure",
+        "section": "additional"
+      },
+      {
+        "id": "L15-R2",
+        "lessonId": "lesson-15",
+        "title": "Project Cartoon",
+        "url": "http://www.projectcartoon.com",
+        "section": "additional"
+      },
+      {
+        "id": "L15-R3",
+        "lessonId": "lesson-15",
+        "title": "Annotate this (Python programs)",
+        "url": "http://www.annedawson.net/Python3Programs.txt",
+        "section": "exercise"
+      }
+    ]
   },
   "lessons": [
     {
       "id": "lesson-1",
       "number": 1,
-      "title": "Lesson 1: Thinking like a Coder",
-      "summary": "Computational thinking basics: decomposition, pattern recognition, abstraction, algorithms, and what counts as a computer.",
+      "title": "Lesson 1: Thinking Like a Programmer",
+      "summary": "Computational thinking and how programmers break problems into smaller chunks, with discussions and activities around real-world problems.",
       "status": "ready",
       "studentPath": "/lessons/lesson-1/student.html",
       "teacherPath": "/lessons/lesson-1/index.html",
-      "timings": "50-60 minutes",
+      "timings": "Not stated in handbook",
       "objectives": [
         {
           "id": "L1-O1",
-          "text": "Define computing."
+          "text": "Define the term computing"
         },
         {
           "id": "L1-O2",
-          "text": "Define computational thinking."
+          "text": "Define the term computational thinking"
         },
         {
           "id": "L1-O3",
-          "text": "Describe typical computational thinking methods: decomposition, pattern recognition, abstraction, algorithms."
+          "text": "Outline the typical methods used in computational thinking: decomposition, pattern recognition, abstraction, algorithms"
         },
         {
           "id": "L1-O4",
-          "text": "Use decomposition to break down a complex problem into smaller parts."
+          "text": "Use problem decomposition to break down data, processes, or a complex problem into smaller parts"
         },
         {
           "id": "L1-O5",
-          "text": "Define a program."
+          "text": "Define the term program"
         },
         {
           "id": "L1-O6",
-          "text": "Explain how algorithms are used in computational thinking."
+          "text": "Understand how algorithms are used in computational thinking"
         },
         {
           "id": "L1-O7",
-          "text": "Identify patterns among smaller problems."
+          "text": "Identify patterns among small, decomposed problems"
         },
         {
           "id": "L1-O8",
-          "text": "Use abstraction to keep important details and drop irrelevant ones."
+          "text": "Use abstraction to filter out unnecessary details when analysing a problem"
         }
       ],
       "resources": [
@@ -174,26 +427,80 @@
       "id": "lesson-2",
       "number": 2,
       "title": "Lesson 2: Software Development",
-      "summary": "Content coming soon.",
-      "status": "placeholder",
+      "summary": "Introduces precision in computer languages, distinguishes source code from machine code, and outlines the steps in software development.",
+      "status": "draft",
       "studentPath": "/lessons/lesson-2/student.html",
       "teacherPath": "/lessons/lesson-2/index.html",
-      "timings": "TBD",
-      "objectives": [],
+      "timings": "Not stated in handbook",
+      "objectives": [
+        {
+          "id": "L2-O1",
+          "text": "Understand the difference between a formal language and a natural language"
+        },
+        {
+          "id": "L2-O2",
+          "text": "Define the term code; distinguish between source code and machine code"
+        },
+        {
+          "id": "L2-O3",
+          "text": "Understand the terms program description, specification"
+        },
+        {
+          "id": "L2-O4",
+          "text": "Recognise typical activities in the creation of a program: analysis, design, programming, testing, enhancement"
+        }
+      ],
       "resources": [],
       "teacherResources": [],
-      "activities": []
+      "activities": [
+        {
+          "id": "a01",
+          "title": "Specification for a Game",
+          "path": "/lessons/lesson-2/activities/01-specification-for-a-game.html",
+          "objectiveIds": [
+            "L2-O3",
+            "L2-O4"
+          ],
+          "expectedEvidence": "Team specification with grouped, numbered requirements.",
+          "rubricHook": null
+        }
+      ]
     },
     {
       "id": "lesson-3",
       "number": 3,
       "title": "Lesson 3: Algorithms",
-      "summary": "Content coming soon.",
+      "summary": "Introduces step-by-step instructions using flowcharts, with multiple examples.",
       "status": "placeholder",
       "studentPath": "/lessons/lesson-3/student.html",
       "teacherPath": "/lessons/lesson-3/index.html",
-      "timings": "TBD",
-      "objectives": [],
+      "timings": "Not stated in handbook",
+      "objectives": [
+        {
+          "id": "L3-O1",
+          "text": "Define the programming construct term sequence. Outline the purpose of sequencing when designing algorithms"
+        },
+        {
+          "id": "L3-O2",
+          "text": "Recognise some methods for problem representation like: flowcharts, pseudocode"
+        },
+        {
+          "id": "L3-O3",
+          "text": "Recognise flowchart symbols like: start/stop, process, decision, input/output, connector, arrow"
+        },
+        {
+          "id": "L3-O4",
+          "text": "Outline the sequence of operations represented by a flowchart, pseudocode"
+        },
+        {
+          "id": "L3-O5",
+          "text": "Write an accurate algorithm based on a description using a technique like: flowchart, pseudocode"
+        },
+        {
+          "id": "L3-O6",
+          "text": "Fix errors in an algorithm like: missing program element, incorrect sequence, incorrect decision outcome"
+        }
+      ],
       "resources": [],
       "teacherResources": [],
       "activities": []
@@ -202,12 +509,29 @@
       "id": "lesson-4",
       "number": 4,
       "title": "Lesson 4: Getting Started",
-      "summary": "Content coming soon.",
+      "summary": "Students get early success running and saving simple Python programs in the shell.",
       "status": "placeholder",
       "studentPath": "/lessons/lesson-4/student.html",
       "teacherPath": "/lessons/lesson-4/index.html",
-      "timings": "TBD",
-      "objectives": [],
+      "timings": "Not stated in handbook",
+      "objectives": [
+        {
+          "id": "L4-O1",
+          "text": "Start and run a program"
+        },
+        {
+          "id": "L4-O2",
+          "text": "Enter code"
+        },
+        {
+          "id": "L4-O3",
+          "text": "Create and save a program"
+        },
+        {
+          "id": "L4-O4",
+          "text": "Open and run a program"
+        }
+      ],
       "resources": [],
       "teacherResources": [],
       "activities": []
@@ -216,12 +540,29 @@
       "id": "lesson-5",
       "number": 5,
       "title": "Lesson 5: Performing Calculations",
-      "summary": "Content coming soon.",
+      "summary": "Use Python as a calculator and learn operator precedence and expression evaluation.",
       "status": "placeholder",
       "studentPath": "/lessons/lesson-5/student.html",
       "teacherPath": "/lessons/lesson-5/index.html",
-      "timings": "TBD",
-      "objectives": [],
+      "timings": "Not stated in handbook",
+      "objectives": [
+        {
+          "id": "L5-O1",
+          "text": "Recognise and use arithmetic operators: +, -, *, /"
+        },
+        {
+          "id": "L5-O2",
+          "text": "Know how parentheses affect the evaluation of mathematical expressions"
+        },
+        {
+          "id": "L5-O3",
+          "text": "Understand and apply the precedence of operators in complex expressions"
+        },
+        {
+          "id": "L5-O4",
+          "text": "Understand how to use parenthesis to structure complex expressions"
+        }
+      ],
       "resources": [],
       "teacherResources": [],
       "activities": []
@@ -230,12 +571,37 @@
       "id": "lesson-6",
       "number": 6,
       "title": "Lesson 6: Data Types and Variables",
-      "summary": "Content coming soon.",
+      "summary": "Introduce basic data types and variables, including input and output.",
       "status": "placeholder",
       "studentPath": "/lessons/lesson-6/student.html",
       "teacherPath": "/lessons/lesson-6/index.html",
-      "timings": "TBD",
-      "objectives": [],
+      "timings": "Not stated in handbook",
+      "objectives": [
+        {
+          "id": "L6-O1",
+          "text": "Use different data types: character, string, integer, float, Boolean"
+        },
+        {
+          "id": "L6-O2",
+          "text": "Define the programming construct term variable. Outline the purpose of a variable in a program"
+        },
+        {
+          "id": "L6-O3",
+          "text": "Define and initialise a variable"
+        },
+        {
+          "id": "L6-O4",
+          "text": "Assign a value to a variable"
+        },
+        {
+          "id": "L6-O5",
+          "text": "Use data input from a user in a program"
+        },
+        {
+          "id": "L6-O6",
+          "text": "Use data output to a screen in a program"
+        }
+      ],
       "resources": [],
       "teacherResources": [],
       "activities": []
@@ -244,12 +610,25 @@
       "id": "lesson-7",
       "number": 7,
       "title": "Lesson 7: True or False",
-      "summary": "Content coming soon.",
+      "summary": "Explore Boolean logic, operators, and evaluation order with applied examples.",
       "status": "placeholder",
       "studentPath": "/lessons/lesson-7/student.html",
       "teacherPath": "/lessons/lesson-7/index.html",
-      "timings": "TBD",
-      "objectives": [],
+      "timings": "Not stated in handbook",
+      "objectives": [
+        {
+          "id": "L7-O1",
+          "text": "Use Boolean logic expressions in a program"
+        },
+        {
+          "id": "L7-O2",
+          "text": "Recognise types of Boolean logic expressions to generate a true or false value like: =, >, <, >=, <=, <>, !=, ==, AND, OR, NOT"
+        },
+        {
+          "id": "L7-O3",
+          "text": "Understand the precedence of operators and the order of evaluation in complex expressions"
+        }
+      ],
       "resources": [],
       "teacherResources": [],
       "activities": []
@@ -258,12 +637,21 @@
       "id": "lesson-8",
       "number": 8,
       "title": "Lesson 8: Aggregate Data Types",
-      "summary": "Content coming soon.",
+      "summary": "Introduce lists and tuples as aggregate data types for holding multiple items.",
       "status": "placeholder",
       "studentPath": "/lessons/lesson-8/student.html",
       "teacherPath": "/lessons/lesson-8/index.html",
-      "timings": "TBD",
-      "objectives": [],
+      "timings": "Not stated in handbook",
+      "objectives": [
+        {
+          "id": "L8-O1",
+          "text": "Understand aggregate data types"
+        },
+        {
+          "id": "L8-O2",
+          "text": "Use aggregate data in a program like: list and tuple"
+        }
+      ],
       "resources": [],
       "teacherResources": [],
       "activities": []
@@ -272,12 +660,25 @@
       "id": "lesson-9",
       "number": 9,
       "title": "Lesson 9: Enhance Your Code",
-      "summary": "Content coming soon.",
+      "summary": "Best practice for structuring and documenting code, with Python examples.",
       "status": "placeholder",
       "studentPath": "/lessons/lesson-9/student.html",
       "teacherPath": "/lessons/lesson-9/index.html",
-      "timings": "TBD",
-      "objectives": [],
+      "timings": "Not stated in handbook",
+      "objectives": [
+        {
+          "id": "L9-O1",
+          "text": "Describe the characteristics of well-structured and documented code like: indentation, appropriate comments, descriptive naming"
+        },
+        {
+          "id": "L9-O2",
+          "text": "Define the programming construct term comment. Outline the purpose of a comment in a program"
+        },
+        {
+          "id": "L9-O3",
+          "text": "Use comments in a program"
+        }
+      ],
       "resources": [],
       "teacherResources": [],
       "activities": []
@@ -286,12 +687,29 @@
       "id": "lesson-10",
       "number": 10,
       "title": "Lesson 10: Conditional Statements",
-      "summary": "Content coming soon.",
+      "summary": "Build logic into programs with conditionals and logic tests.",
       "status": "placeholder",
       "studentPath": "/lessons/lesson-10/student.html",
       "teacherPath": "/lessons/lesson-10/index.html",
-      "timings": "TBD",
-      "objectives": [],
+      "timings": "Not stated in handbook",
+      "objectives": [
+        {
+          "id": "L10-O1",
+          "text": "Define the programming construct term conditional statement. Outline the purpose of conditional statements in a program"
+        },
+        {
+          "id": "L10-O2",
+          "text": "Define the programming construct term logic test. Outline the purpose of a logic test in a program"
+        },
+        {
+          "id": "L10-O3",
+          "text": "Use Boolean logic expressions in a program"
+        },
+        {
+          "id": "L10-O4",
+          "text": "Use IF...THEN...ELSE conditional statements in a program"
+        }
+      ],
       "resources": [],
       "teacherResources": [],
       "activities": []
@@ -300,12 +718,33 @@
       "id": "lesson-11",
       "number": 11,
       "title": "Lesson 11: Procedures and Functions",
-      "summary": "Content coming soon.",
+      "summary": "Reuse code with procedures and functions; build toward later examples.",
       "status": "placeholder",
       "studentPath": "/lessons/lesson-11/student.html",
       "teacherPath": "/lessons/lesson-11/index.html",
-      "timings": "TBD",
-      "objectives": [],
+      "timings": "Not stated in handbook",
+      "objectives": [
+        {
+          "id": "L11-O1",
+          "text": "Understand the term parameter. Outline the purpose of parameters in a program"
+        },
+        {
+          "id": "L11-O2",
+          "text": "Understand the term procedure. Outline the purpose of a procedure in a program"
+        },
+        {
+          "id": "L11-O3",
+          "text": "Write and name a procedure in a program"
+        },
+        {
+          "id": "L11-O4",
+          "text": "Understand the term function. Outline the purpose of a function in a program"
+        },
+        {
+          "id": "L11-O5",
+          "text": "Write and name a function in a program"
+        }
+      ],
       "resources": [],
       "teacherResources": [],
       "activities": []
@@ -314,12 +753,29 @@
       "id": "lesson-12",
       "number": 12,
       "title": "Lesson 12: Loops",
-      "summary": "Content coming soon.",
+      "summary": "Introduce looping structures and iteration with practical examples.",
       "status": "placeholder",
       "studentPath": "/lessons/lesson-12/student.html",
       "teacherPath": "/lessons/lesson-12/index.html",
-      "timings": "TBD",
-      "objectives": [],
+      "timings": "Not stated in handbook",
+      "objectives": [
+        {
+          "id": "L12-O1",
+          "text": "Define the programming construct term loop. Outline the purpose and benefit of looping in a program"
+        },
+        {
+          "id": "L12-O2",
+          "text": "Recognise types of loops used for iteration: for, while, repeat"
+        },
+        {
+          "id": "L12-O3",
+          "text": "Understand the term infinite loop"
+        },
+        {
+          "id": "L12-O4",
+          "text": "Use iteration (looping) in a program like: for, while, repeat"
+        }
+      ],
       "resources": [],
       "teacherResources": [],
       "activities": []
@@ -328,12 +784,25 @@
       "id": "lesson-13",
       "number": 13,
       "title": "Lesson 13: Libraries",
-      "summary": "Content coming soon.",
+      "summary": "Explore libraries and event handling using Pygame examples.",
       "status": "placeholder",
       "studentPath": "/lessons/lesson-13/student.html",
       "teacherPath": "/lessons/lesson-13/index.html",
-      "timings": "TBD",
-      "objectives": [],
+      "timings": "Not stated in handbook",
+      "objectives": [
+        {
+          "id": "L13-O1",
+          "text": "Understand the term event. Outline the purpose of an event in a program"
+        },
+        {
+          "id": "L13-O2",
+          "text": "Use event handlers like: mouse click, keyboard input, button click, timer"
+        },
+        {
+          "id": "L13-O3",
+          "text": "Use available generic libraries like: math, random, time"
+        }
+      ],
       "resources": [],
       "teacherResources": [],
       "activities": []
@@ -342,12 +811,37 @@
       "id": "lesson-14",
       "number": 14,
       "title": "Lesson 14: Recursion",
-      "summary": "Content coming soon.",
+      "summary": "Introduce recursion as functions calling themselves, with example applications.",
       "status": "placeholder",
       "studentPath": "/lessons/lesson-14/student.html",
       "teacherPath": "/lessons/lesson-14/index.html",
-      "timings": "TBD",
-      "objectives": [],
+      "timings": "Not stated in handbook",
+      "objectives": [
+        {
+          "id": "L14-O1",
+          "text": "Understand the term recursion"
+        },
+        {
+          "id": "L14-O2",
+          "text": "Loop"
+        },
+        {
+          "id": "L14-O3",
+          "text": "Procedure"
+        },
+        {
+          "id": "L14-O4",
+          "text": "Function"
+        },
+        {
+          "id": "L14-O5",
+          "text": "Variable"
+        },
+        {
+          "id": "L14-O6",
+          "text": "Parameter"
+        }
+      ],
       "resources": [],
       "teacherResources": [],
       "activities": []
@@ -356,12 +850,41 @@
       "id": "lesson-15",
       "number": 15,
       "title": "Lesson 15: Testing and Modification",
-      "summary": "Content coming soon.",
+      "summary": "Cover testing, debugging, and improving programs against requirements.",
       "status": "placeholder",
       "studentPath": "/lessons/lesson-15/student.html",
       "teacherPath": "/lessons/lesson-15/index.html",
-      "timings": "TBD",
-      "objectives": [],
+      "timings": "Not stated in handbook",
+      "objectives": [
+        {
+          "id": "L15-O1",
+          "text": "Understand types of errors in a program like: syntax, logic"
+        },
+        {
+          "id": "L15-O2",
+          "text": "Understand the benefits of testing and debugging a program to resolve errors"
+        },
+        {
+          "id": "L15-O3",
+          "text": "Identify and fix a syntax error in a program like: incorrect spelling, missing punctuation"
+        },
+        {
+          "id": "L15-O4",
+          "text": "Identify and fix a logic error in a program like: incorrect Boolean expression, incorrect data type"
+        },
+        {
+          "id": "L15-O5",
+          "text": "Check your program against the requirements of the initial description"
+        },
+        {
+          "id": "L15-O6",
+          "text": "Identify enhancements, improvements to the program that may meet additional, related needs"
+        },
+        {
+          "id": "L15-O7",
+          "text": "Describe the completed program, communicating purpose and value"
+        }
+      ],
       "resources": [],
       "teacherResources": [],
       "activities": []

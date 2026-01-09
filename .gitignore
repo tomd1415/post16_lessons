@@ -28,3 +28,7 @@ build/
 .env
 .env.*
 *.log
+
+# Runtime data
+data/*.json
+reports/

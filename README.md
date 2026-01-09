@@ -17,7 +17,7 @@ This repo delivers a containerized, on-prem web platform for the ICDL "Thinking 
 - [x] Phase 2: Local accounts + roles + cohort/year + admin UI + access controls.
 - [x] Phase 3: Server-backed saving + offline-first sync + revision history + role-based menus.
 - [x] Phase 4: Teacher view v1 (filtering, completion, notes, CSV export).
-- [ ] Phase 5: Content expansion automation + link registry tooling.
+- [x] Phase 5: Content expansion automation + link registry tooling.
 - [ ] Phase 6: Python runner MVP (safe, isolated execution).
 - [ ] Phase 7: Teacher view v2 (stats, attention lists, timing).
 - [ ] Phase 8: Ops hardening (backups, retention purge, audit log, DPIA support).
@@ -31,6 +31,8 @@ Detailed requirements and the phase plan are in `plans/prompt_1`.
 - `docker/Caddyfile` TLS + reverse proxy config (internal CA).
 - `docs/design-system-inventory.md` Lesson 1 UI/behavior inventory (design system).
 - `docs/lesson-manifest.md` lesson manifest schema and usage.
+- `scripts/` automation tools (lesson pack scaffold, link registry checks).
+- `data/` runtime data (link overrides).
 - `plans/TeacherHandbook.pdf` source handbook reference.
 
 ## Architecture overview
@@ -95,6 +97,7 @@ Rules:
 - Teacher hub: `https://localhost:8443/teacher.html`
 - Teacher view: `https://localhost:8443/teacher-view.html`
 - Teacher revision history: `https://localhost:8443/teacher-history.html`
+- Link registry: `https://localhost:8443/teacher-links.html`
 - Admin hub: `https://localhost:8443/admin.html`
 - Login: `https://localhost:8443/login.html`
 - Lesson 1 teacher hub: `https://localhost:8443/lessons/lesson-1/index.html`
@@ -104,8 +107,28 @@ Rules:
 ## Lesson manifest system
 Lessons are data-driven via `web/lessons/manifest.json`.
 - Used by `web/core/catalog.js` to render the course catalogue.
-- Lesson 1 is populated; Lessons 2-15 are placeholders.
+- Lessons 1-15 are populated from the handbook; Lesson 2 has a scaffolded pack.
 - Schema details: `docs/lesson-manifest.md`.
+
+## Lesson pack scaffolding (Phase 5)
+Create or refresh a lesson pack (student hub, teacher hub, activities) from the manifest:
+```
+.venv/bin/python scripts/new_lesson_pack.py --lesson-id lesson-2 --force
+```
+
+## Link registry tooling (Phase 5)
+Handbook links live in the manifest `linksRegistry.items`. Teachers can set replacement URLs or local copies in:
+- `https://localhost:8443/teacher-links.html`
+
+Run a link health check (writes report to `reports/link-check.json`):
+```
+.venv/bin/python scripts/link_registry_check.py
+```
+
+To also write status updates back into the manifest:
+```
+.venv/bin/python scripts/link_registry_check.py --write-manifest
+```
 
 ## Design system baseline (must preserve)
 Lesson 1 defines the visual language and interaction patterns.

@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Thinking like a Coder - Link registry</title>
+  <link rel="stylesheet" href="./core/app.css" />
+</head>
+<body data-requires-role="teacher">
+  <div class="topbar no-print">
+    <div class="container">
+      <div class="brand">
+        <b>Thinking like a Coder - Link registry</b>
+        <span>Handbook links, health status, and replacements</span>
+      </div>
+      <div class="row">
+        <a class="pill" href="./teacher.html"><strong>TEACHER</strong> <span>Teacher hub</span></a>
+        <a class="pill" href="./index.html"><strong>STUDENT</strong> <span>Student hub</span></a>
+        <a class="pill" id="adminLink" href="./admin.html" style="display:none"><strong>ADMIN</strong> <span>Admin</span></a>
+        <span id="userBadge" class="badge" style="display:none"></span>
+        <button class="btn" id="logoutBtn" type="button">Logout</button>
+        <button class="btn" id="teacherToggle" type="button">Teacher mode: OFF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>Link registry</h1>
+    <div class="note">
+      <b>Purpose:</b> Track handbook links, identify failures, and set replacements or offline paths.
+    </div>
+
+    <div class="note" style="margin-top:12px">
+      <b>How to update link health:</b> run `scripts/link_registry_check.py` on the server to refresh statuses.
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <table class="table" id="linksTable">
+        <thead>
+          <tr>
+            <th>Lesson</th>
+            <th>Resource</th>
+            <th>Status</th>
+            <th>Replacement URL</th>
+            <th>Local copy path</th>
+            <th>Disable</th>
+            <th>Save</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="footer">
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <script src="./core/app.js"></script>
+  <script src="./core/auth.js"></script>
+  <script>
+    const tableBody = document.querySelector("#linksTable tbody");
+
+    function escapeHtml(value){
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    function renderStatus(item){
+      const status = item.status || "unknown";
+      const checked = item.last_checked ? ` <small class="muted">${escapeHtml(item.last_checked)}</small>` : "";
+      return `<span class="tag">${escapeHtml(status)}</span>${checked}`;
+    }
+
+    function renderRow(item){
+      const lesson = escapeHtml(item.lesson_id || item.lessonId || "");
+      const title = escapeHtml(item.title || item.id);
+      const url = item.effective_url || item.url || "";
+      const urlLabel = url ? `<a href="${escapeHtml(url)}" target="_blank" rel="noopener">${title}</a>` : title;
+      return `
+        <tr data-id="${escapeHtml(item.id)}">
+          <td>${lesson}</td>
+          <td>${urlLabel}</td>
+          <td>${renderStatus(item)}</td>
+          <td><input class="input" data-field="replacement_url" value="${escapeHtml(item.replacement_url || "")}" placeholder="https://..." /></td>
+          <td><input class="input" data-field="local_path" value="${escapeHtml(item.local_path || "")}" placeholder="/srv/lessons/.../file.html" /></td>
+          <td style="text-align:center"><input type="checkbox" data-field="disabled" ${item.disabled ? "checked" : ""} /></td>
+          <td><button class="btn" data-action="save">Save</button></td>
+        </tr>
+      `;
+    }
+
+    async function loadLinks(){
+      tableBody.innerHTML = "<tr><td colspan='7'>Loading...</td></tr>";
+      const res = await fetch("/api/teacher/links", { credentials: "same-origin" });
+      if(!res.ok){
+        tableBody.innerHTML = "<tr><td colspan='7'>Unable to load links.</td></tr>";
+        return;
+      }
+      const data = await res.json().catch(()=>({}));
+      const items = Array.isArray(data.items) ? data.items : [];
+      if(!items.length){
+        tableBody.innerHTML = "<tr><td colspan='7'>No links found.</td></tr>";
+        return;
+      }
+      tableBody.innerHTML = items.map(renderRow).join("");
+    }
+
+    async function saveRow(row){
+      const id = row.dataset.id;
+      const payload = {
+        replacement_url: row.querySelector("[data-field='replacement_url']").value.trim(),
+        local_path: row.querySelector("[data-field='local_path']").value.trim(),
+        disabled: row.querySelector("[data-field='disabled']").checked
+      };
+      const auth = await window.tlacAuthReady;
+      if(!auth){
+        toast("Not signed in.");
+        return;
+      }
+      const res = await fetch(`/api/teacher/links/${encodeURIComponent(id)}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": auth.csrf_token
+        },
+        credentials: "same-origin",
+        body: JSON.stringify(payload)
+      });
+      if(res.ok){
+        toast("Saved.");
+      } else {
+        toast("Unable to save.");
+      }
+    }
+
+    tableBody.addEventListener("click", (event) => {
+      const btn = event.target.closest("button[data-action='save']");
+      if(!btn) return;
+      const row = event.target.closest("tr");
+      if(row) saveRow(row);
+    });
+
+    loadLinks();
+  </script>
+</body>
+</html>

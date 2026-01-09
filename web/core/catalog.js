@@ -15,6 +15,7 @@
 
   function statusLabel(status){
     if(status === "ready") return "Ready";
+    if(status === "draft") return "Draft";
     if(status === "placeholder") return "Coming soon";
     return status || "Unknown";
   }

@@ -19,10 +19,12 @@ services:
       - PYTHONUNBUFFERED=1
       - DATABASE_URL=postgresql+psycopg://tlac:tlac@db:5432/tlac
       - SESSION_TTL_MINUTES=480
+      - LINK_OVERRIDES_PATH=/data/link-overrides.json
     expose:
       - "8000"
     volumes:
       - ./web:/srv:ro
+      - ./data:/data
     depends_on:
       - db
 
