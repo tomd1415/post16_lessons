@@ -30,6 +30,7 @@ const ROLE_MENUS = {
     label: "Teacher",
     items: [
       { label: "Teacher hub", href: "/teacher.html" },
+      { label: "Teacher view", href: "/teacher-view.html" },
       { label: "Revision history", href: "/teacher-history.html" },
       { label: "Lesson 1 teacher hub", href: "/lessons/lesson-1/index.html" },
       { label: "Lesson 1 lesson plan", href: "/lessons/lesson-1/teacher/lesson-plan.html" },
@@ -44,6 +45,7 @@ const ROLE_MENUS = {
       { label: "Admin hub", href: "/admin.html" },
       { label: "Create user", href: "/admin.html#admin-create-user" },
       { label: "Import CSV", href: "/admin.html#admin-import" },
+      { label: "Teacher view", href: "/teacher-view.html" },
       { label: "Revision history", href: "/teacher-history.html" },
       { label: "Teacher hub", href: "/teacher.html" },
       { label: "Student hub", href: "/index.html" }
@@ -116,6 +118,73 @@ function escapeHtml(s){
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
+}
+
+function tryParseJsonString(value){
+  if(typeof value !== "string") return null;
+  const trimmed = value.trim();
+  if(!trimmed) return null;
+  const looksJson =
+    (trimmed.startsWith("{") && trimmed.endsWith("}")) ||
+    (trimmed.startsWith("[") && trimmed.endsWith("]"));
+  if(!looksJson) return null;
+  try{
+    return JSON.parse(trimmed);
+  }catch{
+    return null;
+  }
+}
+
+function renderStateNode(value, seen){
+  const parsed = tryParseJsonString(value);
+  if(parsed !== null) return renderStateNode(parsed, seen);
+
+  if(value === null || value === undefined){
+    return "<span class=\"state-null\">None</span>";
+  }
+  if(value && typeof value === "object"){
+    if(!seen){
+      seen = new WeakSet();
+    }
+    if(seen.has(value)){
+      return "<span class=\"state-null\">[Circular]</span>";
+    }
+    seen.add(value);
+  }
+  if(typeof value === "string"){
+    return `<span class="state-text">${escapeHtml(value)}</span>`;
+  }
+  if(typeof value === "number"){
+    return `<span class="state-text">${value}</span>`;
+  }
+  if(typeof value === "boolean"){
+    return `<span class="state-text">${value ? "Yes" : "No"}</span>`;
+  }
+  if(Array.isArray(value)){
+    if(!value.length){
+      return "<span class=\"state-null\">Empty list</span>";
+    }
+    return `<ol class="state-list">${value.map(item => `<li>${renderStateNode(item, seen)}</li>`).join("")}</ol>`;
+  }
+  if(typeof value === "object"){
+    const entries = Object.entries(value || {});
+    if(!entries.length){
+      return "<span class=\"state-null\">No fields</span>";
+    }
+    return `<dl class="state-dl">${entries
+      .map(([key, val]) => (
+        `<div class="state-row"><dt>${escapeHtml(key)}</dt><dd>${renderStateNode(val, seen)}</dd></div>`
+      ))
+      .join("")}</dl>`;
+  }
+  return `<span class="state-text">${escapeHtml(String(value))}</span>`;
+}
+
+function renderStateReadable(value){
+  if(value === null || value === undefined || value === ""){
+    return "";
+  }
+  return `<div class="state-view">${renderStateNode(value, null)}</div>`;
 }
 
 function roleToMenu(role){

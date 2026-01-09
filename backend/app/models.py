@@ -2,7 +2,7 @@ import enum
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, JSON, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import DeclarativeBase, relationship
 
@@ -13,6 +13,9 @@ def utcnow():
 
 class Base(DeclarativeBase):
     pass
+
+
+JsonType = JSON().with_variant(JSONB, "postgresql")
 
 
 class UserRole(str, enum.Enum):
@@ -40,6 +43,7 @@ class User(Base):
 
     sessions = relationship("Session", back_populates="user", cascade="all, delete-orphan")
     activity_states = relationship("ActivityState", back_populates="user", cascade="all, delete-orphan")
+    activity_marks = relationship("ActivityMark", back_populates="user", cascade="all, delete-orphan")
 
 
 class Session(Base):
@@ -66,7 +70,7 @@ class ActivityState(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
     lesson_id = Column(String(64), nullable=False)
     activity_id = Column(String(64), nullable=False)
-    state = Column(JSONB, nullable=False)
+    state = Column(JsonType, nullable=False)
     created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
     updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)
     last_client_at = Column(DateTime(timezone=True), nullable=True)
@@ -83,9 +87,26 @@ class ActivityRevision(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
     lesson_id = Column(String(64), nullable=False)
     activity_id = Column(String(64), nullable=False)
-    state = Column(JSONB, nullable=False)
+    state = Column(JsonType, nullable=False)
     created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
     client_saved_at = Column(DateTime(timezone=True), nullable=True)
 
     activity_state = relationship("ActivityState", back_populates="revisions")
     user = relationship("User")
+
+
+class ActivityMark(Base):
+    __tablename__ = "activity_marks"
+    __table_args__ = (
+        UniqueConstraint("user_id", "lesson_id", "activity_id", name="uq_activity_mark"),
+    )
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
+    lesson_id = Column(String(64), nullable=False)
+    activity_id = Column(String(64), nullable=False)
+    status = Column(String(20), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)
+
+    user = relationship("User", back_populates="activity_marks")

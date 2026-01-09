@@ -47,7 +47,7 @@
 
       <div class="card">
         <h2>Latest state</h2>
-        <pre id="latestState" style="white-space:pre-wrap; margin:0; min-height:120px"></pre>
+        <div id="latestState" style="min-height:120px"></div>
       </div>
     </div>
 
@@ -67,11 +67,21 @@
     const activitySelect = document.getElementById("activitySelect");
     const historyList = document.getElementById("historyList");
     const latestState = document.getElementById("latestState");
+    const params = new URLSearchParams(window.location.search);
+    const presetUsername = params.get("username") || "";
+    const presetLesson = params.get("lesson_id") || "";
+    const presetActivity = params.get("activity_id") || "";
+    let pupilsLoaded = false;
+    let manifestLoaded = false;
 
     let lessonIndex = {};
 
     function setLatestState(value){
-      latestState.textContent = value || "";
+      if(!value){
+        latestState.innerHTML = "";
+        return;
+      }
+      latestState.innerHTML = renderStateReadable(value);
     }
 
     function renderHistory(items){
@@ -82,7 +92,7 @@
         return;
       }
       const newest = items[0];
-      setLatestState(JSON.stringify(newest.state, null, 2));
+      setLatestState(newest.state);
 
       items.forEach(item => {
         const card = document.createElement("div");
@@ -94,12 +104,11 @@
         const details = document.createElement("details");
         const summaryEl = document.createElement("summary");
         summaryEl.textContent = "View state snapshot";
-        const pre = document.createElement("pre");
-        pre.style.whiteSpace = "pre-wrap";
-        pre.style.margin = "10px 0 0";
-        pre.textContent = JSON.stringify(item.state, null, 2);
+        const view = document.createElement("div");
+        view.style.margin = "10px 0 0";
+        view.innerHTML = renderStateReadable(item.state);
         details.appendChild(summaryEl);
-        details.appendChild(pre);
+        details.appendChild(view);
         card.appendChild(summary);
         card.appendChild(details);
         historyList.appendChild(card);
@@ -137,6 +146,8 @@
       pupilSelect.innerHTML = "";
       if(!items.length){
         pupilSelect.innerHTML = "<option value=''>No pupils found</option>";
+        pupilsLoaded = true;
+        maybeAutoLoad();
         return;
       }
       items.forEach(pupil => {
@@ -145,6 +156,11 @@
         opt.textContent = `${pupil.username} - ${pupil.name}`;
         pupilSelect.appendChild(opt);
       });
+      if(presetUsername){
+        pupilSelect.value = presetUsername;
+      }
+      pupilsLoaded = true;
+      maybeAutoLoad();
     }
 
     async function loadManifest(){
@@ -167,7 +183,22 @@
         opt.textContent = `Lesson ${lesson.number}: ${lesson.title}`;
         lessonSelect.appendChild(opt);
       });
+      if(presetLesson){
+        lessonSelect.value = presetLesson;
+      }
       populateActivities(lessonSelect.value);
+      if(presetActivity){
+        activitySelect.value = presetActivity;
+      }
+      manifestLoaded = true;
+      maybeAutoLoad();
+    }
+
+    function maybeAutoLoad(){
+      if(!pupilsLoaded || !manifestLoaded) return;
+      if(presetUsername && presetLesson && presetActivity){
+        loadHistory();
+      }
     }
 
     async function loadHistory(){

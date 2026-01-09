@@ -16,7 +16,7 @@ This repo delivers a containerized, on-prem web platform for the ICDL "Thinking 
 - [x] Phase 1: Site shell + lesson manifest + course catalogue + lesson placeholders.
 - [x] Phase 2: Local accounts + roles + cohort/year + admin UI + access controls.
 - [x] Phase 3: Server-backed saving + offline-first sync + revision history + role-based menus.
-- [ ] Phase 4: Teacher view v1 (filtering, completion, notes, CSV export).
+- [x] Phase 4: Teacher view v1 (filtering, completion, notes, CSV export).
 - [ ] Phase 5: Content expansion automation + link registry tooling.
 - [ ] Phase 6: Python runner MVP (safe, isolated execution).
 - [ ] Phase 7: Teacher view v2 (stats, attention lists, timing).
@@ -93,6 +93,7 @@ Rules:
 ## Hubs and key URLs
 - Student hub: `https://localhost:8443/index.html`
 - Teacher hub: `https://localhost:8443/teacher.html`
+- Teacher view: `https://localhost:8443/teacher-view.html`
 - Teacher revision history: `https://localhost:8443/teacher-history.html`
 - Admin hub: `https://localhost:8443/admin.html`
 - Login: `https://localhost:8443/login.html`

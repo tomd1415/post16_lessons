@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Thinking like a Coder - Teacher view</title>
+  <link rel="stylesheet" href="./core/app.css" />
+</head>
+<body data-requires-role="teacher">
+  <div class="topbar no-print">
+    <div class="container">
+      <div class="brand">
+        <b>Thinking like a Coder - Teacher view</b>
+        <span>Completion + pupil drill-down</span>
+      </div>
+      <div class="row">
+        <a class="pill" href="./teacher.html"><strong>TEACHER</strong> <span>Teacher hub</span></a>
+        <a class="pill" href="./index.html"><strong>STUDENT</strong> <span>Student hub</span></a>
+        <a class="pill" id="adminLink" href="./admin.html" style="display:none"><strong>ADMIN</strong> <span>Admin</span></a>
+        <span id="userBadge" class="badge" style="display:none"></span>
+        <button class="btn" id="logoutBtn" type="button">Logout</button>
+        <button class="btn" id="teacherToggle" type="button">Teacher mode: OFF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>Teacher view v1</h1>
+    <div class="note">
+      <b>Use this page to:</b> filter by cohort, review lesson completion, and drill into a pupil’s latest work.
+    </div>
+
+    <div class="grid cols2" style="margin-top:12px">
+      <div class="card">
+        <h2>Filters</h2>
+        <label for="cohortSelect"><b>Cohort / year</b></label>
+        <select id="cohortSelect"></select>
+        <div style="height:10px"></div>
+        <label for="lessonSelect"><b>Lesson</b></label>
+        <select id="lessonSelect"></select>
+        <div style="height:10px"></div>
+        <label for="pupilSelect"><b>Pupil</b></label>
+        <select id="pupilSelect"></select>
+        <div style="height:12px"></div>
+        <div class="row">
+          <button class="btn primary" id="refreshBtn" type="button">Refresh overview</button>
+          <button class="btn" id="exportLessonBtn" type="button">Export lesson CSV</button>
+          <button class="btn" id="exportPupilBtn" type="button">Export pupil CSV</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Teacher notes</h2>
+        <label for="teacherNotes"><b>Notes for this pupil</b></label>
+        <textarea id="teacherNotes" placeholder="Private notes for this pupil..."></textarea>
+        <div style="height:10px"></div>
+        <button class="btn primary" id="saveNotesBtn" type="button">Save notes</button>
+      </div>
+    </div>
+
+    <h2>Lesson completion overview</h2>
+    <div class="card">
+      <table class="table" id="overviewTable">
+        <thead>
+          <tr>
+            <th>Pupil</th>
+            <th>Cohort</th>
+            <th>Completed</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <h2>Pupil drill-down</h2>
+    <div class="card">
+      <table class="table" id="activityTable">
+        <thead>
+          <tr>
+            <th>Activity</th>
+            <th>Objectives</th>
+            <th>Status</th>
+            <th>Latest response</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="footer">
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <script src="./core/app.js"></script>
+  <script src="./core/auth.js"></script>
+  <script>
+    const cohortSelect = document.getElementById("cohortSelect");
+    const lessonSelect = document.getElementById("lessonSelect");
+    const pupilSelect = document.getElementById("pupilSelect");
+    const overviewTableBody = document.querySelector("#overviewTable tbody");
+    const activityTableBody = document.querySelector("#activityTable tbody");
+    const teacherNotes = document.getElementById("teacherNotes");
+    const refreshBtn = document.getElementById("refreshBtn");
+    const exportLessonBtn = document.getElementById("exportLessonBtn");
+    const exportPupilBtn = document.getElementById("exportPupilBtn");
+    const saveNotesBtn = document.getElementById("saveNotesBtn");
+
+    let manifest = null;
+    let lessons = [];
+    let lessonMap = {};
+    let overviewData = null;
+
+    function setSelectOptions(select, options, fallback){
+      select.innerHTML = "";
+      if(!options.length){
+        const opt = document.createElement("option");
+        opt.value = "";
+        opt.textContent = fallback || "None";
+        select.appendChild(opt);
+        select.disabled = true;
+        return;
+      }
+      select.disabled = false;
+      options.forEach(({value,label})=>{
+        const opt = document.createElement("option");
+        opt.value = value;
+        opt.textContent = label;
+        select.appendChild(opt);
+      });
+    }
+
+    function currentLesson(){
+      return lessonMap[lessonSelect.value];
+    }
+
+    function renderOverview(){
+      overviewTableBody.innerHTML = "";
+      if(!overviewData || !overviewData.pupils || !overviewData.lessons){
+        overviewTableBody.innerHTML = "<tr><td colspan='4'>No data.</td></tr>";
+        return;
+      }
+      const lessonId = lessonSelect.value;
+      const total = (overviewData.lessons.find(l => l.id === lessonId) || {}).total_activities || 0;
+      overviewData.pupils.forEach(pupil => {
+        const completion = (overviewData.completion[pupil.username] || {})[lessonId] || { completed: 0, total };
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${pupil.username} - ${pupil.name}</td>
+          <td>${pupil.cohort_year || ""}</td>
+          <td>${completion.completed} / ${completion.total}</td>
+          <td>${completion.completed >= completion.total && completion.total > 0 ? "Complete" : "In progress"}</td>
+        `;
+        overviewTableBody.appendChild(row);
+      });
+    }
+
+    function renderActivities(data){
+      activityTableBody.innerHTML = "";
+      const lesson = currentLesson();
+      if(!lesson){
+        activityTableBody.innerHTML = "<tr><td colspan='4'>No lesson selected.</td></tr>";
+        return;
+      }
+      const activities = lesson.activities || [];
+      const marks = {};
+      (data.marks || []).forEach(mark => { marks[mark.activity_id] = mark; });
+      const states = {};
+      (data.states || []).forEach(state => { states[state.activity_id] = state; });
+
+      if(!activities.length){
+        activityTableBody.innerHTML = "<tr><td colspan='4'>No activities listed.</td></tr>";
+        return;
+      }
+
+      activities.forEach(activity => {
+        const mark = marks[activity.id];
+        const status = mark ? mark.status : "incomplete";
+        const objectiveIds = activity.objectiveIds || [];
+        const objectiveLookup = {};
+        (lesson.objectives || []).forEach(obj => { objectiveLookup[obj.id] = obj.text; });
+        const objectiveText = objectiveIds.length
+          ? objectiveIds.map(id => objectiveLookup[id] || id).join(" | ")
+          : "—";
+        const state = states[activity.id];
+        const row = document.createElement("tr");
+        const latestState = state ? renderStateReadable(state.state) : "";
+        row.innerHTML = `
+          <td><b>${activity.id}</b> - ${activity.title}</td>
+          <td>${objectiveText}</td>
+          <td>
+            <span class="tag">${status}</span>
+            <div style="margin-top:6px">
+              <button class="btn" data-action="toggle" data-activity="${activity.id}">
+                Mark ${status === "complete" ? "incomplete" : "complete"}
+              </button>
+            </div>
+            <div style="margin-top:6px">
+              <button class="btn" data-action="history" data-activity="${activity.id}">
+                Revision history
+              </button>
+            </div>
+          </td>
+          <td>
+            ${latestState ? `
+              <details>
+                <summary>View state</summary>
+                ${latestState}
+              </details>
+            ` : "<small class='muted'>No saved state yet.</small>"}
+          </td>
+        `;
+        activityTableBody.appendChild(row);
+      });
+    }
+
+    async function loadManifest(){
+      const res = await fetch("/lessons/manifest.json", { credentials: "same-origin" });
+      if(!res.ok){
+        toast("Manifest unavailable.");
+        return;
+      }
+      manifest = await res.json().catch(()=>null);
+      lessons = (manifest && manifest.lessons) ? manifest.lessons.slice() : [];
+      lessons.sort((a,b)=> (a.number || 0) - (b.number || 0));
+      lessonMap = {};
+      lessons.forEach(lesson => { lessonMap[lesson.id] = lesson; });
+      const options = lessons.map(lesson => ({
+        value: lesson.id,
+        label: `Lesson ${lesson.number}: ${lesson.title}`
+      }));
+      setSelectOptions(lessonSelect, options, "No lessons");
+    }
+
+    async function loadAllPupils(){
+      const res = await fetch("/api/teacher/users", { credentials: "same-origin" });
+      if(!res.ok){
+        setSelectOptions(cohortSelect, [], "No cohorts");
+        setSelectOptions(pupilSelect, [], "No pupils");
+        return;
+      }
+      const data = await res.json().catch(()=>({}));
+      const pupils = Array.isArray(data.items) ? data.items : [];
+      const cohorts = Array.from(new Set(pupils.map(p => p.cohort_year).filter(Boolean))).sort();
+      const cohortOptions = [{ value: "", label: "All cohorts" }].concat(
+        cohorts.map(c => ({ value: c, label: c }))
+      );
+      setSelectOptions(cohortSelect, cohortOptions, "All cohorts");
+      await loadPupilsForCohort();
+    }
+
+    async function loadPupilsForCohort(){
+      const cohort = cohortSelect.value;
+      const url = cohort ? `/api/teacher/users?cohort_year=${encodeURIComponent(cohort)}` : "/api/teacher/users";
+      const res = await fetch(url, { credentials: "same-origin" });
+      if(!res.ok){
+        setSelectOptions(pupilSelect, [], "No pupils");
+        return;
+      }
+      const data = await res.json().catch(()=>({}));
+      const pupils = Array.isArray(data.items) ? data.items : [];
+      const options = pupils.map(p => ({
+        value: p.username,
+        label: `${p.username} - ${p.name}`
+      }));
+      setSelectOptions(pupilSelect, options, "No pupils");
+    }
+
+    async function loadOverview(){
+      const cohort = cohortSelect.value;
+      const url = cohort ? `/api/teacher/overview?cohort_year=${encodeURIComponent(cohort)}` : "/api/teacher/overview";
+      const res = await fetch(url, { credentials: "same-origin" });
+      if(!res.ok){
+        overviewTableBody.innerHTML = "<tr><td colspan='4'>Overview unavailable.</td></tr>";
+        return;
+      }
+      overviewData = await res.json().catch(()=>null);
+      renderOverview();
+    }
+
+    async function loadPupilLesson(){
+      const username = pupilSelect.value;
+      const lessonId = lessonSelect.value;
+      if(!username || !lessonId){
+        activityTableBody.innerHTML = "<tr><td colspan='4'>Select a pupil and lesson.</td></tr>";
+        teacherNotes.value = "";
+        return;
+      }
+      const res = await fetch(`/api/teacher/pupil/${encodeURIComponent(username)}/lesson/${encodeURIComponent(lessonId)}`, {
+        credentials: "same-origin"
+      });
+      if(!res.ok){
+        activityTableBody.innerHTML = "<tr><td colspan='4'>Unable to load pupil data.</td></tr>";
+        return;
+      }
+      const data = await res.json().catch(()=>({}));
+      teacherNotes.value = data.teacher_notes || "";
+      renderActivities(data);
+    }
+
+    async function saveNotes(){
+      const auth = await window.tlacAuthReady;
+      if(!auth){
+        toast("Not signed in.");
+        return;
+      }
+      const username = pupilSelect.value;
+      if(!username){
+        toast("Select a pupil first.");
+        return;
+      }
+      const res = await fetch(`/api/teacher/pupil/${encodeURIComponent(username)}/notes`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": auth.csrf_token
+        },
+        credentials: "same-origin",
+        body: JSON.stringify({ teacher_notes: teacherNotes.value })
+      });
+      if(res.ok){
+        toast("Notes saved.");
+      } else {
+        toast("Unable to save notes.");
+      }
+    }
+
+    async function toggleMark(activityId, currentStatus){
+      const auth = await window.tlacAuthReady;
+      if(!auth){
+        toast("Not signed in.");
+        return;
+      }
+      const username = pupilSelect.value;
+      const lessonId = lessonSelect.value;
+      if(!username || !lessonId){
+        toast("Select a pupil and lesson first.");
+        return;
+      }
+      const nextStatus = currentStatus === "complete" ? "incomplete" : "complete";
+      const res = await fetch("/api/teacher/mark", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": auth.csrf_token
+        },
+        credentials: "same-origin",
+        body: JSON.stringify({
+          username,
+          lesson_id: lessonId,
+          activity_id: activityId,
+          status: nextStatus
+        })
+      });
+      if(res.ok){
+        toast("Marked.");
+        await loadOverview();
+        await loadPupilLesson();
+      } else {
+        toast("Unable to mark activity.");
+      }
+    }
+
+    function openHistory(activityId){
+      const username = pupilSelect.value;
+      const lessonId = lessonSelect.value;
+      if(!username || !lessonId){
+        toast("Select a pupil and lesson first.");
+        return;
+      }
+      const params = new URLSearchParams({
+        username,
+        lesson_id: lessonId
+      });
+      if(activityId){
+        params.set("activity_id", activityId);
+      }
+      window.location.href = `/teacher-history.html?${params.toString()}`;
+    }
+
+    activityTableBody.addEventListener("click", (e)=>{
+      const btn = e.target.closest("button[data-action]");
+      if(!btn) return;
+      const action = btn.dataset.action;
+      const activityId = btn.dataset.activity;
+      if(action === "toggle"){
+        const current = btn.textContent.includes("incomplete") ? "complete" : "incomplete";
+        toggleMark(activityId, current);
+        return;
+      }
+      if(action === "history"){
+        openHistory(activityId);
+      }
+    });
+
+    cohortSelect.addEventListener("change", async ()=>{
+      await loadPupilsForCohort();
+      await loadOverview();
+      await loadPupilLesson();
+    });
+    lessonSelect.addEventListener("change", ()=>{
+      renderOverview();
+      loadPupilLesson();
+    });
+    pupilSelect.addEventListener("change", loadPupilLesson);
+    refreshBtn.addEventListener("click", loadOverview);
+    saveNotesBtn.addEventListener("click", saveNotes);
+    exportLessonBtn.addEventListener("click", ()=>{
+      const lessonId = lessonSelect.value;
+      if(!lessonId){
+        toast("Select a lesson.");
+        return;
+      }
+      const cohort = cohortSelect.value;
+      const url = cohort
+        ? `/api/teacher/export/lesson/${encodeURIComponent(lessonId)}?cohort_year=${encodeURIComponent(cohort)}`
+        : `/api/teacher/export/lesson/${encodeURIComponent(lessonId)}`;
+      window.location.href = url;
+    });
+    exportPupilBtn.addEventListener("click", ()=>{
+      const username = pupilSelect.value;
+      if(!username){
+        toast("Select a pupil.");
+        return;
+      }
+      window.location.href = `/api/teacher/export/pupil/${encodeURIComponent(username)}`;
+    });
+
+    async function init(){
+      await loadManifest();
+      await loadAllPupils();
+      await loadOverview();
+      await loadPupilLesson();
+    }
+
+    init();
+  </script>
+</body>
+</html>

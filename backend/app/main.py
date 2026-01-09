@@ -1,19 +1,21 @@
 import csv
 import io
+import json
+import os
 import re
 import secrets
 import time
 from datetime import datetime, timedelta, timezone
 from urllib.parse import quote
 
-from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile
+from fastapi import Depends, FastAPI, File, HTTPException, Request, Response, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
 from .config import CSRF_HEADER_NAME, SESSION_COOKIE_NAME, SESSION_TTL_MINUTES
 from .db import SessionLocal, engine, get_db
-from .models import ActivityRevision, ActivityState, Base, Session as AuthSession, User
+from .models import ActivityMark, ActivityRevision, ActivityState, Base, Session as AuthSession, User
 from .rate_limit import LoginLimiter, compute_lock_seconds
 from .security import hash_password, verify_password
 
@@ -23,6 +25,9 @@ app = FastAPI(
 )
 
 login_limiter = LoginLimiter()
+MANIFEST_PATH = os.getenv("LESSON_MANIFEST_PATH", "/srv/lessons/manifest.json")
+_manifest_cache = None
+_manifest_mtime = None
 
 
 def utcnow():
@@ -72,6 +77,15 @@ def activity_revision_public(rev: ActivityRevision) -> dict:
     }
 
 
+def activity_mark_public(mark: ActivityMark) -> dict:
+    return {
+        "lesson_id": mark.lesson_id,
+        "activity_id": mark.activity_id,
+        "status": mark.status,
+        "updated_at": mark.updated_at.isoformat() if mark.updated_at else None,
+    }
+
+
 def valid_lesson_id(lesson_id: str) -> bool:
     return bool(re.match(r"^lesson-\d+$", lesson_id))
 
@@ -94,6 +108,38 @@ def parse_client_time(value):
         except Exception:
             return None
     return None
+
+
+def load_manifest():
+    global _manifest_cache, _manifest_mtime
+    try:
+        mtime = os.path.getmtime(MANIFEST_PATH)
+    except OSError:
+        return None
+    if _manifest_cache is not None and _manifest_mtime == mtime:
+        return _manifest_cache
+    try:
+        with open(MANIFEST_PATH, "r", encoding="utf-8") as handle:
+            _manifest_cache = json.load(handle)
+            _manifest_mtime = mtime
+            return _manifest_cache
+    except Exception:
+        return None
+
+
+def lesson_index(manifest):
+    lessons = (manifest or {}).get("lessons") or []
+    return {lesson.get("id"): lesson for lesson in lessons if lesson.get("id")}
+
+
+def lesson_activity_map(lesson):
+    return {activity.get("id"): activity for activity in (lesson or {}).get("activities") or []}
+
+
+def objective_texts_for_activity(lesson, activity):
+    objective_lookup = {obj.get("id"): obj.get("text") for obj in (lesson or {}).get("objectives") or []}
+    ids = (activity or {}).get("objectiveIds") or []
+    return [objective_lookup.get(obj_id, obj_id) for obj_id in ids]
 
 
 def create_session(db: Session, user: User, request: Request) -> AuthSession:
@@ -222,10 +268,14 @@ async def auth_middleware(request: Request, call_next):
         token = request.cookies.get(SESSION_COOKIE_NAME)
         if token:
             session = db.get(AuthSession, token)
-            if session and session.expires_at <= utcnow():
-                db.delete(session)
-                db.commit()
-                session = None
+            if session and session.expires_at:
+                expires_at = session.expires_at
+                if expires_at.tzinfo is None:
+                    expires_at = expires_at.replace(tzinfo=timezone.utc)
+                if expires_at <= utcnow():
+                    db.delete(session)
+                    db.commit()
+                    session = None
             if session:
                 user = db.get(User, session.user_id)
                 if user and not user.active:
@@ -449,14 +499,16 @@ def save_activity_state(
 
 
 @app.get("/api/teacher/users")
-def list_pupils(request: Request, db: Session = Depends(get_db)):
+def list_pupils(
+    request: Request,
+    cohort_year: str = "",
+    db: Session = Depends(get_db),
+):
     require_teacher(request)
-    pupils = (
-        db.query(User)
-        .filter(User.role == "pupil", User.active.is_(True))
-        .order_by(User.username.asc())
-        .all()
-    )
+    query = db.query(User).filter(User.role == "pupil", User.active.is_(True))
+    if cohort_year:
+        query = query.filter(User.cohort_year == cohort_year)
+    pupils = query.order_by(User.username.asc()).all()
     return {"items": [user_public(pupil) for pupil in pupils]}
 
 
@@ -490,6 +542,306 @@ def teacher_revisions(
         query = query.filter(ActivityRevision.activity_id == activity_id)
     revisions = query.order_by(ActivityRevision.created_at.desc()).limit(limit).all()
     return {"items": [activity_revision_public(rev) for rev in revisions]}
+
+
+@app.get("/api/teacher/overview")
+def teacher_overview(
+    request: Request,
+    cohort_year: str = "",
+    db: Session = Depends(get_db),
+):
+    require_teacher(request)
+    manifest = load_manifest() or {}
+    lessons = (manifest.get("lessons") or []) if isinstance(manifest, dict) else []
+    lessons_sorted = sorted(lessons, key=lambda l: l.get("number") or 0)
+    totals = {lesson.get("id"): len(lesson.get("activities") or []) for lesson in lessons_sorted}
+
+    query = db.query(User).filter(User.role == "pupil", User.active.is_(True))
+    if cohort_year:
+        query = query.filter(User.cohort_year == cohort_year)
+    pupils = query.order_by(User.username.asc()).all()
+    pupil_map = {pupil.id: pupil for pupil in pupils}
+    completion = {
+        pupil.username: {
+            lesson.get("id"): {"completed": 0, "total": totals.get(lesson.get("id"), 0)}
+            for lesson in lessons_sorted
+        }
+        for pupil in pupils
+    }
+
+    if pupils:
+        marks = (
+            db.query(ActivityMark)
+            .filter(ActivityMark.user_id.in_(pupil_map.keys()), ActivityMark.status == "complete")
+            .all()
+        )
+        for mark in marks:
+            pupil = pupil_map.get(mark.user_id)
+            if not pupil:
+                continue
+            lesson_id = mark.lesson_id
+            if lesson_id not in totals:
+                continue
+            completion[pupil.username][lesson_id]["completed"] += 1
+
+    return {
+        "lessons": [
+            {
+                "id": lesson.get("id"),
+                "number": lesson.get("number"),
+                "title": lesson.get("title"),
+                "total_activities": totals.get(lesson.get("id"), 0),
+            }
+            for lesson in lessons_sorted
+        ],
+        "pupils": [user_public(pupil) for pupil in pupils],
+        "completion": completion,
+    }
+
+
+@app.get("/api/teacher/pupil/{username}/lesson/{lesson_id}")
+def pupil_lesson_detail(
+    request: Request,
+    username: str,
+    lesson_id: str,
+    db: Session = Depends(get_db),
+):
+    require_teacher(request)
+    username = normalize_username(username)
+    if not username or not valid_lesson_id(lesson_id):
+        raise HTTPException(status_code=400, detail="Invalid username or lesson.")
+    pupil = db.query(User).filter(User.username == username).first()
+    if not pupil:
+        raise HTTPException(status_code=404, detail="Pupil not found.")
+
+    states = (
+        db.query(ActivityState)
+        .filter(ActivityState.user_id == pupil.id, ActivityState.lesson_id == lesson_id)
+        .order_by(ActivityState.activity_id.asc())
+        .all()
+    )
+    marks = (
+        db.query(ActivityMark)
+        .filter(ActivityMark.user_id == pupil.id, ActivityMark.lesson_id == lesson_id)
+        .order_by(ActivityMark.activity_id.asc())
+        .all()
+    )
+
+    return {
+        "pupil": user_public(pupil),
+        "teacher_notes": pupil.teacher_notes or "",
+        "states": [activity_state_public(state) for state in states],
+        "marks": [activity_mark_public(mark) for mark in marks],
+    }
+
+
+@app.post("/api/teacher/mark")
+def set_activity_mark(request: Request, payload: dict, db: Session = Depends(get_db)):
+    csrf_guard(request)
+    require_teacher(request)
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="Invalid payload.")
+    username = normalize_username(payload.get("username", ""))
+    lesson_id = payload.get("lesson_id", "")
+    activity_id = payload.get("activity_id", "")
+    status = (payload.get("status") or "").strip().lower()
+    if status not in {"complete", "incomplete"}:
+        raise HTTPException(status_code=400, detail="Invalid status.")
+    if not username or not valid_lesson_id(lesson_id) or not valid_activity_id(activity_id):
+        raise HTTPException(status_code=400, detail="Invalid lesson or activity id.")
+    pupil = db.query(User).filter(User.username == username).first()
+    if not pupil:
+        raise HTTPException(status_code=404, detail="Pupil not found.")
+
+    now = utcnow()
+    mark = (
+        db.query(ActivityMark)
+        .filter(
+            ActivityMark.user_id == pupil.id,
+            ActivityMark.lesson_id == lesson_id,
+            ActivityMark.activity_id == activity_id,
+        )
+        .first()
+    )
+    if mark:
+        mark.status = status
+        mark.updated_at = now
+    else:
+        mark = ActivityMark(
+            user_id=pupil.id,
+            lesson_id=lesson_id,
+            activity_id=activity_id,
+            status=status,
+        )
+        db.add(mark)
+    db.commit()
+    return {"ok": True, "mark": activity_mark_public(mark)}
+
+
+@app.post("/api/teacher/pupil/{username}/notes")
+def update_pupil_notes(
+    request: Request,
+    username: str,
+    payload: dict,
+    db: Session = Depends(get_db),
+):
+    csrf_guard(request)
+    require_teacher(request)
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="Invalid payload.")
+    pupil = db.query(User).filter(User.username == normalize_username(username)).first()
+    if not pupil:
+        raise HTTPException(status_code=404, detail="Pupil not found.")
+    notes = (payload.get("teacher_notes", "") or "").strip() or None
+    pupil.teacher_notes = notes
+    db.commit()
+    return {"ok": True, "teacher_notes": pupil.teacher_notes or ""}
+
+
+@app.get("/api/teacher/export/lesson/{lesson_id}")
+def export_lesson_csv(
+    request: Request,
+    lesson_id: str,
+    cohort_year: str = "",
+    db: Session = Depends(get_db),
+):
+    require_teacher(request)
+    if not valid_lesson_id(lesson_id):
+        raise HTTPException(status_code=400, detail="Invalid lesson id.")
+    manifest = load_manifest()
+    if not manifest:
+        raise HTTPException(status_code=500, detail="Lesson manifest unavailable.")
+    lessons = lesson_index(manifest)
+    lesson = lessons.get(lesson_id)
+    if not lesson:
+        raise HTTPException(status_code=404, detail="Lesson not found.")
+
+    query = db.query(User).filter(User.role == "pupil", User.active.is_(True))
+    if cohort_year:
+        query = query.filter(User.cohort_year == cohort_year)
+    pupils = query.order_by(User.username.asc()).all()
+    pupil_ids = [pupil.id for pupil in pupils]
+
+    marks = {}
+    if pupil_ids:
+        for mark in (
+            db.query(ActivityMark)
+            .filter(
+                ActivityMark.user_id.in_(pupil_ids),
+                ActivityMark.lesson_id == lesson_id,
+            )
+            .all()
+        ):
+            marks[(mark.user_id, mark.activity_id)] = mark
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(
+        [
+            "username",
+            "name",
+            "cohort_year",
+            "lesson_id",
+            "lesson_title",
+            "activity_id",
+            "activity_title",
+            "objectives",
+            "status",
+            "marked_at",
+        ]
+    )
+
+    activity_map = lesson_activity_map(lesson)
+    for pupil in pupils:
+        for activity_id, activity in activity_map.items():
+            mark = marks.get((pupil.id, activity_id))
+            status = mark.status if mark else "incomplete"
+            marked_at = mark.updated_at.isoformat() if mark and mark.updated_at else ""
+            objectives = objective_texts_for_activity(lesson, activity)
+            writer.writerow(
+                [
+                    pupil.username,
+                    pupil.name,
+                    pupil.cohort_year or "",
+                    lesson_id,
+                    lesson.get("title") or "",
+                    activity_id,
+                    activity.get("title") or "",
+                    " | ".join(objectives),
+                    status,
+                    marked_at,
+                ]
+            )
+
+    filename = f"lesson-{lesson_id}-export.csv"
+    return Response(
+        output.getvalue(),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@app.get("/api/teacher/export/pupil/{username}")
+def export_pupil_csv(
+    request: Request,
+    username: str,
+    db: Session = Depends(get_db),
+):
+    require_teacher(request)
+    username = normalize_username(username)
+    if not username:
+        raise HTTPException(status_code=400, detail="Invalid username.")
+    manifest = load_manifest()
+    if not manifest:
+        raise HTTPException(status_code=500, detail="Lesson manifest unavailable.")
+    lessons = (manifest.get("lessons") or []) if isinstance(manifest, dict) else []
+    pupil = db.query(User).filter(User.username == username).first()
+    if not pupil:
+        raise HTTPException(status_code=404, detail="Pupil not found.")
+
+    marks = {}
+    for mark in db.query(ActivityMark).filter(ActivityMark.user_id == pupil.id).all():
+        marks[(mark.lesson_id, mark.activity_id)] = mark
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(
+        [
+            "lesson_id",
+            "lesson_title",
+            "activity_id",
+            "activity_title",
+            "objectives",
+            "status",
+            "marked_at",
+        ]
+    )
+
+    for lesson in sorted(lessons, key=lambda l: l.get("number") or 0):
+        activity_map = lesson_activity_map(lesson)
+        for activity_id, activity in activity_map.items():
+            mark = marks.get((lesson.get("id"), activity_id))
+            status = mark.status if mark else "incomplete"
+            marked_at = mark.updated_at.isoformat() if mark and mark.updated_at else ""
+            objectives = objective_texts_for_activity(lesson, activity)
+            writer.writerow(
+                [
+                    lesson.get("id") or "",
+                    lesson.get("title") or "",
+                    activity_id,
+                    activity.get("title") or "",
+                    " | ".join(objectives),
+                    status,
+                    marked_at,
+                ]
+            )
+
+    filename = f"pupil-{pupil.username}-export.csv"
+    return Response(
+        output.getvalue(),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 @app.post("/api/admin/bootstrap")
