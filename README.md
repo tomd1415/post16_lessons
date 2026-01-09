@@ -153,6 +153,9 @@ Offline fallback: set `RUNNER_IMAGE=post16_lessons-api` and `RUNNER_AUTO_PULL=0`
 
 Diagnostics (teacher/admin only):
 - `https://localhost:8443/api/python/diagnostics` shows runner config, socket status, and Docker client errors.
+Implementation note: The runner executes code via an inline bootstrap (`python -c ...`) with a base64 payload.
+This avoids intermittent `can't open file '/tmp/main.py'` errors caused by relying on Docker archive uploads into tmpfs.
+Do not switch back to file-based execution without a reliable pre-run file injection step.
 
 ## Link registry tooling (Phase 5)
 Handbook links live in the manifest `linksRegistry.items`. Teachers can set replacement URLs or local copies in:

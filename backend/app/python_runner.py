@@ -328,6 +328,64 @@ def _build_archive(code: str, files: List[dict]) -> bytes:
     return buf.read()
 
 
+def _build_exec_command(code: str) -> tuple[list[str], dict]:
+    runner_bootstrap = (
+        "import base64,os,shutil\n"
+        "payload=os.environ.get('TLAC_CODE_B64','')\n"
+        "text=base64.b64decode(payload.encode('ascii')).decode('utf-8','replace') if payload else ''\n"
+        "path='/tmp/main.py'\n"
+        "try:\n"
+        "    with open(path,'w',encoding='utf-8') as handle:\n"
+        "        handle.write(text)\n"
+        "except Exception:\n"
+        "    pass\n"
+        "try:\n"
+        "    os.chdir('/tmp')\n"
+        "except Exception:\n"
+        "    pass\n"
+        "cwd=os.getcwd()\n"
+        "def _snapshot(root):\n"
+        "    files=set()\n"
+        "    for base, _, names in os.walk(root):\n"
+        "        for name in names:\n"
+        "            full=os.path.join(base,name)\n"
+        "            try:\n"
+        "                rel=os.path.relpath(full, root)\n"
+        "            except Exception:\n"
+        "                rel=name\n"
+        "            files.add(rel)\n"
+        "    return files\n"
+        "before=_snapshot(cwd)\n"
+        "globals_dict={'__name__':'__main__','__file__':path}\n"
+        "exec(compile(text, path, 'exec'), globals_dict)\n"
+        "after=_snapshot(cwd)\n"
+        "if cwd != '/tmp':\n"
+        "    for rel in sorted(after - before):\n"
+        "        src=os.path.join(cwd, rel)\n"
+        "        dst=os.path.join('/tmp', rel)\n"
+        "        try:\n"
+        "            dirpath=os.path.dirname(dst)\n"
+        "            if dirpath:\n"
+        "                os.makedirs(dirpath, exist_ok=True)\n"
+        "            shutil.copy2(src, dst)\n"
+        "        except Exception:\n"
+        "            pass\n"
+    )
+    command = [
+        "timeout",
+        "-s",
+        "SIGKILL",
+        f"{config.RUNNER_TIMEOUT_SEC}s",
+        "python",
+        "-c",
+        runner_bootstrap,
+    ]
+    env = {
+        "TLAC_CODE_B64": base64.b64encode(code.encode("utf-8")).decode("ascii"),
+    }
+    return command, env
+
+
 def _read_archive(stream, max_bytes: int) -> bytes:
     buf = io.BytesIO()
     size = 0
@@ -378,28 +436,7 @@ def run_python(code: str, files: List[dict]) -> dict:
     tmpfs_opts = {
         "/tmp": f"rw,mode=1777,size={config.RUNNER_TMPFS_MB}m",
     }
-    runner_bootstrap = (
-        "import base64,os\n"
-        "payload=os.environ.get('TLAC_CODE_B64','')\n"
-        "text=base64.b64decode(payload.encode('ascii')).decode('utf-8','replace') if payload else ''\n"
-        "path='/tmp/main.py'\n"
-        "try:\n"
-        "    with open(path,'w',encoding='utf-8') as handle:\n"
-        "        handle.write(text)\n"
-        "except Exception:\n"
-        "    pass\n"
-        "globals_dict={'__name__':'__main__','__file__':path}\n"
-        "exec(compile(text, path, 'exec'), globals_dict)\n"
-    )
-    exec_command = [
-        "timeout",
-        "-s",
-        "SIGKILL",
-        f"{config.RUNNER_TIMEOUT_SEC}s",
-        "python",
-        "-c",
-        runner_bootstrap,
-    ]
+    exec_command, exec_env = _build_exec_command(code)
     nano_cpus = max(1, int(config.RUNNER_CPUS * 1_000_000_000))
     host_config = client.create_host_config(
         network_mode="none",
@@ -442,15 +479,26 @@ def run_python(code: str, files: List[dict]) -> dict:
             environment={
                 "PYTHONDONTWRITEBYTECODE": "1",
                 "PYTHONUNBUFFERED": "1",
-                "TLAC_CODE_B64": base64.b64encode(code.encode("utf-8")).decode("ascii"),
+                **exec_env,
             },
         )
         exec_id = exec_info.get("Id")
         if not exec_id:
             raise RunnerError("Failed to start runner process.")
         exec_output = client.exec_start(exec_id, demux=True)
+        deadline = time.monotonic() + config.RUNNER_TIMEOUT_SEC + 2
         exec_result = client.exec_inspect(exec_id)
+        while exec_result.get("Running") and time.monotonic() < deadline:
+            time.sleep(0.05)
+            exec_result = client.exec_inspect(exec_id)
         exit_code = exec_result.get("ExitCode")
+        if exec_result.get("Running"):
+            timed_out = True
+            try:
+                client.kill(container_id)
+            except Exception:
+                pass
+            exit_code = 137
 
         if isinstance(exec_output, tuple):
             stdout_bytes, stderr_bytes = exec_output

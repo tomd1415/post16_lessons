@@ -1,3 +1,6 @@
+import base64
+
+import pytest
 from backend.tests.utils import login, seed_user
 
 
@@ -60,3 +63,41 @@ def test_python_diagnostics_teacher_access(client, db_session):
     assert res.status_code == 200
     data = res.json()
     assert "runner_enabled" in data
+
+
+def test_runner_exec_command_uses_inline_code():
+    from backend.app import python_runner
+
+    code = "print('hello')"
+    cmd, env = python_runner._build_exec_command(code)
+    assert len(cmd) >= 7
+    assert cmd[4] == "python"
+    assert cmd[5] == "-c"
+    assert all(token != "/tmp/main.py" for token in cmd)
+    assert "/tmp/main.py" in cmd[6]
+    assert "os.chdir('/tmp')" in cmd[6]
+    assert "os.walk" in cmd[6]
+    assert "shutil.copy2" in cmd[6]
+    decoded = base64.b64decode(env["TLAC_CODE_B64"]).decode("utf-8")
+    assert decoded == code
+
+
+def test_sanitize_files_rejects_absolute_path():
+    from backend.app import python_runner
+
+    with pytest.raises(ValueError):
+        python_runner._sanitize_files([{"path": "/etc/passwd", "content": "x"}])
+
+
+def test_sanitize_files_rejects_parent_path():
+    from backend.app import python_runner
+
+    with pytest.raises(ValueError):
+        python_runner._sanitize_files([{"path": "../notes.txt", "content": "x"}])
+
+
+def test_sanitize_files_allows_simple_path():
+    from backend.app import python_runner
+
+    files = python_runner._sanitize_files([{"path": "notes.txt", "content": "hi"}])
+    assert files[0]["path"] == "notes.txt"
