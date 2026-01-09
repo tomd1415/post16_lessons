@@ -38,6 +38,24 @@ Purpose: Provide a single source of truth for the course catalogue, lesson metad
 - Lessons 2-15 are populated from the teacher handbook; lesson shells remain placeholders until packs are built.
 - The catalogue UI uses the manifest directly; there is no additional build step.
 
+## Activity scaffold convention (future lessons)
+New activity pages should follow the scaffold template produced by `scripts/new_lesson_pack.py`.
+This template:
+- Breaks the task into structured steps (quick checks, guided notes, main task, reflection).
+- Includes at least three auto-marked checks (instant feedback), with more added when helpful.
+- Includes space for pupil reflections and a teacher-only answer guidance block.
+- Autosaves fields using the shared `store` state key format.
+
+Use `web/core/activity-scaffold.js` to handle quick checks + autosave for scaffolded activities.
+
+## Teacher resources (lesson plan, printable cards, answer guidance)
+`scripts/new_lesson_pack.py` will create these pages automatically if missing:
+- `/lessons/<lesson-id>/teacher/lesson-plan.html`
+- `/lessons/<lesson-id>/teacher/print-cards.html`
+- `/lessons/<lesson-id>/teacher/answer-key.html`
+
+If a lesson is missing any of these `teacherResources` entries, the script inserts the defaults in the manifest.
+
 ## Link registry item
 Fields in `linksRegistry.items`:
 - `id` (string, unique)

@@ -212,6 +212,20 @@ hr.sep{border:0; border-top:1px solid var(--border); margin: 16px 0}
 .state-text{white-space: pre-wrap}
 .state-null{color: var(--muted); font-style: italic}
 
+.choice{
+  display:flex;
+  align-items:flex-start;
+  gap:8px;
+  padding: 6px 0;
+}
+.choice input{margin-top:4px}
+.checklist label{
+  display:flex;
+  align-items:flex-start;
+  gap:8px;
+  padding: 4px 0;
+}
+
 .input, textarea, select{
   width:100%;
   border:1px solid var(--border);

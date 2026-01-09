@@ -451,17 +451,60 @@
         }
       ],
       "resources": [],
-      "teacherResources": [],
+      "teacherResources": [
+        {
+          "title": "Lesson plan",
+          "path": "/lessons/lesson-2/teacher/lesson-plan.html"
+        },
+        {
+          "title": "Printable cards",
+          "path": "/lessons/lesson-2/teacher/print-cards.html"
+        },
+        {
+          "title": "Answer guidance",
+          "path": "/lessons/lesson-2/teacher/answer-key.html"
+        }
+      ],
       "activities": [
         {
           "id": "a01",
+          "title": "Formal vs natural language",
+          "path": "/lessons/lesson-2/activities/01-formal-vs-natural-language.html",
+          "objectiveIds": [
+            "L2-O1"
+          ],
+          "expectedEvidence": "Quick checks completed and a short explanation in the notes.",
+          "rubricHook": null
+        },
+        {
+          "id": "a02",
+          "title": "Source code vs machine code",
+          "path": "/lessons/lesson-2/activities/02-source-vs-machine-code.html",
+          "objectiveIds": [
+            "L2-O2"
+          ],
+          "expectedEvidence": "Correct identification plus summary notes.",
+          "rubricHook": null
+        },
+        {
+          "id": "a03",
+          "title": "Software development steps",
+          "path": "/lessons/lesson-2/activities/03-software-development-steps.html",
+          "objectiveIds": [
+            "L2-O4"
+          ],
+          "expectedEvidence": "Ordered steps and brief descriptions.",
+          "rubricHook": null
+        },
+        {
+          "id": "a04",
           "title": "Specification for a Game",
-          "path": "/lessons/lesson-2/activities/01-specification-for-a-game.html",
+          "path": "/lessons/lesson-2/activities/04-specification-for-a-game.html",
           "objectiveIds": [
             "L2-O3",
             "L2-O4"
           ],
-          "expectedEvidence": "Team specification with grouped, numbered requirements.",
+          "expectedEvidence": "Numbered specification with grouped requirements.",
           "rubricHook": null
         }
       ]
@@ -502,7 +545,20 @@
         }
       ],
       "resources": [],
-      "teacherResources": [],
+      "teacherResources": [
+        {
+          "title": "Lesson plan",
+          "path": "/lessons/lesson-3/teacher/lesson-plan.html"
+        },
+        {
+          "title": "Printable cards",
+          "path": "/lessons/lesson-3/teacher/print-cards.html"
+        },
+        {
+          "title": "Answer guidance",
+          "path": "/lessons/lesson-3/teacher/answer-key.html"
+        }
+      ],
       "activities": []
     },
     {
@@ -533,7 +589,20 @@
         }
       ],
       "resources": [],
-      "teacherResources": [],
+      "teacherResources": [
+        {
+          "title": "Lesson plan",
+          "path": "/lessons/lesson-4/teacher/lesson-plan.html"
+        },
+        {
+          "title": "Printable cards",
+          "path": "/lessons/lesson-4/teacher/print-cards.html"
+        },
+        {
+          "title": "Answer guidance",
+          "path": "/lessons/lesson-4/teacher/answer-key.html"
+        }
+      ],
       "activities": []
     },
     {
@@ -564,7 +633,20 @@
         }
       ],
       "resources": [],
-      "teacherResources": [],
+      "teacherResources": [
+        {
+          "title": "Lesson plan",
+          "path": "/lessons/lesson-5/teacher/lesson-plan.html"
+        },
+        {
+          "title": "Printable cards",
+          "path": "/lessons/lesson-5/teacher/print-cards.html"
+        },
+        {
+          "title": "Answer guidance",
+          "path": "/lessons/lesson-5/teacher/answer-key.html"
+        }
+      ],
       "activities": []
     },
     {
@@ -603,7 +685,20 @@
         }
       ],
       "resources": [],
-      "teacherResources": [],
+      "teacherResources": [
+        {
+          "title": "Lesson plan",
+          "path": "/lessons/lesson-6/teacher/lesson-plan.html"
+        },
+        {
+          "title": "Printable cards",
+          "path": "/lessons/lesson-6/teacher/print-cards.html"
+        },
+        {
+          "title": "Answer guidance",
+          "path": "/lessons/lesson-6/teacher/answer-key.html"
+        }
+      ],
       "activities": []
     },
     {
@@ -630,7 +725,20 @@
         }
       ],
       "resources": [],
-      "teacherResources": [],
+      "teacherResources": [
+        {
+          "title": "Lesson plan",
+          "path": "/lessons/lesson-7/teacher/lesson-plan.html"
+        },
+        {
+          "title": "Printable cards",
+          "path": "/lessons/lesson-7/teacher/print-cards.html"
+        },
+        {
+          "title": "Answer guidance",
+          "path": "/lessons/lesson-7/teacher/answer-key.html"
+        }
+      ],
       "activities": []
     },
     {
@@ -653,7 +761,20 @@
         }
       ],
       "resources": [],
-      "teacherResources": [],
+      "teacherResources": [
+        {
+          "title": "Lesson plan",
+          "path": "/lessons/lesson-8/teacher/lesson-plan.html"
+        },
+        {
+          "title": "Printable cards",
+          "path": "/lessons/lesson-8/teacher/print-cards.html"
+        },
+        {
+          "title": "Answer guidance",
+          "path": "/lessons/lesson-8/teacher/answer-key.html"
+        }
+      ],
       "activities": []
     },
     {
@@ -680,7 +801,20 @@
         }
       ],
       "resources": [],
-      "teacherResources": [],
+      "teacherResources": [
+        {
+          "title": "Lesson plan",
+          "path": "/lessons/lesson-9/teacher/lesson-plan.html"
+        },
+        {
+          "title": "Printable cards",
+          "path": "/lessons/lesson-9/teacher/print-cards.html"
+        },
+        {
+          "title": "Answer guidance",
+          "path": "/lessons/lesson-9/teacher/answer-key.html"
+        }
+      ],
       "activities": []
     },
     {
@@ -711,7 +845,20 @@
         }
       ],
       "resources": [],
-      "teacherResources": [],
+      "teacherResources": [
+        {
+          "title": "Lesson plan",
+          "path": "/lessons/lesson-10/teacher/lesson-plan.html"
+        },
+        {
+          "title": "Printable cards",
+          "path": "/lessons/lesson-10/teacher/print-cards.html"
+        },
+        {
+          "title": "Answer guidance",
+          "path": "/lessons/lesson-10/teacher/answer-key.html"
+        }
+      ],
       "activities": []
     },
     {
@@ -746,7 +893,20 @@
         }
       ],
       "resources": [],
-      "teacherResources": [],
+      "teacherResources": [
+        {
+          "title": "Lesson plan",
+          "path": "/lessons/lesson-11/teacher/lesson-plan.html"
+        },
+        {
+          "title": "Printable cards",
+          "path": "/lessons/lesson-11/teacher/print-cards.html"
+        },
+        {
+          "title": "Answer guidance",
+          "path": "/lessons/lesson-11/teacher/answer-key.html"
+        }
+      ],
       "activities": []
     },
     {
@@ -777,7 +937,20 @@
         }
       ],
       "resources": [],
-      "teacherResources": [],
+      "teacherResources": [
+        {
+          "title": "Lesson plan",
+          "path": "/lessons/lesson-12/teacher/lesson-plan.html"
+        },
+        {
+          "title": "Printable cards",
+          "path": "/lessons/lesson-12/teacher/print-cards.html"
+        },
+        {
+          "title": "Answer guidance",
+          "path": "/lessons/lesson-12/teacher/answer-key.html"
+        }
+      ],
       "activities": []
     },
     {
@@ -804,7 +977,20 @@
         }
       ],
       "resources": [],
-      "teacherResources": [],
+      "teacherResources": [
+        {
+          "title": "Lesson plan",
+          "path": "/lessons/lesson-13/teacher/lesson-plan.html"
+        },
+        {
+          "title": "Printable cards",
+          "path": "/lessons/lesson-13/teacher/print-cards.html"
+        },
+        {
+          "title": "Answer guidance",
+          "path": "/lessons/lesson-13/teacher/answer-key.html"
+        }
+      ],
       "activities": []
     },
     {
@@ -843,7 +1029,20 @@
         }
       ],
       "resources": [],
-      "teacherResources": [],
+      "teacherResources": [
+        {
+          "title": "Lesson plan",
+          "path": "/lessons/lesson-14/teacher/lesson-plan.html"
+        },
+        {
+          "title": "Printable cards",
+          "path": "/lessons/lesson-14/teacher/print-cards.html"
+        },
+        {
+          "title": "Answer guidance",
+          "path": "/lessons/lesson-14/teacher/answer-key.html"
+        }
+      ],
       "activities": []
     },
     {
@@ -886,7 +1085,20 @@
         }
       ],
       "resources": [],
-      "teacherResources": [],
+      "teacherResources": [
+        {
+          "title": "Lesson plan",
+          "path": "/lessons/lesson-15/teacher/lesson-plan.html"
+        },
+        {
+          "title": "Printable cards",
+          "path": "/lessons/lesson-15/teacher/print-cards.html"
+        },
+        {
+          "title": "Answer guidance",
+          "path": "/lessons/lesson-15/teacher/answer-key.html"
+        }
+      ],
       "activities": []
     }
   ]
