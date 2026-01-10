@@ -39,7 +39,7 @@ def find_effective_url(item, overrides):
     return item.get("url"), "original"
 
 
-def check_http(url: str, timeout: int = 8):
+def check_http(url: str, timeout: int = 3):
     headers = {"User-Agent": "tlac-link-checker/1.0"}
     for method in ("HEAD", "GET"):
         if method == "GET":
@@ -64,6 +64,7 @@ def main():
     parser.add_argument("--overrides", default="data/link-overrides.json")
     parser.add_argument("--write-manifest", action="store_true")
     parser.add_argument("--output", default="reports/link-check.json")
+    parser.add_argument("--timeout", type=int, default=3)
     args = parser.parse_args()
 
     manifest_path = Path(args.manifest)
@@ -92,7 +93,7 @@ def main():
                 path = Path.cwd() / path
             status = "local-ok" if path.exists() else "local-missing"
         elif effective_url:
-            status, http_status = check_http(effective_url)
+            status, http_status = check_http(effective_url, timeout=args.timeout)
 
         results.append(
             {

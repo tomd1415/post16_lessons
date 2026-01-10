@@ -695,7 +695,7 @@
       "number": 5,
       "title": "Lesson 5: Performing Calculations",
       "summary": "Use Python as a calculator and learn operator precedence and expression evaluation.",
-      "status": "draft",
+      "status": "ready",
       "studentPath": "/lessons/lesson-5/student.html",
       "teacherPath": "/lessons/lesson-5/index.html",
       "timings": "Not stated in handbook",
@@ -717,7 +717,11 @@
           "text": "Understand how to use parenthesis to structure complex expressions"
         }
       ],
-      "resources": [],
+      "resources": [
+        "Browser for interactive activities",
+        "Python 3 runner (built-in) for quick checks",
+        "Paper/whiteboard for working through operator precedence"
+      ],
       "teacherResources": [
         {
           "title": "Lesson plan",
@@ -743,7 +747,20 @@
             "L5-O3",
             "L5-O4"
           ],
-          "expectedEvidence": "Completed task output and written notes.",
+          "expectedEvidence": "Target table with expressions, operator checklist, and reflection.",
+          "rubricHook": null
+        },
+        {
+          "id": "a02",
+          "title": "Evaluate Expressions",
+          "path": "/lessons/lesson-5/activities/02-evaluate-expressions.html",
+          "objectiveIds": [
+            "L5-O1",
+            "L5-O2",
+            "L5-O3",
+            "L5-O4"
+          ],
+          "expectedEvidence": "Worked evaluation steps, corrected expressions, and test runs in the runner.",
           "rubricHook": null
         }
       ]
@@ -753,7 +770,7 @@
       "number": 6,
       "title": "Lesson 6: Data Types and Variables",
       "summary": "Introduce basic data types and variables, including input and output.",
-      "status": "draft",
+      "status": "ready",
       "studentPath": "/lessons/lesson-6/student.html",
       "teacherPath": "/lessons/lesson-6/index.html",
       "timings": "Not stated in handbook",
@@ -783,7 +800,11 @@
           "text": "Use data output to a screen in a program"
         }
       ],
-      "resources": [],
+      "resources": [
+        "Browser for interactive activities",
+        "Python 3 runner (built-in) for quick checks",
+        "Paper/whiteboard for tracking variable values"
+      ],
       "teacherResources": [
         {
           "title": "Lesson plan",
@@ -811,7 +832,22 @@
             "L6-O5",
             "L6-O6"
           ],
-          "expectedEvidence": "Completed task output and written notes.",
+          "expectedEvidence": "Value-tracking table, step ordering, swap code, and runner proof.",
+          "rubricHook": null
+        },
+        {
+          "id": "a02",
+          "title": "Input and Types",
+          "path": "/lessons/lesson-6/activities/02-input-and-types.html",
+          "objectiveIds": [
+            "L6-O1",
+            "L6-O2",
+            "L6-O3",
+            "L6-O4",
+            "L6-O5",
+            "L6-O6"
+          ],
+          "expectedEvidence": "Planned prompts, typed variables, type checks, and saved runner output.",
           "rubricHook": null
         }
       ]
@@ -821,7 +857,7 @@
       "number": 7,
       "title": "Lesson 7: True or False",
       "summary": "Explore Boolean logic, operators, and evaluation order with applied examples.",
-      "status": "draft",
+      "status": "ready",
       "studentPath": "/lessons/lesson-7/student.html",
       "teacherPath": "/lessons/lesson-7/index.html",
       "timings": "Not stated in handbook",
@@ -839,7 +875,11 @@
           "text": "Understand the precedence of operators and the order of evaluation in complex expressions"
         }
       ],
-      "resources": [],
+      "resources": [
+        "Browser for search exercises",
+        "Paper/whiteboard for truth tables",
+        "Python 3 runner for Boolean expression checks"
+      ],
       "teacherResources": [
         {
           "title": "Lesson plan",
@@ -864,7 +904,7 @@
             "L7-O2",
             "L7-O3"
           ],
-          "expectedEvidence": "Completed task output and written notes.",
+          "expectedEvidence": "Search strings, found links, AND/OR/NOT mapping, and reflection notes.",
           "rubricHook": null
         },
         {
@@ -876,7 +916,7 @@
             "L7-O2",
             "L7-O3"
           ],
-          "expectedEvidence": "Completed task output and written notes.",
+          "expectedEvidence": "Filled input/output tables, Boolean rules, troubleshooting logic, and reflections.",
           "rubricHook": null
         }
       ]
@@ -886,7 +926,7 @@
       "number": 8,
       "title": "Lesson 8: Aggregate Data Types",
       "summary": "Introduce lists and tuples as aggregate data types for holding multiple items.",
-      "status": "draft",
+      "status": "ready",
       "studentPath": "/lessons/lesson-8/student.html",
       "teacherPath": "/lessons/lesson-8/index.html",
       "timings": "Not stated in handbook",
@@ -900,7 +940,11 @@
           "text": "Use aggregate data in a program like: list and tuple"
         }
       ],
-      "resources": [],
+      "resources": [
+        "Browser for interactive activities",
+        "Python 3 runner (built-in) for list/tuple tests",
+        "Paper/whiteboard for index tracing"
+      ],
       "teacherResources": [
         {
           "title": "Lesson plan",
@@ -924,7 +968,18 @@
             "L8-O1",
             "L8-O2"
           ],
-          "expectedEvidence": "Completed task output and written notes.",
+          "expectedEvidence": "Test cases, method choice, ordered steps, and runner output proving reversal.",
+          "rubricHook": null
+        },
+        {
+          "id": "a02",
+          "title": "List and Tuple Toolkit",
+          "path": "/lessons/lesson-8/activities/02-list-and-tuple-toolkit.html",
+          "objectiveIds": [
+            "L8-O1",
+            "L8-O2"
+          ],
+          "expectedEvidence": "Packed tuple/list examples, slice and append tests, and saved runner outputs.",
           "rubricHook": null
         }
       ]
@@ -934,7 +989,7 @@
       "number": 9,
       "title": "Lesson 9: Enhance Your Code",
       "summary": "Best practice for structuring and documenting code, with Python examples.",
-      "status": "draft",
+      "status": "ready",
       "studentPath": "/lessons/lesson-9/student.html",
       "teacherPath": "/lessons/lesson-9/index.html",
       "timings": "Not stated in handbook",
@@ -952,7 +1007,11 @@
           "text": "Use comments in a program"
         }
       ],
-      "resources": [],
+      "resources": [
+        "Browser for interactive examples",
+        "Python 3 runner for quick code checks",
+        "Paper/whiteboard for commenting and layout sketches"
+      ],
       "teacherResources": [
         {
           "title": "Lesson plan",
@@ -977,7 +1036,19 @@
             "L9-O2",
             "L9-O3"
           ],
-          "expectedEvidence": "Completed task output and written notes.",
+          "expectedEvidence": "Comment intent matches, planned edits, checklist ticks, and runner output of the snippet.",
+          "rubricHook": null
+        },
+        {
+          "id": "a02",
+          "title": "Refactor and Annotate",
+          "path": "/lessons/lesson-9/activities/02-refactor-and-annotate.html",
+          "objectiveIds": [
+            "L9-O1",
+            "L9-O2",
+            "L9-O3"
+          ],
+          "expectedEvidence": "Before/after code, comment plan, naming changes, and runner proof of working refactor.",
           "rubricHook": null
         }
       ]
@@ -987,7 +1058,7 @@
       "number": 10,
       "title": "Lesson 10: Conditional Statements",
       "summary": "Build logic into programs with conditionals and logic tests.",
-      "status": "draft",
+      "status": "ready",
       "studentPath": "/lessons/lesson-10/student.html",
       "teacherPath": "/lessons/lesson-10/index.html",
       "timings": "Not stated in handbook",
@@ -1009,7 +1080,11 @@
           "text": "Use IF...THEN...ELSE conditional statements in a program"
         }
       ],
-      "resources": [],
+      "resources": [
+        "Browser for interactive activities",
+        "Python 3 runner for conditional tests",
+        "Paper/whiteboard for logic tables and flow sketches"
+      ],
       "teacherResources": [
         {
           "title": "Lesson plan",
@@ -1035,7 +1110,20 @@
             "L10-O3",
             "L10-O4"
           ],
-          "expectedEvidence": "Completed task output and written notes.",
+          "expectedEvidence": "Logic table, ordered steps, tests, and runner output for age checker.",
+          "rubricHook": null
+        },
+        {
+          "id": "a02",
+          "title": "Traffic Light Logic",
+          "path": "/lessons/lesson-10/activities/02-traffic-light-logic.html",
+          "objectiveIds": [
+            "L10-O1",
+            "L10-O2",
+            "L10-O3",
+            "L10-O4"
+          ],
+          "expectedEvidence": "Truth table, IF/ELIF/ELSE plan, simulated inputs, and runner output showing branches.",
           "rubricHook": null
         }
       ]
@@ -1045,7 +1133,7 @@
       "number": 11,
       "title": "Lesson 11: Procedures and Functions",
       "summary": "Reuse code with procedures and functions; build toward later examples.",
-      "status": "draft",
+      "status": "ready",
       "studentPath": "/lessons/lesson-11/student.html",
       "teacherPath": "/lessons/lesson-11/index.html",
       "timings": "Not stated in handbook",
@@ -1071,7 +1159,11 @@
           "text": "Write and name a function in a program"
         }
       ],
-      "resources": [],
+      "resources": [
+        "Browser for interactive activities",
+        "Python 3 runner for functions and tests",
+        "Paper or whiteboard for planning parameters and return values"
+      ],
       "teacherResources": [
         {
           "title": "Lesson plan",
@@ -1098,7 +1190,21 @@
             "L11-O4",
             "L11-O5"
           ],
-          "expectedEvidence": "Completed task output and written notes.",
+          "expectedEvidence": "Divisibility map, ordered condition checks, planned tests, and runner output for fizz_buzz.",
+          "rubricHook": null
+        },
+        {
+          "id": "a02",
+          "title": "Parameterised Helper",
+          "path": "/lessons/lesson-11/activities/02-parameterised-helper.html",
+          "objectiveIds": [
+            "L11-O1",
+            "L11-O2",
+            "L11-O3",
+            "L11-O4",
+            "L11-O5"
+          ],
+          "expectedEvidence": "Function plan (name/params/return), before/after snippets, three test calls with outputs, and saved runner logs.",
           "rubricHook": null
         }
       ]
@@ -1108,7 +1214,7 @@
       "number": 12,
       "title": "Lesson 12: Loops",
       "summary": "Introduce looping structures and iteration with practical examples.",
-      "status": "draft",
+      "status": "ready",
       "studentPath": "/lessons/lesson-12/student.html",
       "teacherPath": "/lessons/lesson-12/index.html",
       "timings": "Not stated in handbook",
@@ -1130,7 +1236,11 @@
           "text": "Use iteration (looping) in a program like: for, while, repeat"
         }
       ],
-      "resources": [],
+      "resources": [
+        "Browser for interactive activities",
+        "Python 3 runner for loop experiments",
+        "Paper or whiteboard for tracing iterations and stop conditions"
+      ],
       "teacherResources": [
         {
           "title": "Lesson plan",
@@ -1156,7 +1266,7 @@
             "L12-O3",
             "L12-O4"
           ],
-          "expectedEvidence": "Completed task output and written notes.",
+          "expectedEvidence": "Ordered loop steps, growth table, chosen stop conditions, and runner output showing where the loop stops.",
           "rubricHook": null
         },
         {
@@ -1169,7 +1279,7 @@
             "L12-O3",
             "L12-O4"
           ],
-          "expectedEvidence": "Completed task output and written notes.",
+          "expectedEvidence": "Arrow plan (parts/characters), ordered draw steps, test cases, and runner output from the draw function.",
           "rubricHook": null
         }
       ]
@@ -1179,7 +1289,7 @@
       "number": 13,
       "title": "Lesson 13: Libraries",
       "summary": "Explore libraries and event handling using Pygame examples.",
-      "status": "draft",
+      "status": "ready",
       "studentPath": "/lessons/lesson-13/student.html",
       "teacherPath": "/lessons/lesson-13/index.html",
       "timings": "Not stated in handbook",
@@ -1197,7 +1307,11 @@
           "text": "Use available generic libraries like: math, random, time"
         }
       ],
-      "resources": [],
+      "resources": [
+        "Browser for interactive activities",
+        "Python 3 runner with standard libraries (random, time, json)",
+        "Pygame installed for optional event demos"
+      ],
       "teacherResources": [
         {
           "title": "Lesson plan",
@@ -1222,7 +1336,19 @@
             "L13-O2",
             "L13-O3"
           ],
-          "expectedEvidence": "Completed task output and written notes.",
+          "expectedEvidence": "Library-to-goal matches, event handler plan, quick test plan, and runner output using imported libraries.",
+          "rubricHook": null
+        },
+        {
+          "id": "a02",
+          "title": "Event Loop Demo",
+          "path": "/lessons/lesson-13/activities/02-event-loop-demo.html",
+          "objectiveIds": [
+            "L13-O1",
+            "L13-O2",
+            "L13-O3"
+          ],
+          "expectedEvidence": "Event loop sketch (init, loop, handler), mapped triggers/actions, and runner output showing simulated events handled.",
           "rubricHook": null
         }
       ]
@@ -1232,7 +1358,7 @@
       "number": 14,
       "title": "Lesson 14: Recursion",
       "summary": "Introduce recursion as functions calling themselves, with example applications.",
-      "status": "draft",
+      "status": "ready",
       "studentPath": "/lessons/lesson-14/student.html",
       "teacherPath": "/lessons/lesson-14/index.html",
       "timings": "Not stated in handbook",
@@ -1262,7 +1388,11 @@
           "text": "Parameter"
         }
       ],
-      "resources": [],
+      "resources": [
+        "Browser for interactive activities",
+        "Python 3 runner for recursion demos",
+        "Paper or whiteboard for tracing call stacks"
+      ],
       "teacherResources": [
         {
           "title": "Lesson plan",
@@ -1290,7 +1420,22 @@
             "L14-O5",
             "L14-O6"
           ],
-          "expectedEvidence": "Completed task output and written notes.",
+          "expectedEvidence": "Base/recursive plan, ordered move steps, move counts for sample n, and runner output from the recursive function.",
+          "rubricHook": null
+        },
+        {
+          "id": "a02",
+          "title": "Recursive Pattern",
+          "path": "/lessons/lesson-14/activities/02-recursive-pattern.html",
+          "objectiveIds": [
+            "L14-O1",
+            "L14-O2",
+            "L14-O3",
+            "L14-O4",
+            "L14-O5",
+            "L14-O6"
+          ],
+          "expectedEvidence": "Base/recursive description, depth plan, test outputs for multiple depths, and runner logs showing pattern generation.",
           "rubricHook": null
         }
       ]
@@ -1300,7 +1445,7 @@
       "number": 15,
       "title": "Lesson 15: Testing and Modification",
       "summary": "Cover testing, debugging, and improving programs against requirements.",
-      "status": "draft",
+      "status": "ready",
       "studentPath": "/lessons/lesson-15/student.html",
       "teacherPath": "/lessons/lesson-15/index.html",
       "timings": "Not stated in handbook",
@@ -1334,7 +1479,11 @@
           "text": "Describe the completed program, communicating purpose and value"
         }
       ],
-      "resources": [],
+      "resources": [
+        "Browser for interactive activities",
+        "Python 3 runner for debugging and tests",
+        "Sample buggy snippets and space to log defects"
+      ],
       "teacherResources": [
         {
           "title": "Lesson plan",
@@ -1363,7 +1512,23 @@
             "L15-O6",
             "L15-O7"
           ],
-          "expectedEvidence": "Completed task output and written notes.",
+          "expectedEvidence": "Issue classifications, written test cases, debug log, and runner output after fixes.",
+          "rubricHook": null
+        },
+        {
+          "id": "a02",
+          "title": "Bug Hunt and Patch",
+          "path": "/lessons/lesson-15/activities/02-bug-hunt-and-patch.html",
+          "objectiveIds": [
+            "L15-O1",
+            "L15-O2",
+            "L15-O3",
+            "L15-O4",
+            "L15-O5",
+            "L15-O6",
+            "L15-O7"
+          ],
+          "expectedEvidence": "Reproduced failures, test matrix (syntax/logic), before/after code notes, and runner logs showing fixes and enhancements.",
           "rubricHook": null
         }
       ]

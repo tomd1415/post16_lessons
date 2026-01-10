@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>a02 - Bug Hunt and Patch</title>
+  <link rel="stylesheet" href="../../../core/app.css" />
+</head>
+<body data-lesson-id="lesson-15" data-activity-id="a02">
+  <div class="topbar no-print">
+    <div class="container">
+      <div class="brand">
+        <b>a02 - Bug Hunt and Patch</b>
+        <span>Activity scaffold (structured steps + instant feedback)</span>
+      </div>
+      <div class="row">
+        <a class="pill" href="../index.html"><strong>HOME</strong> <span>Teacher hub</span></a>
+        <a class="pill" href="../student.html"><strong>STUDENT</strong> <span>Student hub</span></a>
+        <button class="btn" id="teacherToggle" type="button">Teacher mode: OFF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>a02 - Bug Hunt and Patch</h1>
+    <div class="note">
+      <b>How this works:</b> Quick checks, pick a buggy snippet, reproduce the issue, write tests, fix, and prove the fix.
+    </div>
+
+    <div class="grid cols2" style="margin-top:12px">
+      <div class="card">
+        <h2>Step 1: Quick checks</h2>
+        <p><b>Prompt 1:</b> A failing test is valuable because...</p>
+        <div data-quiz="q1" data-correct="a">
+          <label class="choice"><input type="radio" name="q1" value="a"> it proves a regression you can fix</label>
+          <label class="choice"><input type="radio" name="q1" value="b"> it means code is slow</label>
+          <label class="choice"><input type="radio" name="q1" value="c"> it can be ignored</label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn good" data-quiz-check="q1" type="button">Check</button>
+        </div>
+        <div class="note" data-quiz-feedback="q1" style="margin-top:10px; display:none"></div>
+
+        <div style="height:10px"></div>
+        <p><b>Prompt 2:</b> A syntax error is fixed by...</p>
+        <div data-quiz="q2" data-correct="b">
+          <label class="choice"><input type="radio" name="q2" value="a"> adding more tests</label>
+          <label class="choice"><input type="radio" name="q2" value="b"> correcting the code structure</label>
+          <label class="choice"><input type="radio" name="q2" value="c"> changing the hardware</label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn good" data-quiz-check="q2" type="button">Check</button>
+        </div>
+        <div class="note" data-quiz-feedback="q2" style="margin-top:10px; display:none"></div>
+
+        <div style="height:10px"></div>
+        <p><b>Prompt 3:</b> To prove a logic fix you should...</p>
+        <div data-quiz="q3" data-correct="c">
+          <label class="choice"><input type="radio" name="q3" value="a"> delete the failing test</label>
+          <label class="choice"><input type="radio" name="q3" value="b"> only run happy-path data</label>
+          <label class="choice"><input type="radio" name="q3" value="c"> rerun targeted tests and new edge cases</label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn good" data-quiz-check="q3" type="button">Check</button>
+        </div>
+        <div class="note" data-quiz-feedback="q3" style="margin-top:10px; display:none"></div>
+      </div>
+
+      <div class="card">
+        <h2>Step 2: Pick a snippet and reproduce</h2>
+        <p>Paste or describe the buggy code and how to trigger it.</p>
+        <textarea data-field="bug_snippet" placeholder="Paste code or describe the bug"></textarea>
+        <table class="table" style="margin-top:10px">
+          <thead><tr><th>Input/steps</th><th>Observed failure</th></tr></thead>
+          <tbody>
+            <tr><td><input type="text" data-field="repro_steps" placeholder="steps to reproduce" /></td><td><input type="text" data-field="repro_failure" placeholder="error or wrong output" /></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 3: Test matrix</h2>
+      <div class="note"><b>Learning objective:</b> Find and fix syntax/logic errors and verify against requirements.</div>
+      <table class="table">
+        <thead><tr><th>Test</th><th>Input/condition</th><th>Expected</th><th>Type</th><th>Pass?</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><input type="text" data-field="test1_in" placeholder="boundary" /></td><td><input type="text" data-field="test1_exp" /></td><td><input type="text" data-field="test1_type" placeholder="syntax/logic/regression" /></td><td><input type="checkbox" aria-label="test1 pass"></td></tr>
+          <tr><td>2</td><td><input type="text" data-field="test2_in" /></td><td><input type="text" data-field="test2_exp" /></td><td><input type="text" data-field="test2_type" /></td><td><input type="checkbox" aria-label="test2 pass"></td></tr>
+          <tr><td>3</td><td><input type="text" data-field="test3_in" /></td><td><input type="text" data-field="test3_exp" /></td><td><input type="text" data-field="test3_type" /></td><td><input type="checkbox" aria-label="test3 pass"></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Checklist</h3>
+      <ul class="list checklist">
+        <li><label><input type="checkbox" data-check="repro"> I can reproduce the failure.</label></li>
+        <li><label><input type="checkbox" data-check="assert"> I added an assert or print to catch it.</label></li>
+        <li><label><input type="checkbox" data-check="fix"> I planned a fix and a retest.</label></li>
+        <li><label><input type="checkbox" data-check="enhance"> I noted one enhancement idea.</label></li>
+      </ul>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 4: Patch and prove</h2>
+      <div class="note">Apply the fix, rerun tests, and capture outputs before/after.</div>
+      <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn good" id="runBtn" type="button">Run code</button>
+        <button class="btn" id="saveFilesBtn" type="button">Save files</button>
+        <button class="btn bad" id="resetBtn" type="button">Reset</button>
+      </div>
+
+      <div class="grid cols2" style="margin-top:12px">
+        <div class="card">
+          <h3>Output</h3>
+          <label for="stdout"><b>Stdout</b></label>
+          <pre id="stdout" class="code-output"></pre>
+          <label for="stderr"><b>Stderr</b></label>
+          <pre id="stderr" class="code-output warn"></pre>
+          <div id="runMeta" class="note" style="margin-top:10px; display:none"></div>
+        </div>
+        <div class="card">
+          <h3>Run files</h3>
+          <div id="runFiles" class="file-list"></div>
+          <div style="height:8px"></div>
+          <h3>Saved files</h3>
+          <div id="savedFiles" class="file-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 5: Reflection</h2>
+      <p>What was the root cause? How did tests help? What enhancement would you ship next?</p>
+      <textarea data-field="reflection" placeholder="What went well? What would you do differently next time?"></textarea>
+    </div>
+
+    <div class="teacher-only card" style="margin-top:12px; display:none">
+      <h2>Teacher guidance (answer prompts)</h2>
+      <ul class="list">
+        <li>Quick checks: failing tests show regressions; syntax errors need structure fixes; logic fixes require rerunning targeted and edge tests.</li>
+        <li>Look for clear reproduction steps, test matrix with types, and before/after evidence.</li>
+        <li>Evidence: reproduced failure, planned tests, patched code, and runner logs showing the fix plus one enhancement idea.</li>
+      </ul>
+    </div>
+
+    <div class="footer">
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      <div class="no-print">
+        <hr class="sep" />
+        <small>Tip: add <span class="kbd">?teacher=1</span> to force teacher mode on.</small>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../../core/app.js"></script>
+  <script src="../../../core/auth.js"></script>
+  <script src="../../../core/python-runner.js"></script>
+  <script src="../../../core/activity-scaffold.js"></script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>a02 - Recursive Pattern</title>
+  <link rel="stylesheet" href="../../../core/app.css" />
+</head>
+<body data-lesson-id="lesson-14" data-activity-id="a02">
+  <div class="topbar no-print">
+    <div class="container">
+      <div class="brand">
+        <b>a02 - Recursive Pattern</b>
+        <span>Activity scaffold (structured steps + instant feedback)</span>
+      </div>
+      <div class="row">
+        <a class="pill" href="../index.html"><strong>HOME</strong> <span>Teacher hub</span></a>
+        <a class="pill" href="../student.html"><strong>STUDENT</strong> <span>Student hub</span></a>
+        <button class="btn" id="teacherToggle" type="button">Teacher mode: OFF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>a02 - Recursive Pattern</h1>
+    <div class="note">
+      <b>How this works:</b> Quick checks, plan a recursive pattern (text-based), write the function, and prove it with multiple depths.
+    </div>
+
+    <div class="grid cols2" style="margin-top:12px">
+      <div class="card">
+        <h2>Step 1: Quick checks</h2>
+        <p><b>Prompt 1:</b> A base case...</p>
+        <div data-quiz="q1" data-correct="c">
+          <label class="choice"><input type="radio" name="q1" value="a"> repeats forever</label>
+          <label class="choice"><input type="radio" name="q1" value="b"> ignores parameters</label>
+          <label class="choice"><input type="radio" name="q1" value="c"> stops recursion</label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn good" data-quiz-check="q1" type="button">Check</button>
+        </div>
+        <div class="note" data-quiz-feedback="q1" style="margin-top:10px; display:none"></div>
+
+        <div style="height:10px"></div>
+        <p><b>Prompt 2:</b> Each recursive call should...</p>
+        <div data-quiz="q2" data-correct="a">
+          <label class="choice"><input type="radio" name="q2" value="a"> reduce the problem size</label>
+          <label class="choice"><input type="radio" name="q2" value="b"> increase depth forever</label>
+          <label class="choice"><input type="radio" name="q2" value="c"> skip the base case</label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn good" data-quiz-check="q2" type="button">Check</button>
+        </div>
+        <div class="note" data-quiz-feedback="q2" style="margin-top:10px; display:none"></div>
+
+        <div style="height:10px"></div>
+        <p><b>Prompt 3:</b> Recursion can replace...</p>
+        <div data-quiz="q3" data-correct="b">
+          <label class="choice"><input type="radio" name="q3" value="a"> file saves</label>
+          <label class="choice"><input type="radio" name="q3" value="b"> some loops</label>
+          <label class="choice"><input type="radio" name="q3" value="c"> variable names</label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn good" data-quiz-check="q3" type="button">Check</button>
+        </div>
+        <div class="note" data-quiz-feedback="q3" style="margin-top:10px; display:none"></div>
+      </div>
+
+      <div class="card">
+        <h2>Step 2: Define the pattern</h2>
+        <p>Choose a simple text pattern (e.g., triangles, branches, or repeated markers).</p>
+        <table class="table">
+          <thead><tr><th>Item</th><th>Your notes</th></tr></thead>
+          <tbody>
+            <tr><td>What the pattern prints per level</td><td><input type="text" data-field="per_level" placeholder="e.g., '*' * depth" /></td></tr>
+            <tr><td>Maximum depth</td><td><input type="text" data-field="max_depth" placeholder="e.g., 4" /></td></tr>
+            <tr><td>When to stop</td><td><input type="text" data-field="stop_cond" placeholder="base case" /></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 3: Plan the recursion</h2>
+      <div class="note"><b>Learning objective:</b> Understand and implement recursion.</div>
+      <table class="table">
+        <thead><tr><th>Part</th><th>Your plan</th></tr></thead>
+        <tbody>
+          <tr><td>Function signature</td><td><input type="text" data-field="func_sig" placeholder="def pattern(depth):" /></td></tr>
+          <tr><td>Base case</td><td><input type="text" data-field="plan_base" placeholder="if depth == 0: return" /></td></tr>
+          <tr><td>Work at this level</td><td><input type="text" data-field="plan_work" placeholder="what to print/do" /></td></tr>
+          <tr><td>Recursive call</td><td><input type="text" data-field="plan_recur" placeholder="call with depth-1 or depth+1" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Checklist</h3>
+      <ul class="list checklist">
+        <li><label><input type="checkbox" data-check="base"> Base case stops the calls.</label></li>
+        <li><label><input type="checkbox" data-check="shrink"> Problem size changes toward base.</label></li>
+        <li><label><input type="checkbox" data-check="depth"> Depth limit chosen.</label></li>
+        <li><label><input type="checkbox" data-check="tests"> Test depths planned.</label></li>
+      </ul>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 4: Run in Python</h2>
+      <div class="note">Implement the recursive pattern and run it for at least three depths.</div>
+      <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn good" id="runBtn" type="button">Run code</button>
+        <button class="btn" id="saveFilesBtn" type="button">Save files</button>
+        <button class="btn bad" id="resetBtn" type="button">Reset</button>
+      </div>
+
+      <div class="grid cols2" style="margin-top:12px">
+        <div class="card">
+          <h3>Output</h3>
+          <label for="stdout"><b>Stdout</b></label>
+          <pre id="stdout" class="code-output"></pre>
+          <label for="stderr"><b>Stderr</b></label>
+          <pre id="stderr" class="code-output warn"></pre>
+          <div id="runMeta" class="note" style="margin-top:10px; display:none"></div>
+        </div>
+        <div class="card">
+          <h3>Run files</h3>
+          <div id="runFiles" class="file-list"></div>
+          <div style="height:8px"></div>
+          <h3>Saved files</h3>
+          <div id="savedFiles" class="file-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 5: Reflection</h2>
+      <p>How did you stop recursion? What happens if you increase depth? Could a loop replace your recursion?</p>
+      <textarea data-field="reflection" placeholder="What went well? What would you do differently next time?"></textarea>
+    </div>
+
+    <div class="teacher-only card" style="margin-top:12px; display:none">
+      <h2>Teacher guidance (answer prompts)</h2>
+      <ul class="list">
+        <li>Quick checks: base case stops recursion; each call shrinks the problem; recursion can replace some loops.</li>
+        <li>Look for explicit base case, depth decrement, and outputs for multiple depths.</li>
+        <li>Evidence: planned signature/base/recursive step, depth tests, and runner output for at least three depths.</li>
+      </ul>
+    </div>
+
+    <div class="footer">
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      <div class="no-print">
+        <hr class="sep" />
+        <small>Tip: add <span class="kbd">?teacher=1</span> to force teacher mode on.</small>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../../core/app.js"></script>
+  <script src="../../../core/auth.js"></script>
+  <script src="../../../core/python-runner.js"></script>
+  <script src="../../../core/activity-scaffold.js"></script>
+</body>
+</html>

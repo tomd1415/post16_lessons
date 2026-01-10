@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>a02 - Event Loop Demo</title>
+  <link rel="stylesheet" href="../../../core/app.css" />
+</head>
+<body data-lesson-id="lesson-13" data-activity-id="a02">
+  <div class="topbar no-print">
+    <div class="container">
+      <div class="brand">
+        <b>a02 - Event Loop Demo</b>
+        <span>Activity scaffold (structured steps + instant feedback)</span>
+      </div>
+      <div class="row">
+        <a class="pill" href="../index.html"><strong>HOME</strong> <span>Teacher hub</span></a>
+        <a class="pill" href="../student.html"><strong>STUDENT</strong> <span>Student hub</span></a>
+        <button class="btn" id="teacherToggle" type="button">Teacher mode: OFF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>a02 - Event Loop Demo</h1>
+    <div class="note">
+      <b>How this works:</b> Quick checks, plan an event loop, map triggers to handlers, then simulate events in Python.
+    </div>
+
+    <div class="grid cols2" style="margin-top:12px">
+      <div class="card">
+        <h2>Step 1: Quick checks</h2>
+        <p><b>Prompt 1:</b> An event is...</p>
+        <div data-quiz="q1" data-correct="b">
+          <label class="choice"><input type="radio" name="q1" value="a"> a variable assignment</label>
+          <label class="choice"><input type="radio" name="q1" value="b"> something that happens for the program to react to</label>
+          <label class="choice"><input type="radio" name="q1" value="c"> a syntax error</label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn good" data-quiz-check="q1" type="button">Check</button>
+        </div>
+        <div class="note" data-quiz-feedback="q1" style="margin-top:10px; display:none"></div>
+
+        <div style="height:10px"></div>
+        <p><b>Prompt 2:</b> An event loop keeps...</p>
+        <div data-quiz="q2" data-correct="a">
+          <label class="choice"><input type="radio" name="q2" value="a"> checking for new events</label>
+          <label class="choice"><input type="radio" name="q2" value="b"> deleting handlers</label>
+          <label class="choice"><input type="radio" name="q2" value="c"> stopping after one check</label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn good" data-quiz-check="q2" type="button">Check</button>
+        </div>
+        <div class="note" data-quiz-feedback="q2" style="margin-top:10px; display:none"></div>
+
+        <div style="height:10px"></div>
+        <p><b>Prompt 3:</b> A handler should...</p>
+        <div data-quiz="q3" data-correct="c">
+          <label class="choice"><input type="radio" name="q3" value="a"> ignore the event data</label>
+          <label class="choice"><input type="radio" name="q3" value="b"> always exit the program</label>
+          <label class="choice"><input type="radio" name="q3" value="c"> process one event type and return</label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn good" data-quiz-check="q3" type="button">Check</button>
+        </div>
+        <div class="note" data-quiz-feedback="q3" style="margin-top:10px; display:none"></div>
+      </div>
+
+      <div class="card">
+        <h2>Step 2: Map events</h2>
+        <p>List the events you want to handle.</p>
+        <table class="table">
+          <thead><tr><th>Event trigger</th><th>Handler name</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td><input type="text" data-field="trigger1" placeholder="e.g., 'click'" /></td><td><input type="text" data-field="handler1" placeholder="on_click" /></td><td><input type="text" data-field="action1" placeholder="what happens" /></td></tr>
+            <tr><td><input type="text" data-field="trigger2" placeholder="e.g., 'quit'" /></td><td><input type="text" data-field="handler2" placeholder="on_quit" /></td><td><input type="text" data-field="action2" /></td></tr>
+            <tr><td><input type="text" data-field="trigger3" placeholder="e.g., 'tick'" /></td><td><input type="text" data-field="handler3" placeholder="on_tick" /></td><td><input type="text" data-field="action3" /></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 3: Sketch the event loop</h2>
+      <div class="note"><b>Learning objective:</b> Understand events, handlers, and imported libraries.</div>
+      <table class="table">
+        <thead><tr><th>Loop step</th><th>Your plan</th></tr></thead>
+        <tbody>
+          <tr><td>Initialise state</td><td><input type="text" data-field="init_state" placeholder="e.g., running=True" /></td></tr>
+          <tr><td>Get next event</td><td><input type="text" data-field="get_event" placeholder="e.g., input() or queue" /></td></tr>
+          <tr><td>Dispatch</td><td><input type="text" data-field="dispatch" placeholder="which handler?" /></td></tr>
+          <tr><td>Exit condition</td><td><input type="text" data-field="exit_cond" placeholder="when to stop" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Checklist</h3>
+      <ul class="list checklist">
+        <li><label><input type="checkbox" data-check="imports"> I listed libraries to import.</label></li>
+        <li><label><input type="checkbox" data-check="handlers"> Each event has a handler.</label></li>
+        <li><label><input type="checkbox" data-check="exit"> The loop can exit cleanly.</label></li>
+        <li><label><input type="checkbox" data-check="tests"> I planned test events.</label></li>
+      </ul>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 4: Run in Python</h2>
+      <div class="note">Simulate events with a list or user input. Show how each handler runs.</div>
+      <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn good" id="runBtn" type="button">Run code</button>
+        <button class="btn" id="saveFilesBtn" type="button">Save files</button>
+        <button class="btn bad" id="resetBtn" type="button">Reset</button>
+      </div>
+
+      <div class="grid cols2" style="margin-top:12px">
+        <div class="card">
+          <h3>Output</h3>
+          <label for="stdout"><b>Stdout</b></label>
+          <pre id="stdout" class="code-output"></pre>
+          <label for="stderr"><b>Stderr</b></label>
+          <pre id="stderr" class="code-output warn"></pre>
+          <div id="runMeta" class="note" style="margin-top:10px; display:none"></div>
+        </div>
+        <div class="card">
+          <h3>Run files</h3>
+          <div id="runFiles" class="file-list"></div>
+          <div style="height:8px"></div>
+          <h3>Saved files</h3>
+          <div id="savedFiles" class="file-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 5: Reflection</h2>
+      <p>Which events did you handle? How did you stop the loop? What library calls did you use?</p>
+      <textarea data-field="reflection" placeholder="What went well? What would you do differently next time?"></textarea>
+    </div>
+
+    <div class="teacher-only card" style="margin-top:12px; display:none">
+      <h2>Teacher guidance (answer prompts)</h2>
+      <ul class="list">
+        <li>Quick checks: events are triggers; event loop polls/blocks until events arrive; handlers process one event type and return.</li>
+        <li>Look for clear mapping of triggers to handlers, an exit flag, and imports (random/time/json or pygame) as needed.</li>
+        <li>Evidence: loop sketch, handler table, and runner output showing multiple simulated events handled.</li>
+      </ul>
+    </div>
+
+    <div class="footer">
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      <div class="no-print">
+        <hr class="sep" />
+        <small>Tip: add <span class="kbd">?teacher=1</span> to force teacher mode on.</small>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../../core/app.js"></script>
+  <script src="../../../core/auth.js"></script>
+  <script src="../../../core/python-runner.js"></script>
+  <script src="../../../core/activity-scaffold.js"></script>
+</body>
+</html>

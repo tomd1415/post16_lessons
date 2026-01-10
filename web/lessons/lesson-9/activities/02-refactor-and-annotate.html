@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>a02 - Refactor and Annotate</title>
+  <link rel="stylesheet" href="../../../core/app.css" />
+</head>
+<body data-lesson-id="lesson-9" data-activity-id="a02">
+  <div class="topbar no-print">
+    <div class="container">
+      <div class="brand">
+        <b>a02 - Refactor and Annotate</b>
+        <span>Activity scaffold (structured steps + instant feedback)</span>
+      </div>
+      <div class="row">
+        <a class="pill" href="../index.html"><strong>HOME</strong> <span>Teacher hub</span></a>
+        <a class="pill" href="../student.html"><strong>STUDENT</strong> <span>Student hub</span></a>
+        <button class="btn" id="teacherToggle" type="button">Teacher mode: OFF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>a02 - Refactor and Annotate</h1>
+    <div class="note">
+      <b>How this works:</b> Quick checks, short notes, then refactor a small snippet by improving names, structure, and comments. Prove it in the runner.
+    </div>
+
+    <div class="grid cols2" style="margin-top:12px">
+      <div class="card">
+        <h2>Step 1: Quick checks</h2>
+        <p><b>Prompt 1:</b> Comments should explain...</p>
+        <div data-quiz="q1" data-correct="b">
+          <label class="choice"><input type="radio" name="q1" value="a"> each line of code</label>
+          <label class="choice"><input type="radio" name="q1" value="b"> why the code exists</label>
+          <label class="choice"><input type="radio" name="q1" value="c"> only variable names</label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn good" data-quiz-check="q1" type="button">Check</button>
+        </div>
+        <div class="note" data-quiz-feedback="q1" style="margin-top:10px; display:none"></div>
+
+        <div style="height:10px"></div>
+        <p><b>Prompt 2:</b> Good names should be...</p>
+        <div data-quiz="q2" data-correct="a">
+          <label class="choice"><input type="radio" name="q2" value="a"> descriptive</label>
+          <label class="choice"><input type="radio" name="q2" value="b"> one letter</label>
+          <label class="choice"><input type="radio" name="q2" value="c"> random</label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn good" data-quiz-check="q2" type="button">Check</button>
+        </div>
+        <div class="note" data-quiz-feedback="q2" style="margin-top:10px; display:none"></div>
+
+        <div style="height:10px"></div>
+        <p><b>Prompt 3:</b> Indentation shows...</p>
+        <div data-quiz="q3" data-correct="c">
+          <label class="choice"><input type="radio" name="q3" value="a"> speed</label>
+          <label class="choice"><input type="radio" name="q3" value="b"> file size</label>
+          <label class="choice"><input type="radio" name="q3" value="c"> code structure</label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn good" data-quiz-check="q3" type="button">Check</button>
+        </div>
+        <div class="note" data-quiz-feedback="q3" style="margin-top:10px; display:none"></div>
+      </div>
+
+      <div class="card">
+        <h2>Step 2: Key ideas in your own words</h2>
+        <p>Fill the table.</p>
+        <table class="table">
+          <thead><tr><th>Prompt</th><th>Your answer</th></tr></thead>
+          <tbody>
+            <tr><td>When to add a comment</td><td><input type="text" data-field="when_comment" placeholder="explain the why" /></td></tr>
+            <tr><td>Naming rule you follow</td><td><input type="text" data-field="naming_rule" placeholder="e.g., verbs for functions" /></td></tr>
+            <tr><td>One indentation mistake to avoid</td><td><input type="text" data-field="indent_mistake" placeholder="your wording" /></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 3: Refactor a snippet</h2>
+      <div class="note"><b>Learning objective:</b> Use comments and structure to make code clearer.</div>
+
+      <h3>Task A: Mark issues</h3>
+      <p>Paste a short snippet (5–10 lines). Identify issues.</p>
+      <textarea data-field="snippet" placeholder="Paste code here"></textarea>
+      <table class="table" style="margin-top:10px">
+        <thead><tr><th>Issue</th><th>Fix you will apply</th></tr></thead>
+        <tbody>
+          <tr><td>Bad name</td><td><input type="text" data-field="fix_name" placeholder="rename to..." /></td></tr>
+          <tr><td>Missing why comment</td><td><input type="text" data-field="fix_comment" placeholder="add comment about..." /></td></tr>
+          <tr><td>Indentation/structure</td><td><input type="text" data-field="fix_indent" placeholder="align blocks" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task B: Plan the new version</h3>
+      <table class="table">
+        <thead><tr><th>Element</th><th>Your plan</th></tr></thead>
+        <tbody>
+          <tr><td>Function or block name</td><td><input type="text" data-field="plan_name" /></td></tr>
+          <tr><td>Comment text (why)</td><td><input type="text" data-field="plan_comment" /></td></tr>
+          <tr><td>Spacing/indentation changes</td><td><input type="text" data-field="plan_indent" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task C: Checklist</h3>
+      <ul class="list checklist">
+        <li><label><input type="checkbox" data-check="why"> I explained why, not just what.</label></li>
+        <li><label><input type="checkbox" data-check="names"> I improved names for clarity.</label></li>
+        <li><label><input type="checkbox" data-check="format"> I fixed indentation/spacing.</label></li>
+        <li><label><input type="checkbox" data-check="run"> I will run to prove it still works.</label></li>
+      </ul>
+      <div style="margin-top:10px"></div>
+      <label for="taskNotes"><b>Your structured notes</b></label>
+      <textarea id="taskNotes" data-field="task_notes" placeholder="Requirement 1: ...
+Requirement 2: ..."></textarea>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 4: Run in Python</h2>
+      <div class="note">Paste the refactored code, run it, and save the output as evidence.</div>
+      <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn good" id="runBtn" type="button">Run code</button>
+        <button class="btn" id="saveFilesBtn" type="button">Save files</button>
+        <button class="btn bad" id="resetBtn" type="button">Reset</button>
+      </div>
+
+      <div class="grid cols2" style="margin-top:12px">
+        <div class="card">
+          <h3>Output</h3>
+          <label for="stdout"><b>Stdout</b></label>
+          <pre id="stdout" class="code-output"></pre>
+          <label for="stderr"><b>Stderr</b></label>
+          <pre id="stderr" class="code-output warn"></pre>
+          <div id="runMeta" class="note" style="margin-top:10px; display:none"></div>
+        </div>
+        <div class="card">
+          <h3>Run files</h3>
+          <div id="runFiles" class="file-list"></div>
+          <div style="height:8px"></div>
+          <h3>Saved files</h3>
+          <div id="savedFiles" class="file-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 5: Reflection</h2>
+      <p>What improved? Did any change break the code? Note next improvements.</p>
+      <textarea data-field="reflection" placeholder="What went well? What would you do differently next time?"></textarea>
+    </div>
+
+    <div class="teacher-only card" style="margin-top:12px; display:none">
+      <h2>Teacher guidance (answer prompts)</h2>
+      <ul class="list">
+        <li>Quick check: comments explain why; names are descriptive; indentation shows structure.</li>
+        <li>Look for concise why-comments, renamed variables/functions, and preserved behaviour verified by runner output.</li>
+        <li>Encourage before/after snippets and saved run logs as evidence.</li>
+      </ul>
+    </div>
+
+    <div class="footer">
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      <div class="no-print">
+        <hr class="sep" />
+        <small>Tip: add <span class="kbd">?teacher=1</span> to force teacher mode on.</small>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../../core/app.js"></script>
+  <script src="../../../core/auth.js"></script>
+  <script src="../../../core/python-runner.js"></script>
+  <script src="../../../core/activity-scaffold.js"></script>
+</body>
+</html>

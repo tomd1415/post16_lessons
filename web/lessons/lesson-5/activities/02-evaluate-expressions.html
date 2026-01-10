@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>a02 - Evaluate Expressions</title>
+  <link rel="stylesheet" href="../../../core/app.css" />
+</head>
+<body data-lesson-id="lesson-5" data-activity-id="a02">
+  <div class="topbar no-print">
+    <div class="container">
+      <div class="brand">
+        <b>a02 - Evaluate Expressions</b>
+        <span>Activity scaffold (structured steps + instant feedback)</span>
+      </div>
+      <div class="row">
+        <a class="pill" href="../index.html"><strong>HOME</strong> <span>Teacher hub</span></a>
+        <a class="pill" href="../student.html"><strong>STUDENT</strong> <span>Student hub</span></a>
+        <button class="btn" id="teacherToggle" type="button">Teacher mode: OFF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>a02 - Evaluate Expressions</h1>
+    <div class="note">
+      <b>How this works:</b> Quick checks, short notes, then practice evaluating and fixing expressions. Use the runner to confirm.
+    </div>
+
+    <div class="grid cols2" style="margin-top:12px">
+      <div class="card">
+        <h2>Step 1: Quick checks</h2>
+        <p><b>Prompt 1:</b> Which runs first in Python by default?</p>
+        <div data-quiz="q1" data-correct="b">
+          <label class="choice"><input type="radio" name="q1" value="a"> Addition</label>
+          <label class="choice"><input type="radio" name="q1" value="b"> Multiplication</label>
+          <label class="choice"><input type="radio" name="q1" value="c"> Subtraction</label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn good" data-quiz-check="q1" type="button">Check</button>
+        </div>
+        <div class="note" data-quiz-feedback="q1" style="margin-top:10px; display:none"></div>
+
+        <div style="height:10px"></div>
+        <p><b>Prompt 2:</b> Parentheses change the order by...</p>
+        <div data-quiz="q2" data-correct="a">
+          <label class="choice"><input type="radio" name="q2" value="a"> Forcing inside to run first</label>
+          <label class="choice"><input type="radio" name="q2" value="b"> Ignoring operators</label>
+          <label class="choice"><input type="radio" name="q2" value="c"> Making everything divide</label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn good" data-quiz-check="q2" type="button">Check</button>
+        </div>
+        <div class="note" data-quiz-feedback="q2" style="margin-top:10px; display:none"></div>
+
+        <div style="height:10px"></div>
+        <p><b>Prompt 3:</b> Division with <code>//</code> returns...</p>
+        <div data-quiz="q3" data-correct="c">
+          <label class="choice"><input type="radio" name="q3" value="a"> A float with decimals</label>
+          <label class="choice"><input type="radio" name="q3" value="b"> The remainder only</label>
+          <label class="choice"><input type="radio" name="q3" value="c"> An integer result (floor division)</label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn good" data-quiz-check="q3" type="button">Check</button>
+        </div>
+        <div class="note" data-quiz-feedback="q3" style="margin-top:10px; display:none"></div>
+      </div>
+
+      <div class="card">
+        <h2>Step 2: Key ideas in your own words</h2>
+        <p>Fill the short boxes.</p>
+        <table class="table">
+          <thead><tr><th>Prompt</th><th>Your answer</th></tr></thead>
+          <tbody>
+            <tr><td>PEMDAS/BODMAS meaning</td><td><input type="text" data-field="order" placeholder="your wording" /></td></tr>
+            <tr><td>When to add parentheses</td><td><input type="text" data-field="paren" placeholder="when you want..." /></td></tr>
+            <tr><td>Common trap to avoid</td><td><input type="text" data-field="trap" placeholder="example mistake" /></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 3: Evaluate step by step</h2>
+      <div class="note"><b>Learning objective:</b> Apply operator precedence and parentheses.</div>
+      <p><b>Task A: Show the steps</b></p>
+      <p>Fill one line per step until you get the final answer.</p>
+      <table class="table">
+        <thead><tr><th>Expression</th><th>Step 1</th><th>Step 2</th><th>Final</th></tr></thead>
+        <tbody>
+          <tr><td>(3 + 4) * 2 - 5</td><td><input type="text" data-field="e1s1" /></td><td><input type="text" data-field="e1s2" /></td><td><input type="text" data-field="e1final" /></td></tr>
+          <tr><td>12 / 3 + 4 * 2</td><td><input type="text" data-field="e2s1" /></td><td><input type="text" data-field="e2s2" /></td><td><input type="text" data-field="e2final" /></td></tr>
+          <tr><td>4 * 4 - 4 ** 2</td><td><input type="text" data-field="e3s1" /></td><td><input type="text" data-field="e3s2" /></td><td><input type="text" data-field="e3final" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task B: Fix the bug</h3>
+      <p>Add parentheses or operators to get the target value.</p>
+      <table class="table">
+        <thead><tr><th>Broken expression</th><th>Target</th><th>Your fixed expression</th></tr></thead>
+        <tbody>
+          <tr><td>3 + 4 * 2</td><td>14</td><td><input type="text" data-field="fix1" placeholder="e.g., (3 + 4) * 2" /></td></tr>
+          <tr><td>16 / 4 + 4</td><td>2</td><td><input type="text" data-field="fix2" placeholder="adjust to reach 2" /></td></tr>
+          <tr><td>8 - 4 * 2 ** 2</td><td>0</td><td><input type="text" data-field="fix3" placeholder="reorder to reach 0" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task C: Checklist</h3>
+      <ul class="list checklist">
+        <li><label><input type="checkbox" data-check="order"> I used the correct operator order.</label></li>
+        <li><label><input type="checkbox" data-check="paren"> I added parentheses when needed.</label></li>
+        <li><label><input type="checkbox" data-check="test"> I ran the expressions in Python.</label></li>
+      </ul>
+      <div style="margin-top:10px"></div>
+      <label for="taskNotes"><b>Your structured notes</b></label>
+      <textarea id="taskNotes" data-field="task_notes" placeholder="Requirement 1: ...
+Requirement 2: ..."></textarea>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 4: Run in Python</h2>
+      <div class="note">Paste your expressions and verify outputs. Save runs for evidence.</div>
+      <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn good" id="runBtn" type="button">Run code</button>
+        <button class="btn" id="saveFilesBtn" type="button">Save files</button>
+        <button class="btn bad" id="resetBtn" type="button">Reset</button>
+      </div>
+
+      <div class="grid cols2" style="margin-top:12px">
+        <div class="card">
+          <h3>Output</h3>
+          <label for="stdout"><b>Stdout</b></label>
+          <pre id="stdout" class="code-output"></pre>
+          <label for="stderr"><b>Stderr</b></label>
+          <pre id="stderr" class="code-output warn"></pre>
+          <div id="runMeta" class="note" style="margin-top:10px; display:none"></div>
+        </div>
+        <div class="card">
+          <h3>Run files</h3>
+          <div id="runFiles" class="file-list"></div>
+          <div style="height:8px"></div>
+          <h3>Saved files</h3>
+          <div id="savedFiles" class="file-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 5: Reflection</h2>
+      <p>Note what worked, where you needed parentheses, and any mistakes you corrected.</p>
+      <textarea data-field="reflection" placeholder="What went well? What would you do differently next time?"></textarea>
+    </div>
+
+    <div class="teacher-only card" style="margin-top:12px; display:none">
+      <h2>Teacher guidance (answer prompts)</h2>
+      <ul class="list">
+        <li>Quick check: (1) Multiplication, (2) Forces inside first, (3) Integer from floor division.</li>
+        <li>Task A sample finals: (3+4)*2-5 → 9; 12/3+4*2 → 12; 4*4-4**2 → 0.</li>
+        <li>Task B ideas: (3+4)*2 for 14; (16/(4+4)) for 2; (8-4)*2**2 then adjust to reach 0 such as (8-4*2)**2/4.</li>
+        <li>Look for explicit step working and verifying in the runner.</li>
+      </ul>
+    </div>
+
+    <div class="footer">
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      <div class="no-print">
+        <hr class="sep"/>
+        <small>Tip: add <span class="kbd">?teacher=1</span> to force teacher mode on.</small>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../../core/app.js"></script>
+  <script src="../../../core/auth.js"></script>
+  <script src="../../../core/python-runner.js"></script>
+  <script src="../../../core/activity-scaffold.js"></script>
+</body>
+</html>

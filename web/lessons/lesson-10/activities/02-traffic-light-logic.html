@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>a02 - Traffic Light Logic</title>
+  <link rel="stylesheet" href="../../../core/app.css" />
+</head>
+<body data-lesson-id="lesson-10" data-activity-id="a02">
+  <div class="topbar no-print">
+    <div class="container">
+      <div class="brand">
+        <b>a02 - Traffic Light Logic</b>
+        <span>Activity scaffold (structured steps + instant feedback)</span>
+      </div>
+      <div class="row">
+        <a class="pill" href="../index.html"><strong>HOME</strong> <span>Teacher hub</span></a>
+        <a class="pill" href="../student.html"><strong>STUDENT</strong> <span>Student hub</span></a>
+        <button class="btn" id="teacherToggle" type="button">Teacher mode: OFF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>a02 - Traffic Light Logic</h1>
+    <div class="note">
+      <b>How this works:</b> Quick checks, short notes, then build and test IF/ELIF/ELSE logic for a simple traffic light controller.
+    </div>
+
+    <div class="grid cols2" style="margin-top:12px">
+      <div class="card">
+        <h2>Step 1: Quick checks</h2>
+        <p><b>Prompt 1:</b> IF/ELIF/ELSE picks...</p>
+        <div data-quiz="q1" data-correct="b">
+          <label class="choice"><input type="radio" name="q1" value="a"> all branches</label>
+          <label class="choice"><input type="radio" name="q1" value="b"> first True branch</label>
+          <label class="choice"><input type="radio" name="q1" value="c"> random branch</label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn good" data-quiz-check="q1" type="button">Check</button>
+        </div>
+        <div class="note" data-quiz-feedback="q1" style="margin-top:10px; display:none"></div>
+
+        <div style="height:10px"></div>
+        <p><b>Prompt 2:</b> A logic test returns...</p>
+        <div data-quiz="q2" data-correct="a">
+          <label class="choice"><input type="radio" name="q2" value="a"> True or False</label>
+          <label class="choice"><input type="radio" name="q2" value="b"> a color name</label>
+          <label class="choice"><input type="radio" name="q2" value="c"> a loop count</label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn good" data-quiz-check="q2" type="button">Check</button>
+        </div>
+        <div class="note" data-quiz-feedback="q2" style="margin-top:10px; display:none"></div>
+
+        <div style="height:10px"></div>
+        <p><b>Prompt 3:</b> Equality uses...</p>
+        <div data-quiz="q3" data-correct="b">
+          <label class="choice"><input type="radio" name="q3" value="a"> =</label>
+          <label class="choice"><input type="radio" name="q3" value="b"> ==</label>
+          <label class="choice"><input type="radio" name="q3" value="c"> :=</label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn good" data-quiz-check="q3" type="button">Check</button>
+        </div>
+        <div class="note" data-quiz-feedback="q3" style="margin-top:10px; display:none"></div>
+      </div>
+
+      <div class="card">
+        <h2>Step 2: Key ideas in your own words</h2>
+        <p>Fill the quick table.</p>
+        <table class="table">
+          <thead><tr><th>Prompt</th><th>Your answer</th></tr></thead>
+          <tbody>
+            <tr><td>When to use IF/ELIF/ELSE</td><td><input type="text" data-field="when_if" placeholder="branching choice" /></td></tr>
+            <tr><td>One safety check to include</td><td><input type="text" data-field="safety" placeholder="e.g., sensor offline" /></td></tr>
+            <tr><td>Which inputs you will simulate</td><td><input type="text" data-field="inputs" placeholder="e.g., light color, pedestrian" /></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 3: Design the controller</h2>
+      <div class="note"><b>Learning objective:</b> Use conditional logic to pick behaviors.</div>
+
+      <h3>Task A: Truth table</h3>
+      <p>Fill outcomes for each input mix.</p>
+      <table class="table">
+        <thead><tr><th>Light state</th><th>Pedestrian button pressed?</th><th>Action to take</th></tr></thead>
+        <tbody>
+          <tr><td>Green</td><td><input type="text" data-field="tt_green_btn" placeholder="yes/no" /></td><td><input type="text" data-field="action_green" placeholder="e.g., stay green" /></td></tr>
+          <tr><td>Amber</td><td><input type="text" data-field="tt_amber_btn" placeholder="yes/no" /></td><td><input type="text" data-field="action_amber" placeholder="e.g., go red" /></td></tr>
+          <tr><td>Red</td><td><input type="text" data-field="tt_red_btn" placeholder="yes/no" /></td><td><input type="text" data-field="action_red" placeholder="e.g., stay red" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task B: Draft conditions</h3>
+      <table class="table">
+        <thead><tr><th>Branch</th><th>Condition</th><th>Message/output</th></tr></thead>
+        <tbody>
+          <tr><td>IF</td><td><input type="text" data-field="cond_if" placeholder="e.g., state == 'green' and not button" /></td><td><input type="text" data-field="msg_if" placeholder="what to print" /></td></tr>
+          <tr><td>ELIF</td><td><input type="text" data-field="cond_elif" placeholder="e.g., state == 'amber'" /></td><td><input type="text" data-field="msg_elif" /></td></tr>
+          <tr><td>ELSE</td><td><input type="text" data-field="cond_else" placeholder="fallback" /></td><td><input type="text" data-field="msg_else" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task C: Checklist</h3>
+      <ul class="list checklist">
+        <li><label><input type="checkbox" data-check="inputs"> I listed the inputs I need.</label></li>
+        <li><label><input type="checkbox" data-check="branches"> I planned clear IF/ELIF/ELSE branches.</label></li>
+        <li><label><input type="checkbox" data-check="tests"> I prepared test cases.</label></li>
+        <li><label><input type="checkbox" data-check="run"> I will run in Python to prove it.</label></li>
+      </ul>
+      <div style="margin-top:10px"></div>
+      <label for="taskNotes"><b>Your structured notes</b></label>
+      <textarea id="taskNotes" data-field="task_notes" placeholder="Requirement 1: ...
+Requirement 2: ..."></textarea>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 4: Run in Python</h2>
+      <div class="note">Implement the controller as a function, simulate different inputs, and show outputs for each branch.</div>
+      <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn good" id="runBtn" type="button">Run code</button>
+        <button class="btn" id="saveFilesBtn" type="button">Save files</button>
+        <button class="btn bad" id="resetBtn" type="button">Reset</button>
+      </div>
+
+      <div class="grid cols2" style="margin-top:12px">
+        <div class="card">
+          <h3>Output</h3>
+          <label for="stdout"><b>Stdout</b></label>
+          <pre id="stdout" class="code-output"></pre>
+          <label for="stderr"><b>Stderr</b></label>
+          <pre id="stderr" class="code-output warn"></pre>
+          <div id="runMeta" class="note" style="margin-top:10px; display:none"></div>
+        </div>
+        <div class="card">
+          <h3>Run files</h3>
+          <div id="runFiles" class="file-list"></div>
+          <div style="height:8px"></div>
+          <h3>Saved files</h3>
+          <div id="savedFiles" class="file-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 5: Reflection</h2>
+      <p>Which cases hit IF vs ELIF vs ELSE? What would you add next (e.g., flashing amber)?</p>
+      <textarea data-field="reflection" placeholder="What went well? What would you do differently next time?"></textarea>
+    </div>
+
+    <div class="teacher-only card" style="margin-top:12px; display:none">
+      <h2>Teacher guidance (answer prompts)</h2>
+      <ul class="list">
+        <li>Quick check: IF/ELIF/ELSE picks first True branch; logic tests are True/False; equality uses ==.</li>
+        <li>Truth table ideas: green + no button → stay green; green + button → go amber next; amber → prepare to stop; red → stay red until safe.</li>
+        <li>Evidence: planned branches, test outputs for each state/button combo, and saved runner logs.</li>
+      </ul>
+    </div>
+
+    <div class="footer">
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      <div class="no-print">
+        <hr class="sep" />
+        <small>Tip: add <span class="kbd">?teacher=1</span> to force teacher mode on.</small>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../../core/app.js"></script>
+  <script src="../../../core/auth.js"></script>
+  <script src="../../../core/python-runner.js"></script>
+  <script src="../../../core/activity-scaffold.js"></script>
+</body>
+</html>
