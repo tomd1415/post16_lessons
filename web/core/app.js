@@ -384,9 +384,7 @@ function initRoleMenu(){
   });
 
   const stored = readStoredRole();
-  const params = new URLSearchParams(window.location.search || "");
-  const preferred = preferredMenuFromPath();
-  const menuKey = params.get("teacher") === "1" ? "teacher" : (stored ? roleToMenu(stored) : preferred);
+  const menuKey = stored ? roleToMenu(stored) : "pupil";
   renderRoleMenu(menuKey);
   if(roleMenuHost && !roleMenuHost.textContent.trim()){
     renderRoleMenu("pupil");
@@ -395,7 +393,7 @@ function initRoleMenu(){
 
 function updateRoleMenu(role){
   if(!roleMenuHost) return;
-  const menuKey = role ? roleToMenu(role) : preferredMenuFromPath();
+  const menuKey = role ? roleToMenu(role) : "pupil";
   renderRoleMenu(menuKey);
 }
 

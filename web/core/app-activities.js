@@ -54,7 +54,7 @@ function evidenceText(activity){
 
 function actionStepsHtml(){
   const steps = [
-    "Read the on-page instructions below the title—no booklet needed.",
+    "Read the on-page instructions below the title. If your teacher has provided printed cards or files, keep them nearby.",
     "Work through every card/section in order. When you see buttons like Check, Reset, Export, or Save, use them before moving on.",
     "Fill any text areas or notes so your thinking is captured on this page.",
     "If there is a quiz, choose answers for all questions, then press Check to see feedback.",
@@ -102,7 +102,7 @@ function buildBriefHtml(lesson, activity){
         <div>
           <p><b>Learning goals</b></p>
           ${objectivesHtml}
-          <p><small>Everything needed is on this page; you do not need the printed booklet to complete it.</small></p>
+          <p><small>If your teacher provided printed cards, files, or links for this lesson, use them alongside this page.</small></p>
         </div>
       </div>
     </details>

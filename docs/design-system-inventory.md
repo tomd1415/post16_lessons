@@ -45,6 +45,7 @@ Defined in `:root` in `web/core/app.css`.
 - `body` uses a dark gradient background and 18px base font size
 - `.container` centered max width with padding
 - `.topbar` sticky header with blur and border
+- `.nav-row` holds the global nav and breadcrumb row
 - `.row` flex row for buttons and quick actions
 - `.grid` plus modifiers `.cols2`, `.cols3` for responsive grids
 - `.split` two-column layout with sticky `.nav` (defined but not currently used)
@@ -52,7 +53,9 @@ Defined in `:root` in `web/core/app.css`.
 
 ## Core UI components
 - Buttons: `.btn` with variants `.primary`, `.good`, `.bad`
-- Pills: `.pill` used for HOME/STUDENT navigation in activity pages
+- Global nav: `.global-nav` with `.nav-item` (adds `.active` for current page)
+- Breadcrumbs: `.breadcrumb` with `.crumb-sep` and `.crumb-current`
+- Pills: legacy `.pill` markup (removed at runtime and replaced by global nav)
 - Notes: `.note` with variants `.warn`, `.good`, `.bad`
 - Badges/tags: `.badge`, `.tag`
 - Keyboard callouts: `.kbd`
@@ -75,10 +78,13 @@ Defined in `web/core/app.js`.
 - Toast messages: `toast(msg)` (auto hides in 2.4s)
 - Teacher mode
   - Toggle button `#teacherToggle`
-  - Query param `?teacher=1` forces on
+  - Query param `?teacher=1` forces on (staff roles only)
   - Storage key `tlac_teacher_mode`
   - Shows/hides `.teacher-only` blocks
   - Sets `document.documentElement.dataset.teacher`
+- Role-based navigation
+  - `#roleMenu` is rendered based on the signed-in role
+  - Teacher hub links are hidden for pupils
 - Utilities: `shuffle`, `uid`, `downloadText`, `printPage`
 
 ## Lesson 1 data contract
@@ -149,6 +155,7 @@ All activities use localStorage state and optional export to JSON.
 ## Cross-cutting conventions
 - Every page includes:
   - Topbar with brand and teacher toggle
+  - Global nav + breadcrumbs injected into `.topbar .container`
   - `.container` wrapper
   - Toast container `#toast` with `role="status"` and `aria-live="polite"`
 - All activities persist to localStorage; pupils see latest state only

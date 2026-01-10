@@ -62,7 +62,7 @@
       "Task A: For each statement, pick Formal or Natural. Aim for clear, unambiguous wording.",
       "Task B: Rewrite the hot chocolate instruction as numbered, precise steps with no vague words.",
       "Task C: Swap with a partner (or self-review), mark unclear wording, rewrite one step, tick the checklist, and summarise in the notes box.",
-      "Fill the final reflection box about what you improved; use Reset only if you need a fresh start."
+      "Fill the final reflection box about what you improved; leave your answers in the boxes for review."
     ],
     "a02": [
       "Answer the three quick checks on source vs machine code and click Check for feedback.",
@@ -70,7 +70,7 @@
       "Task A: Mark each statement S (source) or M (machine).",
       "Task B: Pick the missing pipeline step, click Check, and write why that step is needed.",
       "Task C: Complete the translation sentence for x = 2 + 3 and (optional) note an opcode; tick the checklist items when covered.",
-      "Write a short reflection on where errors can happen in translation; Export/Print if you need to keep your answers."
+      "Write a short reflection on where errors can happen in translation; leave your answers in the boxes for review."
     ],
     "a03": [
       "Do the three quick checks about phase order, testing timing, and enhancement; click Check on each.",
@@ -78,7 +78,7 @@
       "Task A: Assign an order number 1–5 to every phase (no blanks).",
       "Task B: Choose the matching artefact/output for each phase (requirements, wireframe, code, test report, change log).",
       "Task C: For the focus timer mini-case, add one concrete action per phase. Tick the checklist when goal/inputs/steps/test are covered.",
-      "Add a reflection on which phase is most important and where bugs creep in; Export/Print if required."
+      "Add a reflection on which phase is most important and where bugs creep in."
     ],
     "a04": [
       "Answer the three quick checks (spec quality, functional vs non-functional, example). Click Check for each.",
@@ -86,7 +86,7 @@
       "Task A: Choose a simple game idea (write a short title).",
       "Task B: Fill the spec table: goal, inputs, outputs, rules, constraints. Keep each as one clear line.",
       "Task C: Write three testable acceptance statements (“The game should…”). Add an accessibility constraint in the stretch if you can.",
-      "Tick the checklist, then add a reflection on the hardest requirement to test; Export/Print if you need to submit."
+      "Tick the checklist, then add a reflection on the hardest requirement to test."
     ]
   },
   "lesson-3": {
@@ -256,12 +256,6 @@
       "Test start/stop behaviour and note any errors (missing file, format).",
       "Record the parameter changes you tried and their effects.",
       "Add a brief reflection on how you would trigger sounds from game events."
-    ],
-    "a03": [
-      "Inspect the event-handling examples; map each event (key/mouse) to an action in the table provided.",
-      "Add or edit one handler to change behaviour; test it and note the output or effect.",
-      "Check for a quit/close handler and ensure it works; record evidence.",
-      "Reflect on how events connect to game loops."
     ]
   },
   "lesson-14": {
@@ -276,12 +270,6 @@
       "Identify the base case and the work done before/after the recursive call.",
       "Try a second input to confirm the call stack pattern; note any risk of infinite recursion.",
       "Summarise how you would test or visualise the recursion in code."
-    ],
-    "a03": [
-      "Work through the search/tree task (e.g., alpha-beta); note the prune/keep decisions on each step.",
-      "Fill any provided tables for node values and pruned branches.",
-      "Explain in a sentence why a branch was cut; add at least one test case of your own.",
-      "Reflect on how pruning speeds up search."
     ]
   },
   "lesson-15": {
@@ -296,12 +284,6 @@
       "List one failure mode per stage and a mitigation.",
       "Tick checklist items once every stage has a clear activity and risk.",
       "Add a reflection on which stage most often slips and how to prevent it."
-    ],
-    "a03": [
-      "Open the Python programs list; choose a snippet and annotate it with comments explaining purpose and tricky lines.",
-      "Run or mentally execute the code to ensure comments match behaviour.",
-      "Add one small refactor if allowed (rename variable, extract function) and note the effect.",
-      "Save/export your annotated version or notes as evidence."
     ]
   }
 }
