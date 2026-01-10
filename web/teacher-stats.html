@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Thinking like a Coder - Teacher stats</title>
+  <link rel="stylesheet" href="./core/app.css" />
+</head>
+<body data-requires-role="teacher">
+  <div class="topbar no-print">
+    <div class="container">
+      <div class="brand">
+        <b>Thinking like a Coder - Teacher stats</b>
+        <span>Completion, attention lists, timing (approx)</span>
+      </div>
+      <div class="row">
+        <a class="pill" href="./teacher.html"><strong>TEACHER</strong> <span>Teacher hub</span></a>
+        <a class="pill" href="./index.html"><strong>STUDENT</strong> <span>Student hub</span></a>
+        <a class="pill" id="adminLink" href="./admin.html" style="display:none"><strong>ADMIN</strong> <span>Admin</span></a>
+        <span id="userBadge" class="badge" style="display:none"></span>
+        <button class="btn" id="logoutBtn" type="button">Logout</button>
+        <button class="btn" id="teacherToggle" type="button">Teacher mode: OFF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>Teacher view v2</h1>
+    <div class="note">
+      <b>Use this page to:</b> review lesson/objective completion, spot pupils needing attention, and view approximate timing.
+    </div>
+
+    <div class="grid cols2" style="margin-top:12px">
+      <div class="card">
+        <h2>Filters</h2>
+        <label for="cohortSelect"><b>Cohort / year</b></label>
+        <select id="cohortSelect"></select>
+        <div style="height:10px"></div>
+        <label for="lessonSelect"><b>Lesson</b></label>
+        <select id="lessonSelect"></select>
+        <div style="height:12px"></div>
+        <button class="btn primary" id="refreshBtn" type="button">Refresh stats</button>
+      </div>
+      <div class="card">
+        <h2>Notes</h2>
+        <div class="note">
+          Timing is approximate: it uses the first and last save events per activity. Activities with 1 save do not
+          contribute to averages.
+        </div>
+        <div class="note" id="attentionMeta" style="margin-top:10px">
+          Needs attention rules load here.
+        </div>
+      </div>
+    </div>
+
+    <h2>Lesson completion</h2>
+    <div class="card">
+      <table class="table" id="completionTable">
+        <thead>
+          <tr>
+            <th>Lesson</th>
+            <th>Completed pupils</th>
+            <th>Total pupils</th>
+            <th>Completion rate</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <h2>Objective completion</h2>
+    <div class="card">
+      <table class="table" id="objectiveTable">
+        <thead>
+          <tr>
+            <th>Objective</th>
+            <th>Completed</th>
+            <th>Total</th>
+            <th>Completion rate</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <h2>Timing by activity (approx)</h2>
+    <div class="card">
+      <table class="table" id="timingTable">
+        <thead>
+          <tr>
+            <th>Activity</th>
+            <th>Avg minutes</th>
+            <th>Median minutes</th>
+            <th>Samples</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <h2>Needs attention</h2>
+    <div class="card">
+      <table class="table" id="attentionTable">
+        <thead>
+          <tr>
+            <th>Pupil</th>
+            <th>Lesson / Activity</th>
+            <th>Reasons</th>
+            <th>Revisions</th>
+            <th>Last activity</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="footer">
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <script src="./core/app.js"></script>
+  <script src="./core/auth.js"></script>
+  <script>
+    const cohortSelect = document.getElementById("cohortSelect");
+    const lessonSelect = document.getElementById("lessonSelect");
+    const refreshBtn = document.getElementById("refreshBtn");
+    const completionBody = document.querySelector("#completionTable tbody");
+    const objectiveBody = document.querySelector("#objectiveTable tbody");
+    const timingBody = document.querySelector("#timingTable tbody");
+    const attentionBody = document.querySelector("#attentionTable tbody");
+    const attentionMeta = document.getElementById("attentionMeta");
+
+    let manifest = null;
+    let lessons = [];
+    let lessonMap = {};
+
+    function setSelectOptions(select, options, fallback){
+      select.innerHTML = "";
+      const optAll = document.createElement("option");
+      optAll.value = "";
+      optAll.textContent = "All";
+      select.appendChild(optAll);
+      if(!options.length){
+        const opt = document.createElement("option");
+        opt.value = "";
+        opt.textContent = fallback || "None";
+        select.appendChild(opt);
+        select.disabled = true;
+        return;
+      }
+      select.disabled = false;
+      options.forEach(({value,label})=>{
+        const opt = document.createElement("option");
+        opt.value = value;
+        opt.textContent = label;
+        select.appendChild(opt);
+      });
+    }
+
+    function formatPercent(value){
+      if(value === null || value === undefined) return "—";
+      return `${Math.round(value * 100)}%`;
+    }
+
+    function formatMinutes(value){
+      if(value === null || value === undefined) return "—";
+      return `${value.toFixed(1)}`;
+    }
+
+    function renderCompletion(data){
+      completionBody.innerHTML = "";
+      const stats = data.lesson_stats || {};
+      if(!lessons.length){
+        completionBody.innerHTML = "<tr><td colspan='4'>No lessons.</td></tr>";
+        return;
+      }
+      const lessonList = lessonSelect.value ? lessons.filter(l => l.id === lessonSelect.value) : lessons;
+      if(!lessonList.length){
+        completionBody.innerHTML = "<tr><td colspan='4'>No data.</td></tr>";
+        return;
+      }
+      lessonList.forEach(lesson => {
+        const entry = stats[lesson.id];
+        if(!entry){
+          return;
+        }
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>Lesson ${lesson.number}: ${lesson.title}</td>
+          <td>${entry.completed_pupils}</td>
+          <td>${entry.total_pupils}</td>
+          <td>${formatPercent(entry.completion_rate)}</td>
+        `;
+        completionBody.appendChild(row);
+      });
+      if(!completionBody.children.length){
+        completionBody.innerHTML = "<tr><td colspan='4'>No data.</td></tr>";
+      }
+    }
+
+    function renderObjectives(data){
+      objectiveBody.innerHTML = "";
+      const lessonId = lessonSelect.value;
+      if(!lessonId){
+        objectiveBody.innerHTML = "<tr><td colspan='4'>Select a lesson to view objectives.</td></tr>";
+        return;
+      }
+      const stats = (data.objective_stats || {})[lessonId] || {};
+      const objectives = (lessonMap[lessonId] && lessonMap[lessonId].objectives) || [];
+      if(!objectives.length){
+        objectiveBody.innerHTML = "<tr><td colspan='4'>No objectives listed.</td></tr>";
+        return;
+      }
+      objectives.forEach(obj => {
+        const entry = stats[obj.id] || { completed: 0, total: 0, completion_rate: 0 };
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${obj.text || obj.id}</td>
+          <td>${entry.completed}</td>
+          <td>${entry.total}</td>
+          <td>${formatPercent(entry.completion_rate)}</td>
+        `;
+        objectiveBody.appendChild(row);
+      });
+    }
+
+    function renderTiming(data){
+      timingBody.innerHTML = "";
+      const lessonId = lessonSelect.value;
+      if(!lessonId){
+        timingBody.innerHTML = "<tr><td colspan='4'>Select a lesson to view timing.</td></tr>";
+        return;
+      }
+      const timings = ((data.timing || {}).activities || {})[lessonId] || {};
+      const activities = (lessonMap[lessonId] && lessonMap[lessonId].activities) || [];
+      if(!activities.length){
+        timingBody.innerHTML = "<tr><td colspan='4'>No activities listed.</td></tr>";
+        return;
+      }
+      activities.forEach(activity => {
+        const entry = timings[activity.id] || {};
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td><b>${activity.id}</b> - ${activity.title}</td>
+          <td>${entry.avg_minutes !== null && entry.avg_minutes !== undefined ? formatMinutes(entry.avg_minutes) : "—"}</td>
+          <td>${entry.median_minutes !== null && entry.median_minutes !== undefined ? formatMinutes(entry.median_minutes) : "—"}</td>
+          <td>${entry.samples || 0}</td>
+        `;
+        timingBody.appendChild(row);
+      });
+    }
+
+    function renderAttention(data){
+      attentionBody.innerHTML = "";
+      const items = Array.isArray(data.items) ? data.items : [];
+      if(!items.length){
+        attentionBody.innerHTML = "<tr><td colspan='6'>No pupils currently flagged.</td></tr>";
+        return;
+      }
+      items.forEach(item => {
+        const reasons = (item.reasons || []).map(reason => `<span class="tag">${reason.replaceAll("_"," ")}</span>`).join(" ");
+        const last = item.last_activity_at ? new Date(item.last_activity_at).toLocaleString() : "—";
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${item.username} - ${item.name}</td>
+          <td>${item.lesson_id} · ${item.activity_id}</td>
+          <td>${reasons || "—"}</td>
+          <td>${item.revision_count || 0}</td>
+          <td>${last}</td>
+          <td><span class="tag">${item.status}</span></td>
+        `;
+        attentionBody.appendChild(row);
+      });
+    }
+
+    async function loadManifest(){
+      const res = await fetch("/lessons/manifest.json", { credentials: "same-origin" });
+      if(!res.ok){
+        toast("Manifest unavailable.");
+        return;
+      }
+      manifest = await res.json().catch(()=>null);
+      lessons = (manifest && manifest.lessons) ? manifest.lessons.slice() : [];
+      lessons.sort((a,b)=> (a.number || 0) - (b.number || 0));
+      lessonMap = {};
+      lessons.forEach(lesson => { lessonMap[lesson.id] = lesson; });
+      const options = lessons.map(lesson => ({
+        value: lesson.id,
+        label: `Lesson ${lesson.number}: ${lesson.title}`
+      }));
+      setSelectOptions(lessonSelect, options, "No lessons");
+    }
+
+    async function loadCohorts(){
+      const res = await fetch("/api/teacher/users", { credentials: "same-origin" });
+      if(!res.ok){
+        setSelectOptions(cohortSelect, [], "No cohorts");
+        return;
+      }
+      const data = await res.json();
+      const pupils = Array.isArray(data.items) ? data.items : [];
+      const cohorts = Array.from(new Set(pupils.map(p => p.cohort_year).filter(Boolean))).sort();
+      const options = cohorts.map(year => ({ value: year, label: year }));
+      setSelectOptions(cohortSelect, options, "No cohorts");
+    }
+
+    async function refreshStats(){
+      const params = new URLSearchParams();
+      if(cohortSelect.value) params.set("cohort_year", cohortSelect.value);
+      if(lessonSelect.value) params.set("lesson_id", lessonSelect.value);
+      const res = await fetch(`/api/teacher/stats?${params.toString()}`, { credentials: "same-origin" });
+      if(!res.ok){
+        toast("Unable to load stats.");
+        return;
+      }
+      const data = await res.json();
+      renderCompletion(data);
+      renderObjectives(data);
+      renderTiming(data);
+    }
+
+    async function refreshAttention(){
+      const params = new URLSearchParams();
+      if(cohortSelect.value) params.set("cohort_year", cohortSelect.value);
+      if(lessonSelect.value) params.set("lesson_id", lessonSelect.value);
+      const res = await fetch(`/api/teacher/attention?${params.toString()}`, { credentials: "same-origin" });
+      if(!res.ok){
+        toast("Unable to load attention list.");
+        return;
+      }
+      const data = await res.json();
+      const thresholds = data.thresholds || {};
+      attentionMeta.innerHTML = `
+        <b>Needs attention:</b>
+        stuck if no progress for ${thresholds.stuck_days || "?"} days,
+        many revisions if ≥ ${thresholds.revision_threshold || "?"}.
+      `;
+      renderAttention(data);
+    }
+
+    async function refreshAll(){
+      await refreshStats();
+      await refreshAttention();
+    }
+
+    refreshBtn.addEventListener("click", refreshAll);
+    lessonSelect.addEventListener("change", refreshAll);
+    cohortSelect.addEventListener("change", refreshAll);
+
+    (async ()=>{
+      await loadManifest();
+      await loadCohorts();
+      await refreshAll();
+    })();
+  </script>
+</body>
+</html>

@@ -19,7 +19,7 @@ This repo delivers a containerized, on-prem web platform for the ICDL "Thinking 
 - [x] Phase 4: Teacher view v1 (filtering, completion, notes, CSV export).
 - [x] Phase 5: Content expansion automation + link registry tooling.
 - [x] Phase 6: Python runner MVP (safe, isolated execution).
-- [ ] Phase 7: Teacher view v2 (stats, attention lists, timing).
+- [x] Phase 7: Teacher view v2 (stats, attention lists, timing).
 - [ ] Phase 8: Ops hardening (backups, retention purge, audit log, DPIA support).
 
 Detailed requirements and the phase plan are in `plans/prompt_1`.
@@ -157,6 +157,16 @@ Implementation note: The runner executes code via an inline bootstrap (`python -
 This avoids intermittent `can't open file '/tmp/main.py'` errors caused by relying on Docker archive uploads into tmpfs.
 Do not switch back to file-based execution without a reliable pre-run file injection step.
 
+## Teacher view v2 (Phase 7)
+Stats + attention + timing are delivered at:
+- Stats page: `https://localhost:8443/teacher-stats.html`.
+- Completion stats: aggregated per lesson and objective (objective totals = activities mapped to the objective × pupils in scope).
+- Needs attention list: only activities a pupil has started (has revisions). Flags:
+  - `not_completed` when status is not complete.
+  - `many_revisions` when revision count exceeds the threshold.
+  - `stuck` when last save is older than the threshold and not complete.
+- Timing metrics: approximate, based on first/last saved timestamps per activity; only activities with 2+ saves contribute to averages.
+
 ## Link registry tooling (Phase 5)
 Handbook links live in the manifest `linksRegistry.items`. Teachers can set replacement URLs or local copies in:
 - `https://localhost:8443/teacher-links.html`
@@ -246,7 +256,6 @@ python -m py_compile backend/app/*.py
 - Static changes not visible: hard refresh to bypass cached assets.
 
 ## Known gaps (planned)
-- Teacher view v2 (stats, attention lists, timing) (Phase 7).
 - Backups, retention purge, audit logs (Phase 8).
 - Lesson 2-15 activity wording polish (draft handbook imports).
 

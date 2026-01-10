@@ -5,6 +5,7 @@ import json
 import os
 import re
 import secrets
+import statistics
 import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -16,6 +17,9 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
 from .config import (
+    ATTENTION_LIMIT,
+    ATTENTION_REVISION_THRESHOLD,
+    ATTENTION_STUCK_DAYS,
     CSRF_HEADER_NAME,
     LINK_OVERRIDES_PATH,
     RUNNER_CONCURRENCY,
@@ -120,6 +124,32 @@ def parse_client_time(value):
         except Exception:
             return None
     return None
+
+
+def safe_mean(values):
+    if not values:
+        return None
+    return sum(values) / len(values)
+
+
+def safe_median(values):
+    if not values:
+        return None
+    return statistics.median(values)
+
+
+def format_minutes(value):
+    if value is None:
+        return None
+    return round(float(value), 1)
+
+
+def ensure_utc(value):
+    if not value:
+        return None
+    if value.tzinfo is None:
+        return value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc)
 
 
 def load_manifest():
@@ -704,6 +734,301 @@ def teacher_overview(
         "completion": completion,
     }
 
+
+@app.get("/api/teacher/stats")
+def teacher_stats(
+    request: Request,
+    cohort_year: str = "",
+    lesson_id: str = "",
+    db: Session = Depends(get_db),
+):
+    require_teacher(request)
+    if lesson_id and not valid_lesson_id(lesson_id):
+        raise HTTPException(status_code=400, detail="Invalid lesson id.")
+
+    manifest = load_manifest() or {}
+    lessons = (manifest.get("lessons") or []) if isinstance(manifest, dict) else []
+    lessons = sorted(lessons, key=lambda l: l.get("number") or 0)
+    if lesson_id:
+        lessons = [lesson for lesson in lessons if lesson.get("id") == lesson_id]
+
+    lesson_ids = [lesson.get("id") for lesson in lessons if lesson.get("id")]
+    lesson_titles = {lesson.get("id"): lesson.get("title") for lesson in lessons if lesson.get("id")}
+
+    activity_meta = {}
+    activity_objectives = {}
+    objective_text = {}
+    objective_activity_ids = {}
+    totals = {}
+    for lesson in lessons:
+        lid = lesson.get("id")
+        if not lid:
+            continue
+        activities = lesson.get("activities") or []
+        activity_meta[lid] = {activity.get("id"): activity for activity in activities if activity.get("id")}
+        activity_objectives[lid] = {}
+        for activity in activities:
+            activity_id = activity.get("id")
+            if not activity_id:
+                continue
+            obj_ids = activity.get("objectiveIds") or []
+            activity_objectives[lid][activity_id] = obj_ids
+            for obj_id in obj_ids:
+                objective_activity_ids.setdefault(lid, {}).setdefault(obj_id, set()).add(activity_id)
+        objectives = lesson.get("objectives") or []
+        objective_text[lid] = {obj.get("id"): obj.get("text") for obj in objectives if obj.get("id")}
+        totals[lid] = len(activity_meta[lid])
+
+    query = db.query(User).filter(User.role == "pupil", User.active.is_(True))
+    if cohort_year:
+        query = query.filter(User.cohort_year == cohort_year)
+    pupils = query.order_by(User.username.asc()).all()
+    pupil_ids = [pupil.id for pupil in pupils]
+
+    lesson_stats = {
+        lid: {
+            "lesson_id": lid,
+            "lesson_title": lesson_titles.get(lid, ""),
+            "total_pupils": len(pupils),
+            "completed_pupils": 0,
+            "completion_rate": 0.0,
+        }
+        for lid in lesson_ids
+    }
+    activity_stats = {}
+    objective_stats = {}
+    for lid in lesson_ids:
+        activity_stats[lid] = {}
+        for activity_id, activity in (activity_meta.get(lid) or {}).items():
+            activity_stats[lid][activity_id] = {
+                "activity_id": activity_id,
+                "activity_title": activity.get("title") or "",
+                "completed": 0,
+                "total": len(pupils),
+                "completion_rate": 0.0,
+            }
+        objective_stats[lid] = {}
+        for obj_id, text in (objective_text.get(lid) or {}).items():
+            total_targets = len(pupils) * len(objective_activity_ids.get(lid, {}).get(obj_id, set()))
+            objective_stats[lid][obj_id] = {
+                "objective_id": obj_id,
+                "objective_text": text or "",
+                "completed": 0,
+                "total": total_targets,
+                "completion_rate": 0.0,
+            }
+
+    pupil_completion_counts = {}
+    marks = []
+    if pupil_ids and lesson_ids:
+        marks_query = db.query(ActivityMark).filter(ActivityMark.user_id.in_(pupil_ids))
+        marks_query = marks_query.filter(ActivityMark.lesson_id.in_(lesson_ids))
+        marks = marks_query.all()
+    for mark in marks:
+        if mark.status != "complete":
+            continue
+        lid = mark.lesson_id
+        activity_id = mark.activity_id
+        if lid not in activity_meta or activity_id not in activity_meta[lid]:
+            continue
+        pupil_completion_counts[(mark.user_id, lid)] = pupil_completion_counts.get((mark.user_id, lid), 0) + 1
+        activity_stats[lid][activity_id]["completed"] += 1
+        for obj_id in activity_objectives.get(lid, {}).get(activity_id, []):
+            if obj_id in objective_stats[lid]:
+                objective_stats[lid][obj_id]["completed"] += 1
+
+    for lid in lesson_ids:
+        total = totals.get(lid, 0)
+        for pupil in pupils:
+            completed = pupil_completion_counts.get((pupil.id, lid), 0)
+            if total > 0 and completed >= total:
+                lesson_stats[lid]["completed_pupils"] += 1
+        if len(pupils):
+            lesson_stats[lid]["completion_rate"] = lesson_stats[lid]["completed_pupils"] / len(pupils)
+
+        for stats in activity_stats[lid].values():
+            if stats["total"]:
+                stats["completion_rate"] = stats["completed"] / stats["total"]
+
+        for stats in objective_stats[lid].values():
+            if stats["total"]:
+                stats["completion_rate"] = stats["completed"] / stats["total"]
+
+    activity_timing = {lid: {aid: [] for aid in (activity_meta.get(lid) or {})} for lid in lesson_ids}
+    pupil_lesson_durations = {}
+    if pupil_ids and lesson_ids:
+        revisions_query = db.query(ActivityRevision).filter(ActivityRevision.user_id.in_(pupil_ids))
+        revisions_query = revisions_query.filter(ActivityRevision.lesson_id.in_(lesson_ids))
+        revisions = revisions_query.all()
+    else:
+        revisions = []
+
+    revision_times = {}
+    for rev in revisions:
+        lid = rev.lesson_id
+        aid = rev.activity_id
+        if lid not in activity_meta or aid not in activity_meta[lid]:
+            continue
+        timestamp = ensure_utc(rev.client_saved_at or rev.created_at)
+        if not timestamp:
+            continue
+        key = (rev.user_id, lid, aid)
+        revision_times.setdefault(key, []).append(timestamp)
+
+    for (user_id, lid, aid), times in revision_times.items():
+        if len(times) < 2:
+            continue
+        times_sorted = sorted(times)
+        duration_sec = (times_sorted[-1] - times_sorted[0]).total_seconds()
+        if duration_sec < 0:
+            continue
+        minutes = duration_sec / 60.0
+        activity_timing[lid][aid].append(minutes)
+        pupil_lesson_durations[(user_id, lid)] = pupil_lesson_durations.get((user_id, lid), 0.0) + minutes
+
+    lesson_timing = {}
+    activity_timing_stats = {}
+    for lid in lesson_ids:
+        pupil_minutes = [minutes for (user_id, lesson_key), minutes in pupil_lesson_durations.items() if lesson_key == lid]
+        lesson_timing[lid] = {
+            "avg_minutes": format_minutes(safe_mean(pupil_minutes)),
+            "median_minutes": format_minutes(safe_median(pupil_minutes)),
+            "samples": len(pupil_minutes),
+        }
+        activity_timing_stats[lid] = {}
+        for aid, durations in activity_timing[lid].items():
+            activity_timing_stats[lid][aid] = {
+                "avg_minutes": format_minutes(safe_mean(durations)),
+                "median_minutes": format_minutes(safe_median(durations)),
+                "samples": len(durations),
+            }
+
+    return {
+        "lesson_ids": lesson_ids,
+        "lesson_stats": lesson_stats,
+        "activity_stats": activity_stats,
+        "objective_stats": objective_stats,
+        "timing": {
+            "lessons": lesson_timing,
+            "activities": activity_timing_stats,
+        },
+    }
+
+
+@app.get("/api/teacher/attention")
+def teacher_attention(
+    request: Request,
+    cohort_year: str = "",
+    lesson_id: str = "",
+    limit: int = ATTENTION_LIMIT,
+    db: Session = Depends(get_db),
+):
+    require_teacher(request)
+    if lesson_id and not valid_lesson_id(lesson_id):
+        raise HTTPException(status_code=400, detail="Invalid lesson id.")
+    limit = max(1, min(int(limit or ATTENTION_LIMIT), 500))
+
+    manifest = load_manifest() or {}
+    lessons = (manifest.get("lessons") or []) if isinstance(manifest, dict) else []
+    lesson_titles = {lesson.get("id"): lesson.get("title") for lesson in lessons if lesson.get("id")}
+    activity_titles = {}
+    for lesson in lessons:
+        lid = lesson.get("id")
+        for activity in lesson.get("activities") or []:
+            activity_id = activity.get("id")
+            if lid and activity_id:
+                activity_titles[(lid, activity_id)] = activity.get("title") or ""
+
+    query = db.query(User).filter(User.role == "pupil", User.active.is_(True))
+    if cohort_year:
+        query = query.filter(User.cohort_year == cohort_year)
+    pupils = query.order_by(User.username.asc()).all()
+    pupil_map = {pupil.id: pupil for pupil in pupils}
+    pupil_ids = [pupil.id for pupil in pupils]
+
+    marks = []
+    if pupil_ids:
+        marks_query = db.query(ActivityMark).filter(ActivityMark.user_id.in_(pupil_ids))
+        if lesson_id:
+            marks_query = marks_query.filter(ActivityMark.lesson_id == lesson_id)
+        marks = marks_query.all()
+    mark_status = {(mark.user_id, mark.lesson_id, mark.activity_id): mark.status for mark in marks}
+
+    revisions = []
+    if pupil_ids:
+        revisions_query = db.query(ActivityRevision).filter(ActivityRevision.user_id.in_(pupil_ids))
+        if lesson_id:
+            revisions_query = revisions_query.filter(ActivityRevision.lesson_id == lesson_id)
+        revisions = revisions_query.all()
+
+    rev_summary = {}
+    for rev in revisions:
+        lid = rev.lesson_id
+        aid = rev.activity_id
+        key = (rev.user_id, lid, aid)
+        timestamp = ensure_utc(rev.client_saved_at or rev.created_at)
+        if not timestamp:
+            continue
+        entry = rev_summary.get(key)
+        if not entry:
+            rev_summary[key] = {"count": 1, "last": timestamp}
+        else:
+            entry["count"] += 1
+            if timestamp > entry["last"]:
+                entry["last"] = timestamp
+
+    cutoff = utcnow() - timedelta(days=ATTENTION_STUCK_DAYS)
+    items = []
+    for (user_id, lid, aid), info in rev_summary.items():
+        pupil = pupil_map.get(user_id)
+        if not pupil:
+            continue
+        status = mark_status.get((user_id, lid, aid), "incomplete")
+        reasons = []
+        if status != "complete":
+            reasons.append("not_completed")
+        if info["count"] >= ATTENTION_REVISION_THRESHOLD:
+            reasons.append("many_revisions")
+        if status != "complete" and info["last"] < cutoff:
+            reasons.append("stuck")
+        if not reasons:
+            continue
+        items.append(
+            {
+                "username": pupil.username,
+                "name": pupil.name,
+                "cohort_year": pupil.cohort_year or "",
+                "lesson_id": lid,
+                "lesson_title": lesson_titles.get(lid, ""),
+                "activity_id": aid,
+                "activity_title": activity_titles.get((lid, aid), ""),
+                "status": status,
+                "reasons": reasons,
+                "revision_count": info["count"],
+                "last_activity_at": info["last"].isoformat(),
+            }
+        )
+
+    def item_score(item):
+        score = 0
+        if "stuck" in item["reasons"]:
+            score += 4
+        if "many_revisions" in item["reasons"]:
+            score += 2
+        if "not_completed" in item["reasons"]:
+            score += 1
+        return score
+
+    items.sort(key=lambda item: (-item_score(item), item["last_activity_at"]))
+    items = items[:limit]
+
+    return {
+        "thresholds": {
+            "stuck_days": ATTENTION_STUCK_DAYS,
+            "revision_threshold": ATTENTION_REVISION_THRESHOLD,
+        },
+        "items": items,
+    }
 
 @app.get("/api/teacher/pupil/{username}/lesson/{lesson_id}")
 def pupil_lesson_detail(

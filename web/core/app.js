@@ -31,6 +31,7 @@ const ROLE_MENUS = {
     items: [
       { label: "Teacher hub", href: "/teacher.html" },
       { label: "Teacher view", href: "/teacher-view.html" },
+      { label: "Teacher stats", href: "/teacher-stats.html" },
       { label: "Revision history", href: "/teacher-history.html" },
       { label: "Link registry", href: "/teacher-links.html" },
       { label: "Lesson 1 teacher hub", href: "/lessons/lesson-1/index.html" },
@@ -47,6 +48,7 @@ const ROLE_MENUS = {
       { label: "Create user", href: "/admin.html#admin-create-user" },
       { label: "Import CSV", href: "/admin.html#admin-import" },
       { label: "Teacher view", href: "/teacher-view.html" },
+      { label: "Teacher stats", href: "/teacher-stats.html" },
       { label: "Revision history", href: "/teacher-history.html" },
       { label: "Link registry", href: "/teacher-links.html" },
       { label: "Teacher hub", href: "/teacher.html" },
