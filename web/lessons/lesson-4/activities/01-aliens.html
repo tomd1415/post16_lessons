@@ -68,28 +68,80 @@
 
       <div class="card">
         <h2>Step 2: Key ideas in your own words</h2>
-        <p>Explain the main idea of <b>Aliens!</b> in one or two sentences.</p>
-        <textarea data-field="step2_notes" placeholder="Write your notes here..."></textarea>
+        <p>Fill the quick boxes (no long writing).</p>
+        <table class="table">
+          <thead><tr><th>Prompt</th><th>Your answer</th></tr></thead>
+          <tbody>
+            <tr><td>Game name / file</td><td><input type="text" data-field="file_name" placeholder="aliens.py" /></td></tr>
+            <tr><td>What should happen when Run is clicked?</td><td><input type="text" data-field="expected_run" placeholder="game window opens" /></td></tr>
+            <tr><td>One control key</td><td><input type="text" data-field="control_key" placeholder="e.g., space to fire" /></td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
     <div class="card" style="margin-top:12px">
       <h2>Step 3: Build the main task</h2>
       <div class="note"><b>Learning objective:</b> Getting started with Python programs</div>
-<p><b>Suggested use:</b> Student activity</p>
-<p>Open and run this 'Alien Invaders' example that comes with Pygame.</p>
-<p>C:\Python32\Lib\site-packages\pygame\examples and choose aliens.py.</p>
-<p>__file__ = "junk"</p>
-<p>As shown in the screenshot:</p>
-<p>(Note: There are two _ characters, not one, before and after the word</p>
-<p>'file'.)</p>
-<p>Alternatively, you can make the exercise easier for students by modifying and</p>
-<p>saving the file aliens.py before the lesson.</p>
-<ol>
-  <li>Use the File->Open menu item, and navigate to:</li>
-  <li>Open and edit the file to add this line:</li>
-  <li>Run the program using F5 to start this game:</li>
-</ol>
+      <p><b>Suggested use:</b> Student activity</p>
+
+      <h3>Task A: Open the starter file</h3>
+      <p>Use the copy of <b>aliens.py</b> provided by your teacher (or the starter folder on your machine).</p>
+      <table class="table">
+        <thead><tr><th>Check</th><th>Done?</th></tr></thead>
+        <tbody>
+          <tr><td>Found the file location</td><td><input type="checkbox" data-check="found_file" /></td></tr>
+          <tr><td>Opened in the editor</td><td><input type="checkbox" data-check="opened_editor" /></td></tr>
+          <tr><td>Noted the file path</td><td><input type="text" data-field="file_path" placeholder="e.g., /home/.../aliens.py" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task B: Run and capture</h3>
+      <p>Run the game once. Record what happened.</p>
+      <table class="table">
+        <thead><tr><th>Question</th><th>Your answer</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Did it run without errors?</td>
+            <td>
+              <label class="choice inline"><input type="radio" name="run_ok" value="yes"> Yes</label>
+              <label class="choice inline"><input type="radio" name="run_ok" value="no"> No</label>
+            </td>
+          </tr>
+          <tr><td>Main output / message</td><td><input type="text" data-field="run_output" placeholder="e.g., window opened / error text" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task C: Make one small edit</h3>
+      <p>Choose one quick change, then run again.</p>
+      <table class="table">
+        <thead><tr><th>Change</th><th>Details</th><th>Ran after change?</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>
+              <select data-field="change_type">
+                <option value="">-- choose --</option>
+                <option>Change window caption</option>
+                <option>Change player speed/value</option>
+                <option>Change starting lives/score</option>
+              </select>
+            </td>
+            <td><input type="text" data-field="change_detail" placeholder="e.g., caption to 'Space Patrol'" /></td>
+            <td>
+              <label class="choice inline"><input type="radio" name="change_run" value="yes"> Yes</label>
+              <label class="choice inline"><input type="radio" name="change_run" value="no"> No</label>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Task D: Evidence</h3>
+      <p>Tick what you saved.</p>
+      <ul class="list checklist">
+        <li><label><input type="checkbox" data-check="saved_file"> Saved the edited file.</label></li>
+        <li><label><input type="checkbox" data-check="screenshot"> Captured a screenshot or score.</label></li>
+        <li><label><input type="checkbox" data-check="notes"> Recorded one issue you fixed.</label></li>
+      </ul>
       <ul class="list checklist">
         <li><label><input type="checkbox" data-check="goal"> I can describe the goal in one clear sentence.</label></li>
         <li><label><input type="checkbox" data-check="inputs"> I can list the inputs or information needed.</label></li>
@@ -104,8 +156,8 @@ Requirement 2: ..."></textarea>
 
     <div class="card" style="margin-top:12px">
       <h2>Step 4: Reflection</h2>
-      <p>Encourage pupils to note what was easy, what was tricky, and what they would change.</p>
-      <textarea data-field="reflection" placeholder="What went well? What would you do differently next time?"></textarea>
+      <p>What was easy? What error (if any) did you see, and how did you fix it?</p>
+      <textarea data-field="reflection" placeholder="Quick note: ..."></textarea>
     </div>
 
     <div class="teacher-only card" style="margin-top:12px; display:none">
@@ -114,8 +166,8 @@ Requirement 2: ..."></textarea>
         <li>Quick check 1: .py</li>
 <li>Quick check 2: Run/Execute</li>
 <li>Quick check 3: storing the code so it can be opened again</li>
-<li>Learning objective focus: Getting started with Python programs</li>
-<li>Look for clear steps and correct use of key terms.</li>
+        <li>Encourage: small edit like caption or speed; capture output/screenshot as evidence.</li>
+        <li>Support: have a pre-tested starter copy; pair for error reading.</li>
       </ul>
     </div>
 

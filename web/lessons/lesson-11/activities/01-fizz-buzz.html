@@ -68,59 +68,91 @@
 
       <div class="card">
         <h2>Step 2: Key ideas in your own words</h2>
-        <p>Explain the main idea of <b>Fizz Buzz</b> in one or two sentences.</p>
-        <textarea data-field="step2_notes" placeholder="Write your notes here..."></textarea>
+        <p>Fill the quick table.</p>
+        <table class="table">
+          <thead><tr><th>Prompt</th><th>Your answer</th></tr></thead>
+          <tbody>
+            <tr><td>Function input</td><td><input type="text" data-field="func_input" placeholder="your wording" /></td></tr>
+            <tr><td>When to return Fizz</td><td><input type="text" data-field="fizz_rule" placeholder="your wording" /></td></tr>
+            <tr><td>When to return Buzz</td><td><input type="text" data-field="buzz_rule" placeholder="your wording" /></td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
     <div class="card" style="margin-top:12px">
       <h2>Step 3: Build the main task</h2>
       <div class="note"><b>Learning objective:</b> Consolidation of lessons 6-12</div>
-<p><b>Suggested use:</b> Student activity</p>
-<p>program/</p>
-<p>Solution File: FizzBuzz.py located in the lesson 11 folder in the</p>
-<p>TeacherCodeFiles folder</p>
-<p>This resource suggests an interview question to determine if programmers</p>
-<p>understand the basics.</p>
-<p>'Write a program that prints the numbers from 1 to 100. But for multiples of</p>
-<p>three print "Fizz" instead of the number and for the multiples of five print</p>
-<p>"Buzz". For numbers which are multiples of both three and five print</p>
-<p>"FizzBuzz".'</p>
-<p>The resource claims that many applicants for programming jobs do not</p>
-<p>understand the basics.</p>
-<p>The learning occurring during lessons 6 - 12 contribute to being able to solve the</p>
-<p>Fizz Buzz problem.  By lesson 12, students will have just enough knowledge to</p>
-<p>write the FizzBuzz program themselves.   You can break down the Fizz Buzz</p>
-<p>program and introduce incrementally during lesson 11 and lesson 12.</p>
-<p>Q: Can you write a logic test to see if a number is divisible by 3?</p>
-<p>A:</p>
-<p>Running this with three different inputs gives the following results:</p>
-<p>Students will probably need hints to find some way to test for whether a number is</p>
-<p>exactly divisible by 3.  A hint could be "What is int(35.5) equal to?".  If they don't</p>
-<p>know, they can try out int(35.5) using the Python shell as a calculator.</p>
-<p>Once students have the idea of using int, they may find other solutions using it.</p>
-<p>When students understand loops in this lesson, they are ready for this question:</p>
-<p>Q: Can you solve the 'Fizz' part of the 'FizzBuzz' problem on its own?</p>
-<p>A:</p>
-<p>Running this gives:</p>
-<p>The program answers the Fizz part of the FizzBuzz question, except it runs from 0</p>
-<p>to 99 rather than 1 to 100.  Students could fix that using an additional variable,</p>
-<p>y=x+1.  (similar to the arrow head example in lesson 11)</p>
-<p>range() can have a start and a count, so range(1,101) will generate numbers 1 to</p>
-<p>100.</p>
-<p>Once the students have completed lesson 11 on functions, develop the FizzBuzz</p>
-<p>challenge further with a question such as this:</p>
-<p>Q: Can you put the 'is it divisible by' logic test into a function that gives a Boolean</p>
-<p>result?</p>
-<p>(Remind students to put a comment before the function to enhance their code.)</p>
-<p>A:</p>
-<p>Finally, at the end of Lesson 11, students can put it all together to get FizzBuzz:</p>
-<p>Which when run gives:</p>
-<p>The use of IF within an IF will be new to the students.</p>
-<p>There is another solution that does not use IF within an IF.  Instead it uses AND</p>
-<p>and NOT.  It's shown here:</p>
-<p>This solution isn't as efficient as the previous solution, but still solves the</p>
-<p>'FizzBuzz' problem.</p>
+      <p><b>Suggested use:</b> Student activity</p>
+
+      <h3>Task A: Divisibility map</h3>
+      <table class="table">
+        <thead><tr><th>Number</th><th>Divisible by 3?</th><th>Divisible by 5?</th><th>Output</th></tr></thead>
+        <tbody>
+          <tr><td>6</td><td><input type="text" data-field="div6_3" placeholder="yes/no" /></td><td><input type="text" data-field="div6_5" placeholder="yes/no" /></td><td><input type="text" data-field="out6" placeholder="Fizz/Buzz/number" /></td></tr>
+          <tr><td>10</td><td><input type="text" data-field="div10_3" placeholder="yes/no" /></td><td><input type="text" data-field="div10_5" placeholder="yes/no" /></td><td><input type="text" data-field="out10" /></td></tr>
+          <tr><td>15</td><td><input type="text" data-field="div15_3" placeholder="yes/no" /></td><td><input type="text" data-field="div15_5" placeholder="yes/no" /></td><td><input type="text" data-field="out15" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task B: Order the checks</h3>
+      <p>Write 1, 2, 3.</p>
+      <table class="table">
+        <thead><tr><th>Condition</th><th>Order</th></tr></thead>
+        <tbody>
+          <tr><td>Check divisible by 3 and 5</td><td><input type="number" data-field="order_both" min="1" max="3" /></td></tr>
+          <tr><td>Check divisible by 3</td><td><input type="number" data-field="order_three" min="1" max="3" /></td></tr>
+          <tr><td>Else: print the number</td><td><input type="number" data-field="order_else" min="1" max="3" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task C: Test cases</h3>
+      <table class="table">
+        <thead><tr><th>Input</th><th>Expected output</th><th>Run?</th></tr></thead>
+        <tbody>
+          <tr><td><input type="text" data-field="test_in1" placeholder="e.g., 1..16" /></td><td><input type="text" data-field="test_out1" placeholder="expected string" /></td><td><input type="checkbox" aria-label="run tc1"></td></tr>
+          <tr><td><input type="text" data-field="test_in2" /></td><td><input type="text" data-field="test_out2" /></td><td><input type="checkbox" aria-label="run tc2"></td></tr>
+        </tbody>
+      </table>
+      <ul class="list checklist">
+        <li><label><input type="checkbox" data-check="goal"> I can describe the goal in one clear sentence.</label></li>
+        <li><label><input type="checkbox" data-check="inputs"> I can list the inputs or information needed.</label></li>
+        <li><label><input type="checkbox" data-check="steps"> I can outline the main steps in order.</label></li>
+        <li><label><input type="checkbox" data-check="test"> I can describe how to test if it works.</label></li>
+      </ul>
+      <div style="margin-top:10px"></div>
+      <label for="taskNotes"><b>Your structured notes</b></label>
+      <textarea id="taskNotes" data-field="task_notes" placeholder="Requirement 1: ...
+Requirement 2: ..."></textarea>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 4: Run in Python</h2>
+      <div class="note">Write your fizz_buzz function and test it.</div>
+      <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn good" id="runBtn" type="button">Run code</button>
+        <button class="btn" id="saveFilesBtn" type="button">Save files</button>
+        <button class="btn bad" id="resetBtn" type="button">Reset</button>
+      </div>
+      <div class="grid cols2" style="margin-top:12px">
+        <div class="card">
+          <h3>Output</h3>
+          <label for="stdout"><b>Stdout</b></label>
+          <pre id="stdout" class="code-output"></pre>
+          <label for="stderr"><b>Stderr</b></label>
+          <pre id="stderr" class="code-output warn"></pre>
+          <div id="runMeta" class="note" style="margin-top:10px; display:none"></div>
+        </div>
+        <div class="card">
+          <h3>Run files</h3>
+          <div id="runFiles" class="file-list"></div>
+          <div style="height:8px"></div>
+          <h3>Saved files</h3>
+          <div id="savedFiles" class="file-list"></div>
+        </div>
+      </div>
+    </div>
       <ul class="list checklist">
         <li><label><input type="checkbox" data-check="goal"> I can describe the goal in one clear sentence.</label></li>
         <li><label><input type="checkbox" data-check="inputs"> I can list the inputs or information needed.</label></li>
@@ -146,7 +178,8 @@ Requirement 2: ..."></textarea>
 <li>Quick check 2: returns a value</li>
 <li>Quick check 3: performs a task</li>
 <li>Learning objective focus: Consolidation of lessons 6-12</li>
-<li>Look for clear steps and correct use of key terms.</li>
+        <li>Task B order: check 3 and 5 first, then 3, then else</li>
+        <li>Look for pupils testing boundary cases and running code to verify.</li>
       </ul>
     </div>
 
@@ -162,6 +195,8 @@ Requirement 2: ..."></textarea>
   </div>
 
   <script src="../../../core/app.js"></script>
+  <script src="../../../core/auth.js"></script>
+  <script src="../../../core/python-runner.js"></script>
   <script src="../../../core/activity-scaffold.js"></script>
 </body>
 </html>

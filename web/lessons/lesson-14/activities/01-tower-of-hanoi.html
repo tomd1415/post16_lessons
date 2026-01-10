@@ -68,51 +68,53 @@
 
       <div class="card">
         <h2>Step 2: Key ideas in your own words</h2>
-        <p>Explain the main idea of <b>Tower of Hanoi</b> in one or two sentences.</p>
-        <textarea data-field="step2_notes" placeholder="Write your notes here..."></textarea>
+        <p>Fill the table.</p>
+        <table class="table">
+          <thead><tr><th>Prompt</th><th>Your answer</th></tr></thead>
+          <tbody>
+            <tr><td>What is the base case for this puzzle?</td><td><input type="text" data-field="base_case" placeholder="your wording" /></td></tr>
+            <tr><td>How does each recursive call make the problem smaller?</td><td><input type="text" data-field="shrink" placeholder="describe change" /></td></tr>
+            <tr><td>What must be true to stop recursing?</td><td><input type="text" data-field="stop" placeholder="stop condition" /></td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
     <div class="card" style="margin-top:12px">
       <h2>Step 3: Build the main task</h2>
       <div class="note"><b>Learning objective:</b> Understand recursion</div>
-<p><b>Suggested use:</b> Student activity</p>
-<p>Topic: Recursion</p>
-<p>Pseudocode</p>
-<p>problem.</p>
-<p>works.</p>
-<p>One piece of learning from this is that a problem that has a recursive nature to it</p>
-<p>can often be solved either by a recursive algorithm or by an iterative one.</p>
-<p>Title: Recursion in Board Games</p>
-<p>beta-search.html</p>
-<p>Any students who play board games such as chess and 'Go' are already familiar</p>
-<p>with an example of recursive thinking.  Often players will consider what could the</p>
-<p>game board look like in 6 moves time?  This involves thinking about current</p>
-<p>moves, and then following them by 5 further moves, and so on...</p>
-<p>This resource is suitable for chess playing students who are really keen on</p>
-<p>understanding how computers can use recursive algorithms to play chess.</p>
-<p>In pseudocode, a recursive algorithm to print possible board positions could be:</p>
-<p>print_possible_positions_from( position, number_of_moves_left):</p>
-<p>if( number_of_moves_left == 0 ):</p>
-<p>print position</p>
-<p>return</p>
-<p>for move in valid_moves_from( position ):</p>
-<p>print_possible_positions_from( position + move, number_of_moves_left -1)</p>
-<p>The structure is the same as other recursions.  There is a logic test to stop</p>
-<p>recursing if looking zero moves ahead.  There is code to make one move and</p>
-<p>then look ahead one fewer moves, by the function calling itself recursively.</p>
-<p>A difference between the chess algorithm and the fractal fern algorithm is that</p>
-<p>instead of the function calling itself four times, it has a loop, and calls itself once</p>
-<p>for each available move.</p>
-<p>Real chess and 'Go' programs use a more complex recursion that takes account</p>
-<p>of how good or bad the moves seem to be.  This reduces the number of positions</p>
-<p>considered when looking ahead, an action called 'pruning'. The resource URL</p>
-<p>includes a link to a description of pruning.</p>
-<ol>
-  <li>Students work in pairs to find a description online of the Tower of Hanoi</li>
-  <li>Students work to solve the problem.</li>
-  <li>Students explain their strategy and more importantly, why their strategy</li>
-</ol>
+      <p><b>Suggested use:</b> Student activity</p>
+
+      <h3>Task A: Sketch the recursive structure</h3>
+      <table class="table">
+        <thead><tr><th>Part</th><th>What happens</th><th>Data passed</th></tr></thead>
+        <tbody>
+          <tr><td>Base case</td><td><input type="text" data-field="base_happens" placeholder="when n == ?" /></td><td><input type="text" data-field="base_data" placeholder="from, to, spare" /></td></tr>
+          <tr><td>Recursive step</td><td><input type="text" data-field="recur_happens" placeholder="move n-1 ..." /></td><td><input type="text" data-field="recur_data" placeholder="how parameters change" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task B: Order the moves</h3>
+      <p>Number the actions for moving <b>n</b> disks from A to C using B as spare.</p>
+      <table class="table">
+        <thead><tr><th>Action</th><th>Order</th></tr></thead>
+        <tbody>
+          <tr><td>Move top <b>n-1</b> disks from A to B</td><td><input type="number" data-field="order_move1" min="1" max="3" /></td></tr>
+          <tr><td>Move largest disk from A to C</td><td><input type="number" data-field="order_move2" min="1" max="3" /></td></tr>
+          <tr><td>Move <b>n-1</b> disks from B to C</td><td><input type="number" data-field="order_move3" min="1" max="3" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task C: Test cases</h3>
+      <table class="table">
+        <thead><tr><th>Disks (n)</th><th>Expected number of moves</th><th>Check mark</th></tr></thead>
+        <tbody>
+          <tr><td><input type="text" data-field="n1" placeholder="e.g., 1" /></td><td><input type="text" data-field="moves1" placeholder="?" /></td><td><input type="checkbox" aria-label="test1 done" /></td></tr>
+          <tr><td><input type="text" data-field="n2" placeholder="e.g., 3" /></td><td><input type="text" data-field="moves2" placeholder="?" /></td><td><input type="checkbox" aria-label="test2 done" /></td></tr>
+          <tr><td><input type="text" data-field="n3" placeholder="e.g., 4" /></td><td><input type="text" data-field="moves3" placeholder="?" /></td><td><input type="checkbox" aria-label="test3 done" /></td></tr>
+        </tbody>
+      </table>
+
       <ul class="list checklist">
         <li><label><input type="checkbox" data-check="goal"> I can describe the goal in one clear sentence.</label></li>
         <li><label><input type="checkbox" data-check="inputs"> I can list the inputs or information needed.</label></li>
@@ -126,7 +128,35 @@ Requirement 2: ..."></textarea>
     </div>
 
     <div class="card" style="margin-top:12px">
-      <h2>Step 4: Reflection</h2>
+      <h2>Step 4: Run in Python</h2>
+      <div class="note">Write a recursive function that prints the moves, and test it with different <b>n</b>.</div>
+      <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn good" id="runBtn" type="button">Run code</button>
+        <button class="btn" id="saveFilesBtn" type="button">Save files</button>
+        <button class="btn bad" id="resetBtn" type="button">Reset</button>
+      </div>
+      <div class="grid cols2" style="margin-top:12px">
+        <div class="card">
+          <h3>Output</h3>
+          <label for="stdout"><b>Stdout</b></label>
+          <pre id="stdout" class="code-output"></pre>
+          <label for="stderr"><b>Stderr</b></label>
+          <pre id="stderr" class="code-output warn"></pre>
+          <div id="runMeta" class="note" style="margin-top:10px; display:none"></div>
+        </div>
+        <div class="card">
+          <h3>Run files</h3>
+          <div id="runFiles" class="file-list"></div>
+          <div style="height:8px"></div>
+          <h3>Saved files</h3>
+          <div id="savedFiles" class="file-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 5: Reflection</h2>
       <p>Encourage pupils to note what was easy, what was tricky, and what they would change.</p>
       <textarea data-field="reflection" placeholder="What went well? What would you do differently next time?"></textarea>
     </div>
@@ -138,7 +168,8 @@ Requirement 2: ..."></textarea>
 <li>Quick check 2: stop recursion</li>
 <li>Quick check 3: move closer to the base case</li>
 <li>Learning objective focus: Understand recursion</li>
-<li>Look for clear steps and correct use of key terms.</li>
+      <li>Order for Task B: move n-1 to spare, move largest, move n-1 to target.</li>
+      <li>Look for clear steps and correct use of key terms.</li>
       </ul>
     </div>
 
@@ -154,6 +185,8 @@ Requirement 2: ..."></textarea>
   </div>
 
   <script src="../../../core/app.js"></script>
+  <script src="../../../core/auth.js"></script>
+  <script src="../../../core/python-runner.js"></script>
   <script src="../../../core/activity-scaffold.js"></script>
 </body>
 </html>

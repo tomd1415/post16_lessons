@@ -24,14 +24,14 @@
   <div class="container">
     <h1>a03 - Flowchart for a Machine</h1>
     <div class="note">
-      <b>How this works:</b> This activity is broken into small steps with quick checks and spaces to add your own ideas.
+      <b>Goal:</b> Design a flowchart for part of a real machine (camera, washing machine, microwave) using correct symbols, decisions, and loops.</b>
     </div>
 
     <div class="grid cols2" style="margin-top:12px">
       <div class="card">
         <h2>Step 1: Quick checks</h2>
-        <p><b>Prompt 1:</b> Which flowchart symbol represents a decision?</p>
-        <div data-quiz="q1" data-correct="b">
+        <p><b>Prompt 1:</b> Which symbol should you use for <b>start/stop</b>?</p>
+        <div data-quiz="q1" data-correct="c">
           <label class="choice"><input type="radio" name="q1" value="a"> Rectangle</label>
           <label class="choice"><input type="radio" name="q1" value="b"> Diamond</label>
           <label class="choice"><input type="radio" name="q1" value="c"> Oval</label>
@@ -42,11 +42,11 @@
         <div class="note" data-quiz-feedback="q1" style="margin-top:10px; display:none"></div>
 
         <div style="height:10px"></div>
-        <p><b>Prompt 2:</b> A sequence in an algorithm means...</p>
-        <div data-quiz="q2" data-correct="a">
-          <label class="choice"><input type="radio" name="q2" value="a"> instructions followed in order</label>
-          <label class="choice"><input type="radio" name="q2" value="b"> random choices with no order</label>
-          <label class="choice"><input type="radio" name="q2" value="c"> skipping steps to save time</label>
+        <p><b>Prompt 2:</b> A decision symbol should have...</p>
+        <div data-quiz="q2" data-correct="b">
+          <label class="choice"><input type="radio" name="q2" value="a"> one exit arrow</label>
+          <label class="choice"><input type="radio" name="q2" value="b"> two labelled exits (e.g., Yes/No)</label>
+          <label class="choice"><input type="radio" name="q2" value="c"> no exits</label>
         </div>
         <div class="row" style="margin-top:8px">
           <button class="btn good" data-quiz-check="q2" type="button">Check</button>
@@ -54,11 +54,11 @@
         <div class="note" data-quiz-feedback="q2" style="margin-top:10px; display:none"></div>
 
         <div style="height:10px"></div>
-        <p><b>Prompt 3:</b> Pseudocode is best described as...</p>
-        <div data-quiz="q3" data-correct="b">
-          <label class="choice"><input type="radio" name="q3" value="a"> code that runs directly on a computer</label>
-          <label class="choice"><input type="radio" name="q3" value="b"> structured plain-language steps</label>
-          <label class="choice"><input type="radio" name="q3" value="c"> a type of flowchart symbol</label>
+        <p><b>Prompt 3:</b> What prevents an infinite loop?</p>
+        <div data-quiz="q3" data-correct="a">
+          <label class="choice"><input type="radio" name="q3" value="a"> A decision that eventually leads to End</label>
+          <label class="choice"><input type="radio" name="q3" value="b"> Drawing more rectangles</label>
+          <label class="choice"><input type="radio" name="q3" value="c"> Removing all arrows</label>
         </div>
         <div class="row" style="margin-top:8px">
           <button class="btn good" data-quiz-check="q3" type="button">Check</button>
@@ -68,63 +68,65 @@
 
       <div class="card">
         <h2>Step 2: Key ideas in your own words</h2>
-        <p>Explain the main idea of <b>Flowchart for a Machine</b> in one or two sentences.</p>
-        <textarea data-field="step2_notes" placeholder="Write your notes here..."></textarea>
+        <p>Fill the two boxes.</p>
+        <table class="table">
+          <thead><tr><th>Prompt</th><th>Your answer</th></tr></thead>
+          <tbody>
+            <tr><td>Machine chosen</td><td><input type="text" data-field="machine_choice" placeholder="camera / washer / microwave" /></td></tr>
+            <tr><td>Behaviour to model</td><td><input type="text" data-field="machine_behaviour" placeholder="e.g., flash control" /></td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
     <div class="card" style="margin-top:12px">
       <h2>Step 3: Build the main task</h2>
-      <div class="note"><b>Learning objective:</b> Practice with flowchart symbols</div>
-<p><b>Suggested use:</b> Student activity</p>
-<p>Understand inputs and outputs</p>
-<p>Understand scope of computing</p>
-<p>Know what an infinite loop is</p>
-<p>Students work on this exercise in pairs.</p>
-<p>discuss what its inputs and outputs are.  Relate the inputs and outputs to</p>
-<p>the input or output box in the flowcharts.</p>
-<p>On a camera, the automatic flash operates if light levels are low.</p>
-<p>There is a small speaker that can make sounds, such as a 'click'.</p>
-<p>The photographer can delete an image they have just taken.  A</p>
-<p>timer can be set to take a picture after a certain time.  No more</p>
-<p>photos can be taken if the storage is full.</p>
-<p>A washing machine has a door lock, a motor, valves that control</p>
-<p>water coming in, a heater, a temperature sensor, a pump, a water</p>
-<p>level sensor, a timer, a display panel, control knobs/buttons.  Whilst</p>
-<p>hot water is an input to the washing machine drum, the heater (on</p>
-<p>or off) is an output of the washing machine controller.  The heater</p>
-<p>plus temperature sensor ensure water is at the correct temperature.</p>
-<p>The valve, pump and water level sensor ensure water fills to the</p>
-<p>right level in the drum.  The washing machine can make a sound</p>
-<p>when it has finished.</p>
-<p>A microwave oven has a door sensor, a turntable, a light, a</p>
-<p>microwave generator, a timer.  It may have a 'grill' electric element</p>
-<p>too.  It has a display and buttons.  It can make a sound when it has</p>
-<p>finished.</p>
-<p>IF, e.g. IF water level high enough, close water inlet valve.</p>
-<p>variations in the ways to achieve the same result and (b) that students</p>
-<p>don't know exactly what rules the machines follow.</p>
-<p>Possibly some flow charts will have bugs?</p>
-<p>Have the students included all the inputs and outputs that they</p>
-<p>identified?</p>
-<p>Which flow chart has the longest sequence of actions without any</p>
-<p>IFs?</p>
-<p>Do the flow charts have an exit or end?</p>
-<p>Camera - could pause 'forever' in an infinite loop, waiting for</p>
-<p>enough light for the exposure, if the camera is in the dark.</p>
-<p>Washing machine - Could pause 'forever' attempting to fill if mains</p>
-<p>water is off, or 'emptying' if the drain is blocked.  Or could beep</p>
-<p>forever, if no one is coming to empty it.</p>
-<p>Microwave Oven - Could pause forever waiting for the user to</p>
-<p>press START.</p>
-<ol>
-  <li>Choose one of a washing machine, camera or microwave oven, and</li>
-  <li>Discuss what the 'logic' is behind the operation of the device e.g.:</li>
-  <li>Students create a flow chart for part of the operation of the device, using</li>
-  <li>Students can then translate the flowchart into pseudocode.</li>
-  <li>Class discussion of the resulting flow charts will likely show (a) some</li>
-  <li>Review the flowcharts:</li>
-</ol>
+      <div class="note"><b>Learning objective:</b> Apply flowchart symbols to represent machine behaviour.</div>
+
+      <h3>Task A: Pick a machine</h3>
+      <p>Choose camera / washing machine / microwave. List 2 inputs and 2 outputs.</p>
+      <table class="table">
+        <thead><tr><th>Machine</th><th>Input 1</th><th>Input 2</th><th>Output 1</th><th>Output 2</th></tr></thead>
+        <tbody>
+          <tr><td><input type="text" data-field="table_machine" placeholder="machine" /></td><td><input type="text" data-field="table_in1" /></td><td><input type="text" data-field="table_in2" /></td><td><input type="text" data-field="table_out1" /></td><td><input type="text" data-field="table_out2" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task B: Draft a flowchart segment</h3>
+      <p>Model one behaviour. Fill the key boxes, then draw it.</p>
+      <table class="table">
+        <thead><tr><th>Element</th><th>Your text</th></tr></thead>
+        <tbody>
+          <tr><td>Start label</td><td><input type="text" data-field="start_label" placeholder="Start" /></td></tr>
+          <tr><td>Decision condition</td><td><input type="text" data-field="decision_condition" placeholder="light low?" /></td></tr>
+          <tr><td>Yes path action</td><td><input type="text" data-field="yes_action" placeholder="flash on" /></td></tr>
+          <tr><td>No path action</td><td><input type="text" data-field="no_action" placeholder="flash off" /></td></tr>
+          <tr><td>End state</td><td><input type="text" data-field="end_state" placeholder="photo saved" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task C: Check for loops and exits</h3>
+      <p>Does any path get stuck forever? Add an exit.</p>
+      <table class="table">
+        <thead><tr><th>Question</th><th>Your answer</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Is there an infinite loop risk?</td>
+            <td>
+              <label class="choice inline"><input type="radio" name="loop" value="yes"> Yes</label>
+              <label class="choice inline"><input type="radio" name="loop" value="no"> No</label>
+            </td>
+          </tr>
+          <tr>
+            <td>Exit or timeout you will add</td>
+            <td><input type="text" data-field="loop_exit" placeholder="e.g., retry max 3 times" /></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Task D: Translate to pseudocode (optional)</h3>
+      <p>Write 4–6 lines that match your flowchart.</p>
+      <textarea data-field="pseudo_lines" placeholder="1. ...&#10;2. ...&#10;3. ..."></textarea>
       <ul class="list checklist">
         <li><label><input type="checkbox" data-check="goal"> I can describe the goal in one clear sentence.</label></li>
         <li><label><input type="checkbox" data-check="inputs"> I can list the inputs or information needed.</label></li>
@@ -133,24 +135,21 @@
       </ul>
       <div style="margin-top:10px"></div>
       <label for="taskNotes"><b>Your structured notes</b></label>
-      <textarea id="taskNotes" data-field="task_notes" placeholder="Requirement 1: ...
-Requirement 2: ..."></textarea>
+      <textarea id="taskNotes" data-field="task_notes" placeholder="Machine: ...&#10;Inputs/Outputs: ...&#10;Flowchart notes: ...&#10;Loop exit: ..."></textarea>
     </div>
 
     <div class="card" style="margin-top:12px">
       <h2>Step 4: Reflection</h2>
-      <p>Encourage pupils to note what was easy, what was tricky, and what they would change.</p>
-      <textarea data-field="reflection" placeholder="What went well? What would you do differently next time?"></textarea>
+      <p>Where could your chart loop forever? How did you show a safe exit?</p>
+      <textarea data-field="reflection" placeholder="Reflection: ..."></textarea>
     </div>
 
     <div class="teacher-only card" style="margin-top:12px; display:none">
       <h2>Teacher guidance (answer prompts)</h2>
       <ul class="list">
-        <li>Quick check 1: Diamond</li>
-<li>Quick check 2: instructions followed in order</li>
-<li>Quick check 3: structured plain-language steps</li>
-<li>Learning objective focus: Practice with flowchart symbols</li>
-<li>Look for clear steps and correct use of key terms.</li>
+        <li>Quick checks: start/end = oval; decision needs two exits; exit condition prevents infinite loop.</li>
+        <li>Look for labelled Yes/No paths and an explicit End.</li>
+        <li>Misconceptions: leaving outputs in environment (e.g., “water” instead of “valve on”).</li>
       </ul>
     </div>
 

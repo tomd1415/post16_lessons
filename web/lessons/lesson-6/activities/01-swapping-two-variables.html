@@ -68,25 +68,56 @@
 
       <div class="card">
         <h2>Step 2: Key ideas in your own words</h2>
-        <p>Explain the main idea of <b>Swapping Two Variables</b> in one or two sentences.</p>
-        <textarea data-field="step2_notes" placeholder="Write your notes here..."></textarea>
+        <p>Fill the quick table.</p>
+        <table class="table">
+          <thead><tr><th>Prompt</th><th>Your answer</th></tr></thead>
+          <tbody>
+            <tr><td>What a variable stores</td><td><input type="text" data-field="var_store" placeholder="your wording" /></td></tr>
+            <tr><td>Symbol for assignment</td><td><input type="text" data-field="assign_symbol" placeholder="symbol" /></td></tr>
+            <tr><td>Temp variable helps because...</td><td><input type="text" data-field="temp_reason" placeholder="your reasoning" /></td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
     <div class="card" style="margin-top:12px">
       <h2>Step 3: Build the main task</h2>
       <div class="note"><b>Learning objective:</b> Using variables</div>
-<p><b>Suggested use:</b> Student self-study</p>
-<p>Solution File: Swap.py located in the lesson 6 folder in the</p>
-<p>TeacherCodeFiles folder</p>
-<p>and B to some other value.</p>
-<p>Here's a possible solution:</p>
-<p>When run this gives:</p>
-<ol>
-  <li>Ask students to imagine that variable A has been initialised to some value</li>
-  <li>Students must write a piece of code that will swap the values of A and B.</li>
-  <li>If necessary provide a hint: introduce an additional variable.</li>
-</ol>
+      <p><b>Suggested use:</b> Student self-study</p>
+
+      <h3>Task A: Track the swap</h3>
+      <p>Fill the table to show A and B before/after using a temp variable.</p>
+      <table class="table">
+        <thead><tr><th>Step</th><th>A</th><th>B</th><th>Temp</th></tr></thead>
+        <tbody>
+          <tr><td>Start values</td><td><input type="text" data-field="start_a" /></td><td><input type="text" data-field="start_b" /></td><td></td></tr>
+          <tr><td>After temp = A</td><td><input type="text" data-field="after_temp_a" /></td><td><input type="text" data-field="after_temp_b" /></td><td><input type="text" data-field="after_temp_t" /></td></tr>
+          <tr><td>After A = B</td><td><input type="text" data-field="after_a" /></td><td><input type="text" data-field="after_a_b" /></td><td><input type="text" data-field="after_a_t" /></td></tr>
+          <tr><td>After B = temp</td><td><input type="text" data-field="final_a" /></td><td><input type="text" data-field="final_b" /></td><td><input type="text" data-field="final_t" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task B: Order the steps</h3>
+      <p>Write 1, 2, 3 to show the correct order.</p>
+      <table class="table">
+        <thead><tr><th>Statement</th><th>Order</th></tr></thead>
+        <tbody>
+          <tr><td>temp = A</td><td><input type="number" data-field="order_temp" min="1" max="3" /></td></tr>
+          <tr><td>A = B</td><td><input type="number" data-field="order_a" min="1" max="3" /></td></tr>
+          <tr><td>B = temp</td><td><input type="number" data-field="order_b" min="1" max="3" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task C: Choose your method</h3>
+      <p>Pick one and tick it.</p>
+      <ul class="list checklist">
+        <li><label><input type="checkbox" data-check="temp_swap"> Use temp variable (classic swap)</label></li>
+        <li><label><input type="checkbox" data-check="tuple_swap"> Use tuple swap (A, B = B, A)</label></li>
+      </ul>
+
+      <h3>Task D: Write the 3 lines</h3>
+      <p>Type your swap code (3 short lines).</p>
+      <textarea data-field="swap_code" placeholder="write your swap code"></textarea>
       <ul class="list checklist">
         <li><label><input type="checkbox" data-check="goal"> I can describe the goal in one clear sentence.</label></li>
         <li><label><input type="checkbox" data-check="inputs"> I can list the inputs or information needed.</label></li>
@@ -100,7 +131,36 @@ Requirement 2: ..."></textarea>
     </div>
 
     <div class="card" style="margin-top:12px">
-      <h2>Step 4: Reflection</h2>
+      <h2>Step 4: Run in Python</h2>
+      <div class="note">Use the runner to prove your swap works. Change A and B values and run again.</div>
+      <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn good" id="runBtn" type="button">Run code</button>
+        <button class="btn" id="saveFilesBtn" type="button">Save files</button>
+        <button class="btn bad" id="resetBtn" type="button">Reset</button>
+      </div>
+
+      <div class="grid cols2" style="margin-top:12px">
+        <div class="card">
+          <h3>Output</h3>
+          <label for="stdout"><b>Stdout</b></label>
+          <pre id="stdout" class="code-output"></pre>
+          <label for="stderr"><b>Stderr</b></label>
+          <pre id="stderr" class="code-output warn"></pre>
+          <div id="runMeta" class="note" style="margin-top:10px; display:none"></div>
+        </div>
+        <div class="card">
+          <h3>Run files</h3>
+          <div id="runFiles" class="file-list"></div>
+          <div style="height:8px"></div>
+          <h3>Saved files</h3>
+          <div id="savedFiles" class="file-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 5: Reflection</h2>
       <p>Encourage pupils to note what was easy, what was tricky, and what they would change.</p>
       <textarea data-field="reflection" placeholder="What went well? What would you do differently next time?"></textarea>
     </div>
@@ -112,7 +172,8 @@ Requirement 2: ..."></textarea>
 <li>Quick check 2: store data that can change</li>
 <li>Quick check 3: score = 10</li>
 <li>Learning objective focus: Using variables</li>
-<li>Look for clear steps and correct use of key terms.</li>
+        <li>Task B order: temp = A (1), A = B (2), B = temp (3)</li>
+        <li>Look for clear steps, correct use of key terms, and that pupils verify swaps by running code.</li>
       </ul>
     </div>
 
@@ -128,6 +189,8 @@ Requirement 2: ..."></textarea>
   </div>
 
   <script src="../../../core/app.js"></script>
+  <script src="../../../core/auth.js"></script>
+  <script src="../../../core/python-runner.js"></script>
   <script src="../../../core/activity-scaffold.js"></script>
 </body>
 </html>

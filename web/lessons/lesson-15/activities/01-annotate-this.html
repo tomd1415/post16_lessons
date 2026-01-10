@@ -68,29 +68,77 @@
 
       <div class="card">
         <h2>Step 2: Key ideas in your own words</h2>
-        <p>Explain the main idea of <b>Annotate this</b> in one or two sentences.</p>
-        <textarea data-field="step2_notes" placeholder="Write your notes here..."></textarea>
+        <p>Fill the table.</p>
+        <table class="table">
+          <thead><tr><th>Prompt</th><th>Your answer</th></tr></thead>
+          <tbody>
+            <tr><td>Why annotate or comment code?</td><td><input type="text" data-field="why_annotate" placeholder="your wording" /></td></tr>
+            <tr><td>What is a regression?</td><td><input type="text" data-field="regression" placeholder="brief definition" /></td></tr>
+            <tr><td>What makes a good test case?</td><td><input type="text" data-field="good_test" placeholder="coverage idea" /></td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
     <div class="card" style="margin-top:12px">
       <h2>Step 3: Build the main task</h2>
       <div class="note"><b>Learning objective:</b> Identify common code errors and best practice in</div>
-<p><b>Suggested use:</b> Student activity</p>
-<p>producing readable code</p>
-<p>Simple and more complex Python 3 programs to modify for this activity can be</p>
-<p>found at this URL. Alternatively perform an Internet search for 'simple python 3</p>
-<p>programs'.</p>
-<p>error and a logic error in it.</p>
-<p>as syntax or logic errors.</p>
-<p>easy to understand the code e.g.:</p>
-<p>good/bad comments</p>
-<p>good/bad choices for variable and function names</p>
-<ol>
-  <li>Students are given a printed copy of a short program that has a syntax</li>
-  <li>Students annotate the program to mark the two errors and classify them</li>
-  <li>Students annotate the program to show features that make it easier or less</li>
-</ol>
+      <p><b>Suggested use:</b> Student activity</p>
+      <p>producing readable code</p>
+
+      <h3>Task A: Classify issues</h3>
+      <table class="table">
+        <thead><tr><th>Scenario</th><th>Error type</th></tr></thead>
+        <tbody>
+          <tr><td><small>Code: <b>if score &gt; 10 print("hi")</b></small></td><td>
+            <select data-field="issue1">
+              <option value="">Select...</option>
+              <option>Syntax error</option>
+              <option>Logic error</option>
+              <option>Regression risk</option>
+              <option>Style issue</option>
+            </select>
+          </td></tr>
+          <tr><td><small>Function doubles numbers but returns 0 for input 0.</small></td><td>
+            <select data-field="issue2">
+              <option value="">Select...</option>
+              <option>Syntax error</option>
+              <option>Logic error</option>
+              <option>Regression risk</option>
+              <option>Style issue</option>
+            </select>
+          </td></tr>
+          <tr><td><small>Last week's tests pass; new feature change makes one fail.</small></td><td>
+            <select data-field="issue3">
+              <option value="">Select...</option>
+              <option>Syntax error</option>
+              <option>Logic error</option>
+              <option>Regression risk</option>
+              <option>Style issue</option>
+            </select>
+          </td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task B: Write test cases</h3>
+      <table class="table">
+        <thead><tr><th>Input/condition</th><th>Expected output/behaviour</th><th>Test type</th></tr></thead>
+        <tbody>
+          <tr><td><input type="text" data-field="testcase1_in" placeholder="e.g., score=0" /></td><td><input type="text" data-field="testcase1_out" placeholder="expect..." /></td><td><input type="text" data-field="testcase1_type" placeholder="boundary/logic" /></td></tr>
+          <tr><td><input type="text" data-field="testcase2_in" /></td><td><input type="text" data-field="testcase2_out" /></td><td><input type="text" data-field="testcase2_type" /></td></tr>
+          <tr><td><input type="text" data-field="testcase3_in" /></td><td><input type="text" data-field="testcase3_out" /></td><td><input type="text" data-field="testcase3_type" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task C: Debug log</h3>
+      <table class="table">
+        <thead><tr><th>Observation</th><th>Hypothesis</th><th>Fix or check</th></tr></thead>
+        <tbody>
+          <tr><td><input type="text" data-field="obs1" placeholder="what you see" /></td><td><input type="text" data-field="hyp1" placeholder="why?" /></td><td><input type="text" data-field="fix1" placeholder="change or test" /></td></tr>
+          <tr><td><input type="text" data-field="obs2" /></td><td><input type="text" data-field="hyp2" /></td><td><input type="text" data-field="fix2" /></td></tr>
+        </tbody>
+      </table>
+
       <ul class="list checklist">
         <li><label><input type="checkbox" data-check="goal"> I can describe the goal in one clear sentence.</label></li>
         <li><label><input type="checkbox" data-check="inputs"> I can list the inputs or information needed.</label></li>
@@ -104,7 +152,35 @@ Requirement 2: ..."></textarea>
     </div>
 
     <div class="card" style="margin-top:12px">
-      <h2>Step 4: Reflection</h2>
+      <h2>Step 4: Run in Python</h2>
+      <div class="note">Paste a small program, add print statements or <code>assert</code> checks, and fix any failing cases.</div>
+      <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn good" id="runBtn" type="button">Run code</button>
+        <button class="btn" id="saveFilesBtn" type="button">Save files</button>
+        <button class="btn bad" id="resetBtn" type="button">Reset</button>
+      </div>
+      <div class="grid cols2" style="margin-top:12px">
+        <div class="card">
+          <h3>Output</h3>
+          <label for="stdout"><b>Stdout</b></label>
+          <pre id="stdout" class="code-output"></pre>
+          <label for="stderr"><b>Stderr</b></label>
+          <pre id="stderr" class="code-output warn"></pre>
+          <div id="runMeta" class="note" style="margin-top:10px; display:none"></div>
+        </div>
+        <div class="card">
+          <h3>Run files</h3>
+          <div id="runFiles" class="file-list"></div>
+          <div style="height:8px"></div>
+          <h3>Saved files</h3>
+          <div id="savedFiles" class="file-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 5: Reflection</h2>
       <p>Encourage pupils to note what was easy, what was tricky, and what they would change.</p>
       <textarea data-field="reflection" placeholder="What went well? What would you do differently next time?"></textarea>
     </div>
@@ -115,8 +191,9 @@ Requirement 2: ..."></textarea>
         <li>Quick check 1: invalid code structure</li>
 <li>Quick check 2: the program runs but gives the wrong result</li>
 <li>Quick check 3: checking against requirements</li>
-<li>Learning objective focus: Identify common code errors and best practice in</li>
-<li>Look for clear steps and correct use of key terms.</li>
+      <li>Learning objective focus: Identify common code errors and best practice in producing readable code</li>
+      <li>Task A likely matches: missing colon → syntax error; wrong output for 0 → logic error; previous tests failing after change → regression risk.</li>
+      <li>Look for clear steps and correct use of key terms.</li>
       </ul>
     </div>
 
@@ -132,6 +209,8 @@ Requirement 2: ..."></textarea>
   </div>
 
   <script src="../../../core/app.js"></script>
+  <script src="../../../core/auth.js"></script>
+  <script src="../../../core/python-runner.js"></script>
   <script src="../../../core/activity-scaffold.js"></script>
 </body>
 </html>

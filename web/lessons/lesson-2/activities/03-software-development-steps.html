@@ -24,17 +24,17 @@
   <div class="container">
     <h1>a03 - Software development steps</h1>
     <div class="note">
-      <b>How this works:</b> This activity is broken into small steps with quick checks and spaces to add your own ideas.
+      <b>Goal:</b> Practise naming and ordering the common phases of software development: analysis, design, programming, testing, enhancement.
     </div>
 
     <div class="grid cols2" style="margin-top:12px">
       <div class="card">
         <h2>Step 1: Quick checks</h2>
-        <p><b>Prompt 1:</b> Replace this with a simple question that builds confidence.</p>
-        <div data-quiz="q1" data-correct="b">
-          <label class="choice"><input type="radio" name="q1" value="a"> Option A (replace)</label>
-          <label class="choice"><input type="radio" name="q1" value="b"> Option B (correct)</label>
-          <label class="choice"><input type="radio" name="q1" value="c"> Option C (replace)</label>
+        <p><b>Prompt 1:</b> Which phase happens first?</p>
+        <div data-quiz="q1" data-correct="a">
+          <label class="choice"><input type="radio" name="q1" value="a"> Analysis</label>
+          <label class="choice"><input type="radio" name="q1" value="b"> Programming</label>
+          <label class="choice"><input type="radio" name="q1" value="c"> Testing</label>
         </div>
         <div class="row" style="margin-top:8px">
           <button class="btn good" data-quiz-check="q1" type="button">Check</button>
@@ -42,11 +42,11 @@
         <div class="note" data-quiz-feedback="q1" style="margin-top:10px; display:none"></div>
 
         <div style="height:10px"></div>
-        <p><b>Prompt 2:</b> Add a second quick check for instant feedback.</p>
-        <div data-quiz="q2" data-correct="a">
-          <label class="choice"><input type="radio" name="q2" value="a"> Option A (correct)</label>
-          <label class="choice"><input type="radio" name="q2" value="b"> Option B (replace)</label>
-          <label class="choice"><input type="radio" name="q2" value="c"> Option C (replace)</label>
+        <p><b>Prompt 2:</b> Testing should begin...</p>
+        <div data-quiz="q2" data-correct="b">
+          <label class="choice"><input type="radio" name="q2" value="a"> Only after final release</label>
+          <label class="choice"><input type="radio" name="q2" value="b"> During and after programming</label>
+          <label class="choice"><input type="radio" name="q2" value="c"> Before analysis</label>
         </div>
         <div class="row" style="margin-top:8px">
           <button class="btn good" data-quiz-check="q2" type="button">Check</button>
@@ -54,11 +54,11 @@
         <div class="note" data-quiz-feedback="q2" style="margin-top:10px; display:none"></div>
 
         <div style="height:10px"></div>
-        <p><b>Prompt 3:</b> Add a third quick check to reinforce understanding.</p>
+        <p><b>Prompt 3:</b> An enhancement phase focuses on...</p>
         <div data-quiz="q3" data-correct="c">
-          <label class="choice"><input type="radio" name="q3" value="a"> Option A (replace)</label>
-          <label class="choice"><input type="radio" name="q3" value="b"> Option B (replace)</label>
-          <label class="choice"><input type="radio" name="q3" value="c"> Option C (correct)</label>
+          <label class="choice"><input type="radio" name="q3" value="a"> Writing the first version</label>
+          <label class="choice"><input type="radio" name="q3" value="b"> Ignoring user feedback</label>
+          <label class="choice"><input type="radio" name="q3" value="c"> Improvements after release</label>
         </div>
         <div class="row" style="margin-top:8px">
           <button class="btn good" data-quiz-check="q3" type="button">Check</button>
@@ -69,14 +69,63 @@
 
       <div class="card">
         <h2>Step 2: Key ideas in your own words</h2>
-        <p>Prompt pupils to explain a term or idea in one or two sentences.</p>
-        <textarea data-field="step2_notes" placeholder="Write your notes here..."></textarea>
+        <p>Fill one short line for each phase.</p>
+        <table class="table">
+          <thead><tr><th>Phase</th><th>What happens</th></tr></thead>
+          <tbody>
+            <tr><td>Analysis</td><td><input type="text" data-field="analysis_line" placeholder="find requirements" /></td></tr>
+            <tr><td>Design</td><td><input type="text" data-field="design_line" placeholder="plan flow/UI" /></td></tr>
+            <tr><td>Programming</td><td><input type="text" data-field="programming_line" placeholder="write code" /></td></tr>
+            <tr><td>Testing</td><td><input type="text" data-field="testing_line" placeholder="run checks" /></td></tr>
+            <tr><td>Enhancement</td><td><input type="text" data-field="enhancement_line" placeholder="improve after feedback" /></td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
     <div class="card" style="margin-top:12px">
       <h2>Step 3: Build the main task</h2>
-      <p>Break the big task into smaller checkpoints before pupils attempt the full task.</p>
+      <div class="note"><b>Learning objective:</b> Recognise typical activities in creating a program.</div>
+      <h3>Task A: Order the steps</h3>
+      <p>Choose the order (1 = first, 5 = last).</p>
+      <table class="table">
+        <thead><tr><th>Phase</th><th>Order</th></tr></thead>
+        <tbody>
+          <tr><td>Analysis</td><td><select data-field="order_analysis"><option value="">--</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td></tr>
+          <tr><td>Design</td><td><select data-field="order_design"><option value="">--</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td></tr>
+          <tr><td>Programming</td><td><select data-field="order_programming"><option value="">--</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td></tr>
+          <tr><td>Testing</td><td><select data-field="order_testing"><option value="">--</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td></tr>
+          <tr><td>Enhancement</td><td><select data-field="order_enhancement"><option value="">--</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task B: Spot the artefacts</h3>
+      <p>Pick the matching output for each phase.</p>
+      <table class="table">
+        <thead><tr><th>Phase</th><th>Output</th></tr></thead>
+        <tbody>
+          <tr><td>Analysis</td><td><select data-field="artifact_analysis"><option value="">--</option><option>User stories / requirements list</option><option>Flowchart / wireframe</option><option>Working code & commits</option><option>Test report (pass/fail)</option><option>Change log / updated backlog</option></select></td></tr>
+          <tr><td>Design</td><td><select data-field="artifact_design"><option value="">--</option><option>User stories / requirements list</option><option>Flowchart / wireframe</option><option>Working code & commits</option><option>Test report (pass/fail)</option><option>Change log / updated backlog</option></select></td></tr>
+          <tr><td>Programming</td><td><select data-field="artifact_programming"><option value="">--</option><option>User stories / requirements list</option><option>Flowchart / wireframe</option><option>Working code & commits</option><option>Test report (pass/fail)</option><option>Change log / updated backlog</option></select></td></tr>
+          <tr><td>Testing</td><td><select data-field="artifact_testing"><option value="">--</option><option>User stories / requirements list</option><option>Flowchart / wireframe</option><option>Working code & commits</option><option>Test report (pass/fail)</option><option>Change log / updated backlog</option></select></td></tr>
+          <tr><td>Enhancement</td><td><select data-field="artifact_enhancement"><option value="">--</option><option>User stories / requirements list</option><option>Flowchart / wireframe</option><option>Working code & commits</option><option>Test report (pass/fail)</option><option>Change log / updated backlog</option></select></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task C: Mini case</h3>
+      <p>Scenario: Build a “focus timer” app for classmates. Add one short action per phase.</p>
+      <table class="table">
+        <thead><tr><th>Phase</th><th>Your one-sentence action</th></tr></thead>
+        <tbody>
+          <tr><td>Analysis</td><td><input type="text" data-field="case_analysis" placeholder="e.g., ask 3 users what they need" /></td></tr>
+          <tr><td>Design</td><td><input type="text" data-field="case_design" placeholder="sketch screen + timer flow" /></td></tr>
+          <tr><td>Programming</td><td><input type="text" data-field="case_programming" placeholder="code start/stop + countdown" /></td></tr>
+          <tr><td>Testing</td><td><input type="text" data-field="case_testing" placeholder="run 3 timed tests" /></td></tr>
+          <tr><td>Enhancement</td><td><input type="text" data-field="case_enhancement" placeholder="add break reminders" /></td></tr>
+        </tbody>
+      </table>
+
+      <div class="note warn" style="margin-top:10px">Stretch: list two risks that testing should catch early.</div>
       <ul class="list checklist">
         <li><label><input type="checkbox" data-check="goal"> I can describe the goal in one clear sentence.</label></li>
         <li><label><input type="checkbox" data-check="inputs"> I can list the inputs or information needed.</label></li>
@@ -85,21 +134,22 @@
       </ul>
       <div style="margin-top:10px"></div>
       <label for="taskNotes"><b>Your structured notes</b></label>
-      <textarea id="taskNotes" data-field="task_notes" placeholder="Requirement 1: ...&#10;Requirement 2: ..."></textarea>
+      <textarea id="taskNotes" data-field="task_notes" placeholder="Ordered steps: ...&#10;Phase outputs: ...&#10;Case notes: ..."></textarea>
     </div>
 
     <div class="card" style="margin-top:12px">
       <h2>Step 4: Reflection</h2>
-      <p>Encourage pupils to note what was easy, what was tricky, and what they would change.</p>
-      <textarea data-field="reflection" placeholder="What went well? What would you do differently next time?"></textarea>
+      <p>Which phase feels most important to you and why? Where do bugs usually enter?</p>
+      <textarea data-field="reflection" placeholder="Reflection: ..."></textarea>
     </div>
 
     <div class="teacher-only card" style="margin-top:12px; display:none">
       <h2>Teacher guidance (answer prompts)</h2>
       <ul class="list">
-        <li>Quick check answers: replace with the correct options.</li>
-        <li>Key ideas to listen for in pupil notes.</li>
-        <li>Common misconceptions and follow-up prompts.</li>
+        <li>Quick checks: (1) Analysis, (2) During/after programming, (3) Improvements after release.</li>
+        <li>Ordering: Analysis → Design → Programming → Testing → Enhancement.</li>
+        <li>Misconceptions: “Testing happens only at the end”; “Enhancement is optional”; “Design = writing code”.</li>
+        <li>Differentiation: give a printed strip-set of phases to physically order; stretch asks for risks (e.g., incorrect logic, missing requirements).</li>
       </ul>
     </div>
 

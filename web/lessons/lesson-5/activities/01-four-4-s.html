@@ -68,28 +68,82 @@
 
       <div class="card">
         <h2>Step 2: Key ideas in your own words</h2>
-        <p>Explain the main idea of <b>Four 4's</b> in one or two sentences.</p>
-        <textarea data-field="step2_notes" placeholder="Write your notes here..."></textarea>
+        <p>Fill the short boxes.</p>
+        <table class="table">
+          <thead><tr><th>Prompt</th><th>Your answer</th></tr></thead>
+          <tbody>
+            <tr><td>Goal (using four 4s)</td><td><input type="text" data-field="goal" placeholder="state the challenge" /></td></tr>
+            <tr><td>Allowed operators</td><td><input type="text" data-field="ops" placeholder="list what is allowed" /></td></tr>
+            <tr><td>Your own starter expression</td><td><input type="text" data-field="example" placeholder="write one idea" /></td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
     <div class="card" style="margin-top:12px">
       <h2>Step 3: Build the main task</h2>
       <div class="note"><b>Learning objective:</b> Using Python as a calculator</div>
-<p><b>Suggested use:</b> Student self-study</p>
-<p>Topic: Expressions</p>
-<p>Find expressions using exactly four x 4's that make the numbers 1, 2, 3, 4, up to</p>
-<p>9.  Brackets are allowed.  For example: 1 is 4/4*4/4.</p>
-<p>Square roots are in a Python library (see lesson 13).  Students can get the</p>
-<p>Python math library which contains square roots by typing:</p>
-<p>import math</p>
-<p>expressions.  For example:</p>
-<p>math.sqrt(4) * 4 * 4 * 4 is 128</p>
-<ol>
-  <li>If the students want to go beyond 9, they can use square roots too.</li>
-  <li>Once the math library is imported, square roots can be used in</li>
-  <li>Using square roots students can continue from 9 on to 22.</li>
-</ol>
+      <p><b>Suggested use:</b> Student self-study</p>
+
+      <h3>Task A: Make the targets</h3>
+      <p>Use exactly four “4” digits each time. Enter one expression per target.</p>
+      <table class="table">
+        <thead><tr><th>Target</th><th>Your expression</th><th>Check run?</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><input type="text" data-field="t1" placeholder="your expression" /></td><td><input type="checkbox" aria-label="run1"></td></tr>
+          <tr><td>2</td><td><input type="text" data-field="t2" placeholder="your expression" /></td><td><input type="checkbox" aria-label="run2"></td></tr>
+          <tr><td>3</td><td><input type="text" data-field="t3" placeholder="your expression" /></td><td><input type="checkbox" aria-label="run3"></td></tr>
+          <tr><td>4</td><td><input type="text" data-field="t4" placeholder="your expression" /></td><td><input type="checkbox" aria-label="run4"></td></tr>
+          <tr><td>5</td><td><input type="text" data-field="t5" placeholder="your expression" /></td><td><input type="checkbox" aria-label="run5"></td></tr>
+          <tr><td>6</td><td><input type="text" data-field="t6" placeholder="your expression" /></td><td><input type="checkbox" aria-label="run6"></td></tr>
+          <tr><td>7</td><td><input type="text" data-field="t7" placeholder="your expression" /></td><td><input type="checkbox" aria-label="run7"></td></tr>
+          <tr><td>8</td><td><input type="text" data-field="t8" placeholder="your expression" /></td><td><input type="checkbox" aria-label="run8"></td></tr>
+          <tr><td>9</td><td><input type="text" data-field="t9" placeholder="your expression" /></td><td><input type="checkbox" aria-label="run9"></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task B: Quick matches</h3>
+      <p>Pick which target each expression makes.</p>
+      <table class="table">
+        <thead><tr><th>Expression</th><th>Target (pick)</th></tr></thead>
+        <tbody>
+          <tr><td>44/4 - 4</td><td>
+            <select data-field="match1">
+              <option value="">Select</option>
+              <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option>
+            </select>
+          </td></tr>
+          <tr><td>(4+4)/4 + 4</td><td>
+            <select data-field="match2">
+              <option value="">Select</option>
+              <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option>
+            </select>
+          </td></tr>
+          <tr><td>4*4 - 4 - 4</td><td>
+            <select data-field="match3">
+              <option value="">Select</option>
+              <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option>
+            </select>
+          </td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task C: Allowed tools</h3>
+      <p>Tick what you used.</p>
+      <ul class="list checklist">
+        <li><label><input type="checkbox" data-check="ops_add"> + / - / * / /</label></li>
+        <li><label><input type="checkbox" data-check="ops_paren"> Parentheses</label></li>
+        <li><label><input type="checkbox" data-check="ops_sqrt"> Square root (math.sqrt(4))</label></li>
+      </ul>
+
+      <h3>Task D: Hardest target</h3>
+      <p>Which number was hardest? How did you solve it?</p>
+      <table class="table">
+        <thead><tr><th>Target</th><th>Idea used</th></tr></thead>
+        <tbody>
+          <tr><td><input type="text" data-field="hard_target" placeholder="number" /></td><td><input type="text" data-field="hard_strategy" placeholder="strategy" /></td></tr>
+        </tbody>
+      </table>
       <ul class="list checklist">
         <li><label><input type="checkbox" data-check="goal"> I can describe the goal in one clear sentence.</label></li>
         <li><label><input type="checkbox" data-check="inputs"> I can list the inputs or information needed.</label></li>
@@ -103,7 +157,38 @@ Requirement 2: ..."></textarea>
     </div>
 
     <div class="card" style="margin-top:12px">
-      <h2>Step 4: Reflection</h2>
+      <h2>Step 4: Run in Python</h2>
+      <div class="note">
+        Paste your expressions below and click <b>Run code</b> to verify each target. Saved outputs help teachers review attempts.
+      </div>
+      <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn good" id="runBtn" type="button">Run code</button>
+        <button class="btn" id="saveFilesBtn" type="button">Save files</button>
+        <button class="btn bad" id="resetBtn" type="button">Reset</button>
+      </div>
+
+      <div class="grid cols2" style="margin-top:12px">
+        <div class="card">
+          <h3>Output</h3>
+          <label for="stdout"><b>Stdout</b></label>
+          <pre id="stdout" class="code-output"></pre>
+          <label for="stderr"><b>Stderr</b></label>
+          <pre id="stderr" class="code-output warn"></pre>
+          <div id="runMeta" class="note" style="margin-top:10px; display:none"></div>
+        </div>
+        <div class="card">
+          <h3>Run files</h3>
+          <div id="runFiles" class="file-list"></div>
+          <div style="height:8px"></div>
+          <h3>Saved files</h3>
+          <div id="savedFiles" class="file-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 5: Reflection</h2>
       <p>Encourage pupils to note what was easy, what was tricky, and what they would change.</p>
       <textarea data-field="reflection" placeholder="What went well? What would you do differently next time?"></textarea>
     </div>
@@ -115,7 +200,8 @@ Requirement 2: ..."></textarea>
 <li>Quick check 2: evaluate inside first</li>
 <li>Quick check 3: /</li>
 <li>Learning objective focus: Using Python as a calculator</li>
-<li>Look for clear steps and correct use of key terms.</li>
+        <li>Task B matches: 44/4 - 4 → 7; (4+4)/4 + 4 → 6; 4*4 - 4 - 4 → 8</li>
+        <li>Look for clear steps, correct use of operators, and that pupils run code to check their work.</li>
       </ul>
     </div>
 
@@ -131,6 +217,8 @@ Requirement 2: ..."></textarea>
   </div>
 
   <script src="../../../core/app.js"></script>
+  <script src="../../../core/auth.js"></script>
+  <script src="../../../core/python-runner.js"></script>
   <script src="../../../core/activity-scaffold.js"></script>
 </body>
 </html>

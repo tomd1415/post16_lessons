@@ -68,40 +68,52 @@
 
       <div class="card">
         <h2>Step 2: Key ideas in your own words</h2>
-        <p>Explain the main idea of <b>Logic in Search Terms</b> in one or two sentences.</p>
-        <textarea data-field="step2_notes" placeholder="Write your notes here..."></textarea>
+        <p>Fill the short table.</p>
+        <table class="table">
+          <thead><tr><th>Prompt</th><th>Your answer</th></tr></thead>
+          <tbody>
+            <tr><td>AND means...</td><td><input type="text" data-field="and_def" placeholder="your wording" /></td></tr>
+            <tr><td>OR means...</td><td><input type="text" data-field="or_def" placeholder="your wording" /></td></tr>
+            <tr><td>NOT means...</td><td><input type="text" data-field="not_def" placeholder="your wording" /></td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
     <div class="card" style="margin-top:12px">
       <h2>Step 3: Build the main task</h2>
       <div class="note"><b>Learning objective:</b> Algorithms (from lesson 1)</div>
-<p><b>Suggested use:</b> Student activity</p>
-<p>Formal and informal languages.  (from lesson 2)</p>
-<p>Boolean logic (from lesson 4)</p>
-<p>Logic is useful in online Internet searches such as Google advanced search.</p>
-<p>Which of the entry boxes is for AND of the search terms?</p>
-<p>Which of the search boxes is for OR of the search terms?</p>
-<p>Which box is used for 'Not'?</p>
-<p>of ambiguous English.  For example, to look for ambiguous English and</p>
-<p>exclude definitions of the word ambiguous, and to exclude the "Kill la Kill</p>
-<p>Ambiguous" song use:</p>
-<p>ambiguous english -kill -definition</p>
-<p>such as:</p>
-<p>Pumpkins, but not about Halloween</p>
-<p>Something no other pair in the class found out about, about</p>
-<p>snowflakes</p>
-<p>get around the vagaries of natural language.  Pay attention to scenarios</p>
-<p>where search results were not as expected.  Consider the challenge in</p>
-<p>giving clear instructions to a computer.  This relates back to the learning</p>
-<p>about formal languages in lesson 2 onwards.</p>
-<ol>
-  <li>Ask students to look at: https://www.google.com/advanced_search</li>
-  <li>Students familiarise themselves with the search entry boxes:</li>
-  <li>Students attempt more advanced methods of searching to find examples</li>
-  <li>Challenge students to perform advanced searches, providing examples</li>
-  <li>Conduct a class discussion on how an Internet search engine attempts to</li>
-</ol>
+      <p><b>Suggested use:</b> Student activity</p>
+
+      <h3>Task A: Map boxes to logic</h3>
+      <p>Use Google advanced search (or similar). Fill which box is which.</p>
+      <table class="table">
+        <thead><tr><th>Logic</th><th>Box name/position</th></tr></thead>
+        <tbody>
+          <tr><td>AND</td><td><input type="text" data-field="and_box" placeholder="box label/position" /></td></tr>
+          <tr><td>OR</td><td><input type="text" data-field="or_box" placeholder="box label/position" /></td></tr>
+          <tr><td>NOT</td><td><input type="text" data-field="not_box" placeholder="box label/position" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task B: Build two searches</h3>
+      <p>Fill the lines; keep typing minimal.</p>
+      <table class="table">
+        <thead><tr><th>Goal</th><th>Search you will run</th></tr></thead>
+        <tbody>
+          <tr><td>Pumpkins, but NOT Halloween</td><td><input type="text" data-field="search1" placeholder="type your search string" /></td></tr>
+          <tr><td>Snowflakes (exclude music)</td><td><input type="text" data-field="search2" placeholder="type your search string" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task C: Capture results</h3>
+      <table class="table">
+        <thead><tr><th>Search</th><th>Good result found?</th><th>Link/title</th></tr></thead>
+        <tbody>
+          <tr><td>Search 1</td><td><input type="checkbox" aria-label="s1 ok" /></td><td><input type="text" data-field="search1_result" placeholder="page title" /></td></tr>
+          <tr><td>Search 2</td><td><input type="checkbox" aria-label="s2 ok" /></td><td><input type="text" data-field="search2_result" placeholder="page title" /></td></tr>
+        </tbody>
+      </table>
       <ul class="list checklist">
         <li><label><input type="checkbox" data-check="goal"> I can describe the goal in one clear sentence.</label></li>
         <li><label><input type="checkbox" data-check="inputs"> I can list the inputs or information needed.</label></li>
@@ -127,7 +139,10 @@ Requirement 2: ..."></textarea>
 <li>Quick check 2: at least one condition is true</li>
 <li>Quick check 3: Flips it</li>
 <li>Learning objective focus: Algorithms (from lesson 1)</li>
-<li>Look for clear steps and correct use of key terms.</li>
+        <li>Step 2 answers: AND = both true; OR = at least one true; NOT = exclude the term</li>
+        <li>Task A mapping: AND → all these words; OR → any of these words; NOT → none of these words</li>
+        <li>Task B examples: pumpkins -halloween; snowflakes -song -lyrics</li>
+        <li>Task C: expect a relevant page title/URL for each search and a checked box if found</li>
       </ul>
     </div>
 

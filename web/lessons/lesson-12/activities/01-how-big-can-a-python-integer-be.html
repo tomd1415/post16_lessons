@@ -68,20 +68,52 @@
 
       <div class="card">
         <h2>Step 2: Key ideas in your own words</h2>
-        <p>Explain the main idea of <b>How big can a Python integer be?</b> in one or two sentences.</p>
-        <textarea data-field="step2_notes" placeholder="Write your notes here..."></textarea>
+        <p>Fill the quick table.</p>
+        <table class="table">
+          <thead><tr><th>Prompt</th><th>Your answer</th></tr></thead>
+          <tbody>
+            <tr><td>Loop purpose</td><td><input type="text" data-field="loop_purpose" placeholder="your wording" /></td></tr>
+            <tr><td>What ends a while loop</td><td><input type="text" data-field="while_end" placeholder="your wording" /></td></tr>
+            <tr><td>Risk of infinite loop</td><td><input type="text" data-field="inf_risk" placeholder="your wording" /></td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
     <div class="card" style="margin-top:12px">
       <h2>Step 3: Build the main task</h2>
       <div class="note"><b>Learning objective:</b> Infinite loop, Integers</div>
-<p><b>Suggested use:</b> Student activity</p>
-<p>Ask the students to write a while loop that doubles a number repeatedly.</p>
-<p>How big can a Python integer get?</p>
-<p>Python is different from many other computer languages.  There isn't a</p>
-<p>hard fixed limit to the size of an integer in Python.  Instead Python can</p>
-<p>keep doubling a number until it runs out of memory to store the number in.</p>
+      <p><b>Suggested use:</b> Student activity</p>
+
+      <h3>Task A: Order the loop</h3>
+      <p>Write 1, 2, 3.</p>
+      <table class="table">
+        <thead><tr><th>Statement</th><th>Order</th></tr></thead>
+        <tbody>
+          <tr><td>Set starting value</td><td><input type="number" data-field="order_start" min="1" max="3" /></td></tr>
+          <tr><td>While condition is true</td><td><input type="number" data-field="order_condition" min="1" max="3" /></td></tr>
+          <tr><td>Double the value and count steps</td><td><input type="number" data-field="order_double" min="1" max="3" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task B: Track growth</h3>
+      <table class="table">
+        <thead><tr><th>Iteration</th><th>Value</th><th>Digits</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><input type="text" data-field="iter1_val" /></td><td><input type="text" data-field="iter1_digits" /></td></tr>
+          <tr><td>2</td><td><input type="text" data-field="iter2_val" /></td><td><input type="text" data-field="iter2_digits" /></td></tr>
+          <tr><td>3</td><td><input type="text" data-field="iter3_val" /></td><td><input type="text" data-field="iter3_digits" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task C: Stop condition</h3>
+      <table class="table">
+        <thead><tr><th>Possible stop</th><th>How to detect it</th></tr></thead>
+        <tbody>
+          <tr><td>Too many iterations</td><td><input type="text" data-field="stop_iters" placeholder="e.g., counter limit" /></td></tr>
+          <tr><td>Number too large</td><td><input type="text" data-field="stop_size" placeholder="e.g., try/except MemoryError" /></td></tr>
+        </tbody>
+      </table>
       <ul class="list checklist">
         <li><label><input type="checkbox" data-check="goal"> I can describe the goal in one clear sentence.</label></li>
         <li><label><input type="checkbox" data-check="inputs"> I can list the inputs or information needed.</label></li>
@@ -92,6 +124,34 @@
       <label for="taskNotes"><b>Your structured notes</b></label>
       <textarea id="taskNotes" data-field="task_notes" placeholder="Requirement 1: ...
 Requirement 2: ..."></textarea>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 4: Run in Python</h2>
+      <div class="note">Write your doubling loop and record when it stops.</div>
+      <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn good" id="runBtn" type="button">Run code</button>
+        <button class="btn" id="saveFilesBtn" type="button">Save files</button>
+        <button class="btn bad" id="resetBtn" type="button">Reset</button>
+      </div>
+      <div class="grid cols2" style="margin-top:12px">
+        <div class="card">
+          <h3>Output</h3>
+          <label for="stdout"><b>Stdout</b></label>
+          <pre id="stdout" class="code-output"></pre>
+          <label for="stderr"><b>Stderr</b></label>
+          <pre id="stderr" class="code-output warn"></pre>
+          <div id="runMeta" class="note" style="margin-top:10px; display:none"></div>
+        </div>
+        <div class="card">
+          <h3>Run files</h3>
+          <div id="runFiles" class="file-list"></div>
+          <div style="height:8px"></div>
+          <h3>Saved files</h3>
+          <div id="savedFiles" class="file-list"></div>
+        </div>
+      </div>
     </div>
 
     <div class="card" style="margin-top:12px">
@@ -107,7 +167,8 @@ Requirement 2: ..."></textarea>
 <li>Quick check 2: a condition is true</li>
 <li>Quick check 3: the exit condition never becomes false</li>
 <li>Learning objective focus: Infinite loop, Integers</li>
-<li>Look for clear steps and correct use of key terms.</li>
+        <li>Task A order: start value, while condition, double value</li>
+        <li>Look for pupils setting safe stop conditions and noting when loops end.</li>
       </ul>
     </div>
 
@@ -123,6 +184,8 @@ Requirement 2: ..."></textarea>
   </div>
 
   <script src="../../../core/app.js"></script>
+  <script src="../../../core/auth.js"></script>
+  <script src="../../../core/python-runner.js"></script>
   <script src="../../../core/activity-scaffold.js"></script>
 </body>
 </html>

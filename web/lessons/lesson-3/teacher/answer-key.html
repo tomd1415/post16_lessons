@@ -23,19 +23,51 @@
 
   <div class="container">
     <h1>Answer guidance</h1>
-
     <div class="card">
-      <h2>Quick check answers</h2>
+      <h2>a01 — Everyday algorithms</h2>
       <ul class="list">
-        <li>Quick check 1: Diamond</li>
-<li>Quick check 2: instructions followed in order</li>
-<li>Quick check 3: structured plain-language steps</li>
+        <li>Quick checks: decision = diamond; sequence = ordered steps; pseudocode = structured plain language.</li>
+        <li>Step 2 table: sequence = ordered steps; decision = branch on condition; hard symbol e.g., connector.</li>
+        <li>Task A table: ensure 5 steps, ticked decision where relevant.</li>
+        <li>Task B condition: fill Yes/No paths (e.g., cereal available → eat cereal / toast instead).</li>
+        <li>Flowchart checklist: start/end present; Yes/No labels; loop exit identified.</li>
+        <li>Loop risk: “wait forever” if no condition to exit (e.g., no cereal scenario).</li>
       </ul>
     </div>
 
     <div class="card" style="margin-top:12px">
-      <h2>Review question answers (from handbook)</h2>
-      <p>1. A sequence is:</p><p>b. A number of instructions that should be obeyed one after the other.</p><p>2. Which of these is not used to represent an algorithm?</p><p>d. Pseudoscience.</p><p>3. Match the following symbols to their names:</p><p>Arrow e</p><p>Decision d</p><p>Start or Stop a</p><p>Process b</p><p>Input or Output c</p><p>Connector f</p><p>4.  In the following pseudocode:</p><p>Set oven to 1800C</p><p>Mix ingredients</p><p>Put cake in oven</p><p>Check whether cake is baked and while it isn't</p><p>Wait</p><p>Take cake out of oven</p><p>STOP</p><p>Which instruction is obeyed immediately after 'Mix Ingredients'?</p><p>d. Put cake in oven</p><p>5. The following program is supposed to drain water from a washing machine.  What</p><p>error does it have?</p><p>Turn on drainage pump</p><p>Check water level</p><p>While there is no water left</p><p>Wait</p><p>Turn off drainage pump.</p><p>STOP</p><p>c. Incorrect decision outcome</p>
+      <h2>a02 — Inputs and outputs</h2>
+      <ul class="list">
+        <li>Quick checks: IO symbol = parallelogram; input = data/signals in; output example = heater on.</li>
+        <li>Step 2 table: camera input/output; washer input/output; microwave input/output.</li>
+        <li>Device tables: expect at least 2 inputs/2 outputs per device.</li>
+        <li>Snippet planner: input trigger, optional decision, output action; IO symbol checkbox ticked.</li>
+        <li>Checklist table: input present, output present, test idea written.</li>
+        <li>Device examples: camera (inputs: button, light sensor; outputs: flash, click sound), washing machine (inputs: door sensor, program knob; outputs: heater on, motor spin).</li>
+        <li>Misconception: calling “water” an output—clarify controller outputs vs environment.</li>
+      </ul>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>a03 — Flowchart for a machine</h2>
+      <ul class="list">
+        <li>Quick checks: start/end = oval; decision has two exits; exit condition prevents infinite loop.</li>
+        <li>Step 2 table: machine choice + behaviour.</li>
+        <li>IO table: two inputs/two outputs noted.</li>
+        <li>Flowchart element table: condition (e.g., light low), Yes action (flash on), No action (flash off), end = photo saved.</li>
+        <li>Loop check: radio yes/no plus exit (e.g., timeout, max retries).</li>
+        <li>Example camera flash path: Start → Check light → Yes: flash on → Capture → End; No: flash off → Capture → End.</li>
+        <li>Loop exits: timeout on waiting for door closed; max retries on fill/empty; timer reaching zero in microwave.</li>
+      </ul>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Evidence to collect</h2>
+      <ul class="list">
+        <li>Labelled decisions and IO symbols in notes/photos.</li>
+        <li>At least one reflection noting a potential infinite loop and fix.</li>
+        <li>Pseudocode (optional) aligning with the flowchart steps.</li>
+      </ul>
     </div>
 
     <div class="footer">

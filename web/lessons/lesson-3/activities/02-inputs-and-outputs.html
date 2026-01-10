@@ -24,17 +24,17 @@
   <div class="container">
     <h1>a02 - Inputs and Outputs</h1>
     <div class="note">
-      <b>How this works:</b> This activity is broken into small steps with quick checks and spaces to add your own ideas.
+      <b>Goal:</b> Identify inputs and outputs for everyday machines and represent them correctly in flowcharts.
     </div>
 
     <div class="grid cols2" style="margin-top:12px">
       <div class="card">
         <h2>Step 1: Quick checks</h2>
-        <p><b>Prompt 1:</b> Which flowchart symbol represents a decision?</p>
-        <div data-quiz="q1" data-correct="b">
-          <label class="choice"><input type="radio" name="q1" value="a"> Rectangle</label>
-          <label class="choice"><input type="radio" name="q1" value="b"> Diamond</label>
-          <label class="choice"><input type="radio" name="q1" value="c"> Oval</label>
+        <p><b>Prompt 1:</b> Which symbol represents input/output in a flowchart?</p>
+        <div data-quiz="q1" data-correct="c">
+          <label class="choice"><input type="radio" name="q1" value="a"> Diamond</label>
+          <label class="choice"><input type="radio" name="q1" value="b"> Rectangle</label>
+          <label class="choice"><input type="radio" name="q1" value="c"> Parallelogram</label>
         </div>
         <div class="row" style="margin-top:8px">
           <button class="btn good" data-quiz-check="q1" type="button">Check</button>
@@ -42,11 +42,11 @@
         <div class="note" data-quiz-feedback="q1" style="margin-top:10px; display:none"></div>
 
         <div style="height:10px"></div>
-        <p><b>Prompt 2:</b> A sequence in an algorithm means...</p>
+        <p><b>Prompt 2:</b> An <b>input</b> is...</p>
         <div data-quiz="q2" data-correct="a">
-          <label class="choice"><input type="radio" name="q2" value="a"> instructions followed in order</label>
-          <label class="choice"><input type="radio" name="q2" value="b"> random choices with no order</label>
-          <label class="choice"><input type="radio" name="q2" value="c"> skipping steps to save time</label>
+          <label class="choice"><input type="radio" name="q2" value="a"> data/signals received by the system</label>
+          <label class="choice"><input type="radio" name="q2" value="b"> anything shown on screen</label>
+          <label class="choice"><input type="radio" name="q2" value="c"> the final report</label>
         </div>
         <div class="row" style="margin-top:8px">
           <button class="btn good" data-quiz-check="q2" type="button">Check</button>
@@ -54,11 +54,11 @@
         <div class="note" data-quiz-feedback="q2" style="margin-top:10px; display:none"></div>
 
         <div style="height:10px"></div>
-        <p><b>Prompt 3:</b> Pseudocode is best described as...</p>
+        <p><b>Prompt 3:</b> An <b>output</b> for a washing machine controller could be...</p>
         <div data-quiz="q3" data-correct="b">
-          <label class="choice"><input type="radio" name="q3" value="a"> code that runs directly on a computer</label>
-          <label class="choice"><input type="radio" name="q3" value="b"> structured plain-language steps</label>
-          <label class="choice"><input type="radio" name="q3" value="c"> a type of flowchart symbol</label>
+          <label class="choice"><input type="radio" name="q3" value="a"> dirty clothes</label>
+          <label class="choice"><input type="radio" name="q3" value="b"> turning the heater on</label>
+          <label class="choice"><input type="radio" name="q3" value="c"> mains water supply</label>
         </div>
         <div class="row" style="margin-top:8px">
           <button class="btn good" data-quiz-check="q3" type="button">Check</button>
@@ -68,46 +68,70 @@
 
       <div class="card">
         <h2>Step 2: Key ideas in your own words</h2>
-        <p>Explain the main idea of <b>Inputs and Outputs</b> in one or two sentences.</p>
-        <textarea data-field="step2_notes" placeholder="Write your notes here..."></textarea>
+        <p>Fill the quick table.</p>
+        <table class="table">
+          <thead><tr><th>Device</th><th>One input</th><th>One output</th></tr></thead>
+          <tbody>
+            <tr><td>Camera</td><td><input type="text" data-field="cam_in" placeholder="shutter button" /></td><td><input type="text" data-field="cam_out" placeholder="flash / photo" /></td></tr>
+            <tr><td>Washing machine</td><td><input type="text" data-field="wash_in" placeholder="door sensor" /></td><td><input type="text" data-field="wash_out" placeholder="heater on" /></td></tr>
+            <tr><td>Microwave</td><td><input type="text" data-field="micro_in" placeholder="timer set" /></td><td><input type="text" data-field="micro_out" placeholder="beep / magnetron" /></td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
     <div class="card" style="margin-top:12px">
       <h2>Step 3: Build the main task</h2>
-      <div class="note"><b>Learning objective:</b> Understand inputs and outputs</div>
-<p><b>Suggested use:</b> Class discussion</p>
-<p>Understand scope of computing</p>
-<p>Students identify inputs and outputs on various machines - coffee maker, oven,</p>
-<p>car, electric fan, gas boiler etc.  Consider input and output sounds (e.g. as buttons</p>
-<p>are pressed, or the sound on completion) and lights (e.g. the busy/finished lights,</p>
-<p>the light when the fridge door opened).</p>
-      <ul class="list checklist">
-        <li><label><input type="checkbox" data-check="goal"> I can describe the goal in one clear sentence.</label></li>
-        <li><label><input type="checkbox" data-check="inputs"> I can list the inputs or information needed.</label></li>
-        <li><label><input type="checkbox" data-check="steps"> I can outline the main steps in order.</label></li>
-        <li><label><input type="checkbox" data-check="test"> I can describe how to test if it works.</label></li>
-      </ul>
-      <div style="margin-top:10px"></div>
-      <label for="taskNotes"><b>Your structured notes</b></label>
-      <textarea id="taskNotes" data-field="task_notes" placeholder="Requirement 1: ...
-Requirement 2: ..."></textarea>
+      <div class="note"><b>Learning objective:</b> Understand inputs and outputs.</div>
+
+      <h3>Task A: Identify IO for devices</h3>
+      <p>For two devices, list at least 2 inputs and 2 outputs each (include sounds/lights).</p>
+      <table class="table">
+        <thead><tr><th>Device</th><th>Input 1</th><th>Input 2</th><th>Output 1</th><th>Output 2</th></tr></thead>
+        <tbody>
+          <tr><td>Device A</td><td><input type="text" data-field="devA_in1" /></td><td><input type="text" data-field="devA_in2" /></td><td><input type="text" data-field="devA_out1" /></td><td><input type="text" data-field="devA_out2" /></td></tr>
+          <tr><td>Device B</td><td><input type="text" data-field="devB_in1" /></td><td><input type="text" data-field="devB_in2" /></td><td><input type="text" data-field="devB_out1" /></td><td><input type="text" data-field="devB_out2" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task B: Map to flowchart</h3>
+      <p>Plan your snippet: fill the boxes, then draw it with the IO parallelogram.</p>
+      <table class="table">
+        <thead><tr><th>Input trigger</th><th>Decision (if any)</th><th>Output action</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><input type="text" data-field="snippet_input" placeholder="e.g., door closed" /></td>
+            <td><input type="text" data-field="snippet_decision" placeholder="if needed" /></td>
+            <td><input type="text" data-field="snippet_output" placeholder="start motor" /></td>
+          </tr>
+        </tbody>
+      </table>
+      <label class="choice"><input type="checkbox" data-check="io_symbol"> IO parallelogram added</label>
+
+      <h3>Task C: Check completeness</h3>
+      <p>Tick when covered:</p>
+      <table class="table">
+        <thead><tr><th>Check</th><th>Done?</th></tr></thead>
+        <tbody>
+          <tr><td>Each path starts with an input</td><td><input type="checkbox" data-check="goal" /></td></tr>
+          <tr><td>Each path ends with an output</td><td><input type="checkbox" data-check="steps" /></td></tr>
+          <tr><td>Test idea written</td><td><input type="checkbox" data-check="test" /></td></tr>
+        </tbody>
+      </table>
     </div>
 
     <div class="card" style="margin-top:12px">
       <h2>Step 4: Reflection</h2>
-      <p>Encourage pupils to note what was easy, what was tricky, and what they would change.</p>
-      <textarea data-field="reflection" placeholder="What went well? What would you do differently next time?"></textarea>
+      <p>Did any device have hidden inputs/outputs (e.g., sensors)? What would you add to make the flowchart clearer?</p>
+      <textarea data-field="reflection" placeholder="Reflection: ..."></textarea>
     </div>
 
     <div class="teacher-only card" style="margin-top:12px; display:none">
       <h2>Teacher guidance (answer prompts)</h2>
       <ul class="list">
-        <li>Quick check 1: Diamond</li>
-<li>Quick check 2: instructions followed in order</li>
-<li>Quick check 3: structured plain-language steps</li>
-<li>Learning objective focus: Understand inputs and outputs</li>
-<li>Look for clear steps and correct use of key terms.</li>
+        <li>Quick checks: IO symbol = parallelogram; input = data/signals in; output example = heater on.</li>
+        <li>Expect at least 2 inputs and 2 outputs per chosen device.</li>
+        <li>Misconceptions: confusing “water in” (environment) with “valve on” (controller output); forgetting that a sound/light is an output.</li>
       </ul>
     </div>
 

@@ -23,14 +23,59 @@
 
   <div class="container">
     <h1>Answer guidance</h1>
-    <div class="note warn">
-      This resource is a structured placeholder. Replace the content using Lesson 1 style and layout.
-    </div>
 
     <div class="card">
-      <h2>What to add</h2>
+      <h2>a01 — Formal vs natural language</h2>
       <ul class="list">
-        <li>Expected answers for auto-marked checks.</li><li>Guidance for open-ended responses.</li><li>Common misconceptions and prompts.</li>
+        <li>Quick checks: formal language = Python; computers prefer precision; “move forward a bit” is ambiguous.</li>
+        <li>Step 2 table: formal = fixed rules; examples: Python, maths notation; natural example: chat/story.</li>
+        <li>Task A radios: 1=F, 2=N, 3=F, 4=N.</li>
+        <li>Task B numbered inputs: look for measurable steps (quantities/timings).</li>
+        <li>Task C: if ambiguity flagged = Yes, ensure the rewritten line is clearer.</li>
+        <li>Misconception: formal = polite; use “Can a CPU guess?” prompt.</li>
+      </ul>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>a02 — Source vs machine code</h2>
+      <ul class="list">
+        <li>Quick checks: humans read source; machine code is binary; compiler/assembler translates.</li>
+        <li>Step 2 table: source example e.g., print('hi'); machine example = binary bytes.</li>
+        <li>Task A radios: 1=M, 2=S, 3=S (assembly), 4=S/comment.</li>
+        <li>Pipeline quiz: correct = compile/assemble; reason = translates to CPU-ready bits.</li>
+        <li>Snippet line: “CPU loads 2 and 3, adds, stores result”; optional opcode noted.</li>
+        <li>Misconceptions: “CPU runs .py directly”; “comments execute”.</li>
+      </ul>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>a03 — Software development steps</h2>
+      <ul class="list">
+        <li>Quick checks: Analysis first; testing during/after programming; enhancement after release.</li>
+        <li>Step 2 table: concise phase definitions.</li>
+        <li>Ordering dropdowns: Analysis → Design → Programming → Testing → Enhancement.</li>
+        <li>Artefact matches: Analysis→requirements; Design→flowchart/wireframe; Programming→working code; Testing→test report; Enhancement→change log/backlog.</li>
+        <li>Mini-case lines: expect one short action per phase; risks: logic bugs, missed requirements, perf issues.</li>
+      </ul>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>a04 — Specification for a game</h2>
+      <ul class="list">
+        <li>Quick checks: specs must be clear/testable; functional = what it does; non-functional = qualities (speed, accessibility).</li>
+        <li>Step 2 inputs: functional example = gameplay behaviour; non-functional = performance/accessibility.</li>
+        <li>Spec table: goal (win condition), inputs (controls), outputs (score/sound), rules (collisions/lose life), constraints (load time, keyboard-only).</li>
+        <li>Acceptance checks: “Score resets to 0 on new game”, “Player loses 1 life on collision”, “Level loads &lt; 2s”.</li>
+        <li>Watch for vague words: fun, cool — replace with measurable behaviour.</li>
+      </ul>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Evidence to look for</h2>
+      <ul class="list">
+        <li>Completed quick checks (auto-marked).</li>
+        <li>Structured notes for specification with at least three acceptance statements.</li>
+        <li>Reflections noting translation risks (compiler errors, ambiguous requirements).</li>
       </ul>
     </div>
 

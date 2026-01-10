@@ -68,35 +68,95 @@
 
       <div class="card">
         <h2>Step 2: Key ideas in your own words</h2>
-        <p>Explain the main idea of <b>Reading code comments</b> in one or two sentences.</p>
-        <textarea data-field="step2_notes" placeholder="Write your notes here..."></textarea>
+        <p>Complete the table.</p>
+        <table class="table">
+          <thead><tr><th>Prompt</th><th>Your answer</th></tr></thead>
+          <tbody>
+            <tr><td>What comments are for</td><td><input type="text" data-field="comment_use" placeholder="your wording" /></td></tr>
+            <tr><td>How indentation helps</td><td><input type="text" data-field="indent_help" placeholder="your wording" /></td></tr>
+            <tr><td>One rule for good names</td><td><input type="text" data-field="naming_rule" placeholder="your rule" /></td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
     <div class="card" style="margin-top:12px">
       <h2>Step 3: Build the main task</h2>
       <div class="note"><b>Learning objective:</b> Understanding the value of comments in code</div>
-<p><b>Suggested use:</b> Student activity</p>
-<p>In film and television, the 'frame rate' is how many frames are displayed per</p>
-<p>second.  Television broadcasts are about 30 frames per second.</p>
-<p>down to make it much easier to play.</p>
-<p>students are looking for is shown below:</p>
-<p>Originally the number 5 was 40, which made the game much faster.</p>
-<ol>
-  <li>Students use the aliens.py game from lesson 4, and find out how to slow it</li>
-  <li>Change the relevant code extract and play the game.</li>
-  <li>Discuss how the comments helped in figuring out what to do.  The code</li>
-</ol>
+      <p><b>Suggested use:</b> Student activity</p>
+
+      <h3>Task A: Match comments to intent</h3>
+      <table class="table">
+        <thead><tr><th>Comment snippet</th><th>Intent</th></tr></thead>
+        <tbody>
+          <tr><td># adjust speed</td><td>
+            <select data-field="match_speed">
+              <option value="">Select</option>
+              <option>Make movement slower</option>
+              <option>Change sprite image</option>
+              <option>Toggle fullscreen</option>
+            </select>
+          </td></tr>
+          <tr><td># TODO: refactor</td><td>
+            <select data-field="match_todo">
+              <option value="">Select</option>
+              <option>Later clean-up</option>
+              <option>Speed tweak</option>
+              <option>Input prompt</option>
+            </select>
+          </td></tr>
+          <tr><td># ask for name</td><td>
+            <select data-field="match_input">
+              <option value="">Select</option>
+              <option>Get user input</option>
+              <option>Draw the player</option>
+              <option>End the loop</option>
+            </select>
+          </td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task B: Plan a change</h3>
+      <table class="table">
+        <thead><tr><th>Comment</th><th>Value to change</th><th>Expected effect</th></tr></thead>
+        <tbody>
+          <tr><td>"# adjust speed"</td><td><input type="text" data-field="speed_value" placeholder="current → new" /></td><td><input type="text" data-field="speed_effect" placeholder="what should happen" /></td></tr>
+          <tr><td>"# limit lives"</td><td><input type="text" data-field="lives_value" placeholder="current → new" /></td><td><input type="text" data-field="lives_effect" placeholder="what should happen" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task C: Comment quality spot-check</h3>
       <ul class="list checklist">
-        <li><label><input type="checkbox" data-check="goal"> I can describe the goal in one clear sentence.</label></li>
-        <li><label><input type="checkbox" data-check="inputs"> I can list the inputs or information needed.</label></li>
-        <li><label><input type="checkbox" data-check="steps"> I can outline the main steps in order.</label></li>
-        <li><label><input type="checkbox" data-check="test"> I can describe how to test if it works.</label></li>
+        <li><label><input type="checkbox" data-check="clear_intent"> Each comment states why, not just what.</label></li>
+        <li><label><input type="checkbox" data-check="names_good"> Variable names match their purpose.</label></li>
+        <li><label><input type="checkbox" data-check="indent"> Indentation matches block structure.</label></li>
       </ul>
-      <div style="margin-top:10px"></div>
-      <label for="taskNotes"><b>Your structured notes</b></label>
-      <textarea id="taskNotes" data-field="task_notes" placeholder="Requirement 1: ...
-Requirement 2: ..."></textarea>
+
+      <h3>Task D: Run and verify</h3>
+      <div class="note">Paste the snippet you edited and run to confirm your change.</div>
+      <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn good" id="runBtn" type="button">Run code</button>
+        <button class="btn" id="saveFilesBtn" type="button">Save files</button>
+        <button class="btn bad" id="resetBtn" type="button">Reset</button>
+      </div>
+      <div class="grid cols2" style="margin-top:12px">
+        <div class="card">
+          <h3>Output</h3>
+          <label for="stdout"><b>Stdout</b></label>
+          <pre id="stdout" class="code-output"></pre>
+          <label for="stderr"><b>Stderr</b></label>
+          <pre id="stderr" class="code-output warn"></pre>
+          <div id="runMeta" class="note" style="margin-top:10px; display:none"></div>
+        </div>
+        <div class="card">
+          <h3>Run files</h3>
+          <div id="runFiles" class="file-list"></div>
+          <div style="height:8px"></div>
+          <h3>Saved files</h3>
+          <div id="savedFiles" class="file-list"></div>
+        </div>
+      </div>
     </div>
 
     <div class="card" style="margin-top:12px">
@@ -112,7 +172,8 @@ Requirement 2: ..."></textarea>
 <li>Quick check 2: showing code structure clearly</li>
 <li>Quick check 3: easier to understand</li>
 <li>Learning objective focus: Understanding the value of comments in code</li>
-<li>Look for clear steps and correct use of key terms.</li>
+        <li>Task A matches: adjust speed → make movement slower; TODO: refactor → later clean-up; ask for name → get user input</li>
+        <li>Look for pupils stating why comments matter, planning a change, and validating by running code.</li>
       </ul>
     </div>
 
@@ -128,6 +189,8 @@ Requirement 2: ..."></textarea>
   </div>
 
   <script src="../../../core/app.js"></script>
+  <script src="../../../core/auth.js"></script>
+  <script src="../../../core/python-runner.js"></script>
   <script src="../../../core/activity-scaffold.js"></script>
 </body>
 </html>

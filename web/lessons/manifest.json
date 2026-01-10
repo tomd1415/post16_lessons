@@ -428,7 +428,7 @@
       "number": 2,
       "title": "Lesson 2: Software Development",
       "summary": "Introduces precision in computer languages, distinguishes source code from machine code, and outlines the steps in software development.",
-      "status": "draft",
+      "status": "ready",
       "studentPath": "/lessons/lesson-2/student.html",
       "teacherPath": "/lessons/lesson-2/index.html",
       "timings": "Not stated in handbook",
@@ -450,7 +450,11 @@
           "text": "Recognise typical activities in the creation of a program: analysis, design, programming, testing, enhancement"
         }
       ],
-      "resources": [],
+      "resources": [
+        "Browser for interactive activities",
+        "Printed vocab/spec cards (optional)",
+        "Paper for sketching specs"
+      ],
       "teacherResources": [
         {
           "title": "Lesson plan",
@@ -473,7 +477,7 @@
           "objectiveIds": [
             "L2-O1"
           ],
-          "expectedEvidence": "Quick checks completed and a short explanation in the notes.",
+          "expectedEvidence": "Radio answers for formal/natural, completed step table, and filled rewrite/ambiguity fields.",
           "rubricHook": null
         },
         {
@@ -483,7 +487,7 @@
           "objectiveIds": [
             "L2-O2"
           ],
-          "expectedEvidence": "Correct identification plus summary notes.",
+          "expectedEvidence": "Radio choices for S/M sorting, pipeline step quiz, and filled translation fields.",
           "rubricHook": null
         },
         {
@@ -493,7 +497,7 @@
           "objectiveIds": [
             "L2-O4"
           ],
-          "expectedEvidence": "Ordered steps and brief descriptions.",
+          "expectedEvidence": "Ordered dropdowns, matched artefacts, and per-phase case lines.",
           "rubricHook": null
         },
         {
@@ -504,7 +508,7 @@
             "L2-O3",
             "L2-O4"
           ],
-          "expectedEvidence": "Numbered specification with grouped requirements.",
+          "expectedEvidence": "Completed spec input fields and three acceptance statements.",
           "rubricHook": null
         }
       ]
@@ -514,7 +518,7 @@
       "number": 3,
       "title": "Lesson 3: Algorithms",
       "summary": "Introduces step-by-step instructions using flowcharts, with multiple examples.",
-      "status": "draft",
+      "status": "ready",
       "studentPath": "/lessons/lesson-3/student.html",
       "teacherPath": "/lessons/lesson-3/index.html",
       "timings": "Not stated in handbook",
@@ -544,7 +548,11 @@
           "text": "Fix errors in an algorithm like: missing program element, incorrect sequence, incorrect decision outcome"
         }
       ],
-      "resources": [],
+      "resources": [
+        "Browser for interactive activities",
+        "Printed symbol/IO cards (optional)",
+        "Paper for sketching flowcharts"
+      ],
       "teacherResources": [
         {
           "title": "Lesson plan",
@@ -572,7 +580,7 @@
             "L3-O5",
             "L3-O6"
           ],
-          "expectedEvidence": "Completed task output and written notes.",
+          "expectedEvidence": "Completed routine table, decision paths, and flowchart checklist ticks.",
           "rubricHook": null
         },
         {
@@ -587,7 +595,7 @@
             "L3-O5",
             "L3-O6"
           ],
-          "expectedEvidence": "Completed task output and written notes.",
+          "expectedEvidence": "Device IO tables, snippet planner, and IO checklist ticks.",
           "rubricHook": null
         },
         {
@@ -602,7 +610,7 @@
             "L3-O5",
             "L3-O6"
           ],
-          "expectedEvidence": "Completed task output and written notes.",
+          "expectedEvidence": "Machine/IO table, flowchart element entries, loop check, and optional pseudocode.",
           "rubricHook": null
         }
       ]
@@ -612,7 +620,7 @@
       "number": 4,
       "title": "Lesson 4: Getting Started",
       "summary": "Students get early success running and saving simple Python programs in the shell.",
-      "status": "draft",
+      "status": "ready",
       "studentPath": "/lessons/lesson-4/student.html",
       "teacherPath": "/lessons/lesson-4/index.html",
       "timings": "Not stated in handbook",
@@ -634,7 +642,11 @@
           "text": "Open and run a program"
         }
       ],
-      "resources": [],
+      "resources": [
+        "Browser for interactive activities",
+        "Starter file (aliens.py) or equivalent sample",
+        "Headphones (optional for game sounds)"
+      ],
       "teacherResources": [
         {
           "title": "Lesson plan",
@@ -660,7 +672,7 @@
             "L4-O3",
             "L4-O4"
           ],
-          "expectedEvidence": "Completed task output and written notes.",
+          "expectedEvidence": "File path noted, run/issue record, small edit logged, and checklist ticks.",
           "rubricHook": null
         },
         {
@@ -673,7 +685,7 @@
             "L4-O3",
             "L4-O4"
           ],
-          "expectedEvidence": "Working code output and saved run results.",
+          "expectedEvidence": "Planned input/output, run log table, saved outputs/files, and reflection.",
           "rubricHook": null
         }
       ]

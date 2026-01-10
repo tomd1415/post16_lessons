@@ -68,48 +68,63 @@
 
       <div class="card">
         <h2>Step 2: Key ideas in your own words</h2>
-        <p>Explain the main idea of <b>And and Or in Controlling a Washing Machine</b> in one or two sentences.</p>
-        <textarea data-field="step2_notes" placeholder="Write your notes here..."></textarea>
+        <p>Complete the table with concise phrases.</p>
+        <table class="table">
+          <thead><tr><th>Prompt</th><th>Your answer</th></tr></thead>
+          <tbody>
+            <tr><td>AND in the washer control means...</td><td><input type="text" data-field="and_control" placeholder="your wording" /></td></tr>
+            <tr><td>OR in the washer control means...</td><td><input type="text" data-field="or_control" placeholder="your wording" /></td></tr>
+            <tr><td>NOT in the washer control means...</td><td><input type="text" data-field="not_control" placeholder="your wording" /></td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
     <div class="card" style="margin-top:12px">
       <h2>Step 3: Build the main task</h2>
       <div class="note"><b>Learning objective:</b> Reinforce understanding of OR and AND Boolean</div>
-<p><b>Suggested use:</b> Student activity</p>
-<p>operators</p>
-<p>Students list parts of a washing machine that can be on or off (outputs).</p>
-<p>(A list prepared earlier from lesson 2 activities can be used here.)</p>
-<p>Element to heat the water</p>
-<p>Motor to turn the drum</p>
-<p>Pump to pump water out.</p>
-<p>Valve to allow water in</p>
-<p>Lock to lock door.</p>
-<p>Level of water</p>
-<p>Temperature of water</p>
-<p>Time</p>
-<p>Heating element ON but no water, then the heating element will</p>
-<p>burn out.</p>
-<p>Opening the door when there is water in the drum</p>
-<p>machine's operation.  Logic statements may use AND and OR.  For</p>
-<p>example:</p>
-<p>Lock the washing machine door if the drum is spinning OR there is</p>
-<p>water in the drum</p>
-<p>Turn on the pump to pump out water if the machine is in the spin</p>
-<p>cycle AND there is water in the washing machine drum"</p>
-<p>In practice a washing machine's operational logic is more complex e.g. the</p>
-<p>pump will turn on during rinses.  However, AND is still a building block in</p>
-<p>the logic to control the washing machine pump.</p>
-<p>who bought the washing machine.</p>
-<p>Contact manufacturer if (Door-seal leaky OR motor-does-not-work)</p>
-<p>AND (still under warranty)</p>
-<ol>
-  <li>The list could include:</li>
-  <li>Talk about the sensors - what the washing machine can measure (inputs):</li>
-  <li>Ask about things that could go wrong, examples include:</li>
-  <li>These potential problems lead on to describing the logic of the washing</li>
-  <li>AND and OR may also be relevant in an algorithm to follow for the person</li>
-</ol>
+      <p><b>Suggested use:</b> Student activity</p>
+
+      <h3>Task A: Map outputs and inputs</h3>
+      <table class="table">
+        <thead><tr><th>Outputs (on/off)</th><th>Your entry</th></tr></thead>
+        <tbody>
+          <tr><td>Heating element</td><td><input type="text" data-field="out_heater" placeholder="state" /></td></tr>
+          <tr><td>Drum motor</td><td><input type="text" data-field="out_motor" placeholder="state" /></td></tr>
+          <tr><td>Water pump</td><td><input type="text" data-field="out_pump" placeholder="state" /></td></tr>
+          <tr><td>Water inlet valve</td><td><input type="text" data-field="out_valve" placeholder="state" /></td></tr>
+          <tr><td>Door lock</td><td><input type="text" data-field="out_lock" placeholder="state" /></td></tr>
+        </tbody>
+      </table>
+
+      <table class="table">
+        <thead><tr><th>Inputs (sensed)</th><th>Reading or state</th></tr></thead>
+        <tbody>
+          <tr><td>Water level</td><td><input type="text" data-field="in_level" placeholder="reading" /></td></tr>
+          <tr><td>Water temperature</td><td><input type="text" data-field="in_temp" placeholder="reading" /></td></tr>
+          <tr><td>Door closed sensor</td><td><input type="text" data-field="in_door" placeholder="reading" /></td></tr>
+          <tr><td>Cycle stage</td><td><input type="text" data-field="in_stage" placeholder="stage" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task B: Complete safety logic</h3>
+      <table class="table">
+        <thead><tr><th>Scenario</th><th>Logic statement (fill the condition)</th></tr></thead>
+        <tbody>
+          <tr><td>Protect heater</td><td><input type="text" data-field="logic_heater" placeholder="write the condition" /></td></tr>
+          <tr><td>Protect users</td><td><input type="text" data-field="logic_lock" placeholder="write the condition" /></td></tr>
+          <tr><td>Pump control</td><td><input type="text" data-field="logic_pump" placeholder="write the condition" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task C: Troubleshoot with AND/OR</h3>
+      <table class="table">
+        <thead><tr><th>Issue</th><th>Boolean rule to decide action</th></tr></thead>
+        <tbody>
+          <tr><td>Door seal leak OR motor failed</td><td><input type="text" data-field="logic_service" placeholder="write the rule" /></td></tr>
+          <tr><td>Cycle stuck</td><td><input type="text" data-field="logic_reset" placeholder="write the rule" /></td></tr>
+        </tbody>
+      </table>
       <ul class="list checklist">
         <li><label><input type="checkbox" data-check="goal"> I can describe the goal in one clear sentence.</label></li>
         <li><label><input type="checkbox" data-check="inputs"> I can list the inputs or information needed.</label></li>
@@ -135,7 +150,11 @@ Requirement 2: ..."></textarea>
 <li>Quick check 2: at least one condition is true</li>
 <li>Quick check 3: Flips it</li>
 <li>Learning objective focus: Reinforce understanding of OR and AND Boolean</li>
-<li>Look for clear steps and correct use of key terms.</li>
+        <li>Step 2 ideas: AND = both signals; OR = either signal; NOT = block when condition present</li>
+        <li>Outputs to expect: heater, motor, pump, inlet valve, door lock (on/off states)</li>
+        <li>Inputs to expect: water level, temperature, door closed, cycle stage</li>
+        <li>Safety logic examples: heater only with water; lock door if spinning OR water present; pump when spin AND water present</li>
+        <li>Troubleshooting: contact manufacturer if (seal leak OR motor failure) AND under warranty; reset only if door closed AND water drained</li>
       </ul>
     </div>
 

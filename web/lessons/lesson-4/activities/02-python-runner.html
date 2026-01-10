@@ -83,9 +83,31 @@
       </div>
     </div>
 
+    <div class="card" style="margin-top:12px">
+      <h2>Step 3: Plan your run</h2>
+      <p>Fill the boxes before you click <b>Run code</b>.</p>
+      <table class="table">
+        <thead><tr><th>Prompt</th><th>Your answer</th></tr></thead>
+        <tbody>
+          <tr><td>Test input (if any)</td><td><input type="text" data-field="plan_input" placeholder="e.g., name or number" /></td></tr>
+          <tr><td>Expected output</td><td><input type="text" data-field="plan_output" placeholder="e.g., Hello Sam" /></td></tr>
+          <tr><td>Change you will test</td><td><input type="text" data-field="plan_change" placeholder="e.g., add second print line" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Run log</h3>
+      <table class="table">
+        <thead><tr><th>Run #</th><th>What changed</th><th>Output OK?</th><th>Error note</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><input type="text" data-field="run1_change" /></td><td><input type="checkbox" aria-label="Run1 ok"></td><td><input type="text" data-field="run1_err" /></td></tr>
+          <tr><td>2</td><td><input type="text" data-field="run2_change" /></td><td><input type="checkbox" aria-label="Run2 ok"></td><td><input type="text" data-field="run2_err" /></td></tr>
+        </tbody>
+      </table>
+    </div>
+
     <div class="grid cols2" style="margin-top:12px">
       <div class="card">
-        <h2>Step 3: Run output</h2>
+        <h2>Step 4: Run output</h2>
         <div class="note">
           Outputs are saved with your attempt so teachers can review them later.
         </div>
@@ -97,7 +119,7 @@
       </div>
 
       <div class="card">
-        <h2>Step 4: Files</h2>
+        <h2>Step 5: Files</h2>
         <div class="note">
           Files created during a run are shown below. Use <b>Save files</b> to keep them with your attempt.
         </div>
@@ -109,7 +131,7 @@
     </div>
 
     <div class="card" style="margin-top:12px">
-      <h2>Step 5: Reflection</h2>
+      <h2>Step 6: Reflection</h2>
       <p>What did you change? What worked first time? What will you try next?</p>
       <textarea data-field="reflection" placeholder="My reflections..."></textarea>
     </div>

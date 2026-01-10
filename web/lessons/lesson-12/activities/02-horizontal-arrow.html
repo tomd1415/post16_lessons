@@ -68,28 +68,52 @@
 
       <div class="card">
         <h2>Step 2: Key ideas in your own words</h2>
-        <p>Explain the main idea of <b>Horizontal Arrow</b> in one or two sentences.</p>
-        <textarea data-field="step2_notes" placeholder="Write your notes here..."></textarea>
+        <p>Fill the table.</p>
+        <table class="table">
+          <thead><tr><th>Prompt</th><th>Your answer</th></tr></thead>
+          <tbody>
+            <tr><td>Why use a function here?</td><td><input type="text" data-field="func_reason" placeholder="your wording" /></td></tr>
+            <tr><td>What parameter controls width?</td><td><input type="text" data-field="param_width" placeholder="name" /></td></tr>
+            <tr><td>How to avoid infinite loops?</td><td><input type="text" data-field="loop_safe" placeholder="your tip" /></td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
     <div class="card" style="margin-top:12px">
       <h2>Step 3: Build the main task</h2>
       <div class="note"><b>Learning objective:</b> Loops, Procedures, Functions and Parameters</div>
-<p><b>Suggested use:</b> Student activity</p>
-<p>Solution File: HorizontalArrow.py located in the lesson 12 folder in</p>
-<p>the TeacherCodeFiles folder</p>
-<p>In Lesson 12 students learned how to draw an arrow head.  Can they use the</p>
-<p>knowledge they have gained to draw a double headed horizontal arrow?</p>
-<p>Some helpful tips:</p>
-<p>Use a dot for spaces, until they have the program working, so that they</p>
-<p>can see where the spaces are being printed.</p>
-<p>Break the problem down into parts (decomposition).</p>
-<p>Use functions for the different parts.</p>
-<p>Start with just a function to draw an arrow head pointing right, and get that</p>
-<p>part working on its own.</p>
-<p>Here's a possible solution:</p>
-<p>When run this gives:</p>
+      <p><b>Suggested use:</b> Student activity</p>
+
+      <h3>Task A: Plan the pieces</h3>
+      <table class="table">
+        <thead><tr><th>Part</th><th>Width/length</th><th>Character</th></tr></thead>
+        <tbody>
+          <tr><td>Head (left)</td><td><input type="text" data-field="head_left_w" /></td><td><input type="text" data-field="head_left_char" /></td></tr>
+          <tr><td>Shaft</td><td><input type="text" data-field="shaft_len" /></td><td><input type="text" data-field="shaft_char" /></td></tr>
+          <tr><td>Head (right)</td><td><input type="text" data-field="head_right_w" /></td><td><input type="text" data-field="head_right_char" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task B: Order the draw steps</h3>
+      <p>Write 1, 2, 3.</p>
+      <table class="table">
+        <thead><tr><th>Action</th><th>Order</th></tr></thead>
+        <tbody>
+          <tr><td>Draw left head</td><td><input type="number" data-field="order_left" min="1" max="3" /></td></tr>
+          <tr><td>Draw shaft</td><td><input type="number" data-field="order_shaft" min="1" max="3" /></td></tr>
+          <tr><td>Draw right head</td><td><input type="number" data-field="order_right" min="1" max="3" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task C: Test cases</h3>
+      <table class="table">
+        <thead><tr><th>Width</th><th>Height/rows</th><th>Character</th><th>Run?</th></tr></thead>
+        <tbody>
+          <tr><td><input type="text" data-field="test_w1" placeholder="e.g., 3" /></td><td><input type="text" data-field="test_h1" placeholder="e.g., 1" /></td><td><input type="text" data-field="test_c1" placeholder="*" /></td><td><input type="checkbox" aria-label="run test1"></td></tr>
+          <tr><td><input type="text" data-field="test_w2" /></td><td><input type="text" data-field="test_h2" /></td><td><input type="text" data-field="test_c2" /></td><td><input type="checkbox" aria-label="run test2"></td></tr>
+        </tbody>
+      </table>
       <ul class="list checklist">
         <li><label><input type="checkbox" data-check="goal"> I can describe the goal in one clear sentence.</label></li>
         <li><label><input type="checkbox" data-check="inputs"> I can list the inputs or information needed.</label></li>
@@ -103,7 +127,35 @@ Requirement 2: ..."></textarea>
     </div>
 
     <div class="card" style="margin-top:12px">
-      <h2>Step 4: Reflection</h2>
+      <h2>Step 4: Run in Python</h2>
+      <div class="note">Write a function to draw the arrow using print statements or loops.</div>
+      <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn good" id="runBtn" type="button">Run code</button>
+        <button class="btn" id="saveFilesBtn" type="button">Save files</button>
+        <button class="btn bad" id="resetBtn" type="button">Reset</button>
+      </div>
+      <div class="grid cols2" style="margin-top:12px">
+        <div class="card">
+          <h3>Output</h3>
+          <label for="stdout"><b>Stdout</b></label>
+          <pre id="stdout" class="code-output"></pre>
+          <label for="stderr"><b>Stderr</b></label>
+          <pre id="stderr" class="code-output warn"></pre>
+          <div id="runMeta" class="note" style="margin-top:10px; display:none"></div>
+        </div>
+        <div class="card">
+          <h3>Run files</h3>
+          <div id="runFiles" class="file-list"></div>
+          <div style="height:8px"></div>
+          <h3>Saved files</h3>
+          <div id="savedFiles" class="file-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 5: Reflection</h2>
       <p>Encourage pupils to note what was easy, what was tricky, and what they would change.</p>
       <textarea data-field="reflection" placeholder="What went well? What would you do differently next time?"></textarea>
     </div>
@@ -116,6 +168,7 @@ Requirement 2: ..."></textarea>
 <li>Quick check 3: the exit condition never becomes false</li>
 <li>Learning objective focus: Loops, Procedures, Functions and Parameters</li>
 <li>Look for clear steps and correct use of key terms.</li>
+<li>Order should be left head, shaft, right head; test with different characters.</li>
       </ul>
     </div>
 
@@ -131,6 +184,8 @@ Requirement 2: ..."></textarea>
   </div>
 
   <script src="../../../core/app.js"></script>
+  <script src="../../../core/auth.js"></script>
+  <script src="../../../core/python-runner.js"></script>
   <script src="../../../core/activity-scaffold.js"></script>
 </body>
 </html>

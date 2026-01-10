@@ -24,7 +24,7 @@
   <div class="container">
     <h1>a01 - Flowchart for Everyday Algorithms</h1>
     <div class="note">
-      <b>How this works:</b> This activity is broken into small steps with quick checks and spaces to add your own ideas.
+      <b>Goal:</b> Practise reading and creating simple flowcharts for everyday tasks, using the correct symbols and sequences.
     </div>
 
     <div class="grid cols2" style="margin-top:12px">
@@ -68,28 +68,65 @@
 
       <div class="card">
         <h2>Step 2: Key ideas in your own words</h2>
-        <p>Explain the main idea of <b>Flowchart for Everyday Algorithms</b> in one or two sentences.</p>
-        <textarea data-field="step2_notes" placeholder="Write your notes here..."></textarea>
+        <p>Fill the short boxes.</p>
+        <table class="table">
+          <thead><tr><th>Prompt</th><th>Your answer</th></tr></thead>
+          <tbody>
+            <tr><td>Sequence means...</td><td><input type="text" data-field="seq_def" placeholder="steps in order" /></td></tr>
+            <tr><td>Decision means...</td><td><input type="text" data-field="dec_def" placeholder="branch on a condition" /></td></tr>
+            <tr><td>Symbol I find hardest</td><td><input type="text" data-field="hard_symbol" placeholder="e.g., connector" /></td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
     <div class="card" style="margin-top:12px">
       <h2>Step 3: Build the main task</h2>
-      <div class="note"><b>Learning objective:</b> Practice with flowchart symbols</div>
-<p><b>Suggested use:</b> Development of a student activity on algorithms</p>
-<p>Understand the decision symbol</p>
-<p>First attempts at everyday algorithms tend to represent linear sequences.  Most</p>
-<p>recipes are a step by step sequence, with perhaps a 'wait for oven to heat up'</p>
-<p>being the furthest deviation from the sequential flow.  Most instructions for putting</p>
-<p>furniture together are step by step.</p>
-<p>Encourage the students to find ways that their everyday algorithms could contain</p>
-<p>an 'if' scenario, e.g.</p>
-<p>How does the getting ready for school algorithm change if there is a power</p>
-<p>cut, or there is no cereal for breakfast?</p>
-<p>How does a sandwich recipe change depending on what is available in the</p>
-<p>fridge?</p>
-<p>How do the furniture assembly instructions change if you've made a</p>
-<p>mistake in assembly?</p>
+      <div class="note"><b>Learning objective:</b> Recognise flowchart symbols and sequence operations.</div>
+
+      <h3>Task A: Map a daily routine</h3>
+      <p>Pick an everyday process (making breakfast / packing a bag). Add 5 short steps and mark any decision step.</p>
+      <table class="table">
+        <thead><tr><th>#</th><th>Step</th><th>Decision?</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><input type="text" data-field="step1" placeholder="Step 1" /></td><td><input type="checkbox" aria-label="Step 1 decision" /></td></tr>
+          <tr><td>2</td><td><input type="text" data-field="step2" placeholder="Step 2" /></td><td><input type="checkbox" aria-label="Step 2 decision" /></td></tr>
+          <tr><td>3</td><td><input type="text" data-field="step3" placeholder="Step 3" /></td><td><input type="checkbox" aria-label="Step 3 decision" /></td></tr>
+          <tr><td>4</td><td><input type="text" data-field="step4" placeholder="Step 4" /></td><td><input type="checkbox" aria-label="Step 4 decision" /></td></tr>
+          <tr><td>5</td><td><input type="text" data-field="step5" placeholder="Step 5" /></td><td><input type="checkbox" aria-label="Step 5 decision" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task B: Add one decision branch</h3>
+      <p>Rewrite your routine with an IF. Fill both paths.</p>
+      <table class="table">
+        <thead><tr><th>Condition</th><th>Yes path</th><th>No path</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><input type="text" data-field="condition" placeholder="e.g., cereal available?" /></td>
+            <td><input type="text" data-field="yes_path" placeholder="Yes: ..." /></td>
+            <td><input type="text" data-field="no_path" placeholder="No: ..." /></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Task C: Convert to flowchart form</h3>
+      <ol class="list">
+        <li>Start / End: ovals</li>
+        <li>Actions: rectangles</li>
+        <li>Decisions: diamonds with two labelled outputs (Yes/No)</li>
+        <li>Arrows: show direction and loops if needed</li>
+      </ol>
+      <table class="table">
+        <thead><tr><th>Check</th><th>Done?</th></tr></thead>
+        <tbody>
+          <tr><td>Start and End added</td><td><input type="checkbox" aria-label="Start End done"></td></tr>
+          <tr><td>Decision has Yes/No labels</td><td><input type="checkbox" aria-label="Decision labelled"></td></tr>
+          <tr><td>Any loop has an exit</td><td><input type="checkbox" aria-label="Loop exit"></td></tr>
+        </tbody>
+      </table>
+
+      <div class="note warn" style="margin-top:10px">Stretch: identify a possible infinite loop and how to exit it.</div>
       <ul class="list checklist">
         <li><label><input type="checkbox" data-check="goal"> I can describe the goal in one clear sentence.</label></li>
         <li><label><input type="checkbox" data-check="inputs"> I can list the inputs or information needed.</label></li>
@@ -98,24 +135,21 @@
       </ul>
       <div style="margin-top:10px"></div>
       <label for="taskNotes"><b>Your structured notes</b></label>
-      <textarea id="taskNotes" data-field="task_notes" placeholder="Requirement 1: ...
-Requirement 2: ..."></textarea>
+      <textarea id="taskNotes" data-field="task_notes" placeholder="Process: ...&#10;Decision point: ...&#10;Yes path: ...&#10;No path: ..."></textarea>
     </div>
 
     <div class="card" style="margin-top:12px">
       <h2>Step 4: Reflection</h2>
-      <p>Encourage pupils to note what was easy, what was tricky, and what they would change.</p>
-      <textarea data-field="reflection" placeholder="What went well? What would you do differently next time?"></textarea>
+      <p>Where did you add a decision? Did any step need to loop? What would make the flowchart clearer?</p>
+      <textarea data-field="reflection" placeholder="Reflection: ..."></textarea>
     </div>
 
     <div class="teacher-only card" style="margin-top:12px; display:none">
       <h2>Teacher guidance (answer prompts)</h2>
       <ul class="list">
-        <li>Quick check 1: Diamond</li>
-<li>Quick check 2: instructions followed in order</li>
-<li>Quick check 3: structured plain-language steps</li>
-<li>Learning objective focus: Practice with flowchart symbols</li>
-<li>Look for clear steps and correct use of key terms.</li>
+        <li>Quick checks: decision = diamond; sequence = ordered steps; pseudocode = structured plain language.</li>
+        <li>Look for a clear Yes/No labelling on the diamond; at least one loop or explicit end.</li>
+        <li>Misconceptions: arrows that jump backwards without condition; missing End.</li>
       </ul>
     </div>
 

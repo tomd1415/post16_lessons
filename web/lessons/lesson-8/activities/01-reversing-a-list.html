@@ -68,25 +68,54 @@
 
       <div class="card">
         <h2>Step 2: Key ideas in your own words</h2>
-        <p>Explain the main idea of <b>Reversing a list</b> in one or two sentences.</p>
-        <textarea data-field="step2_notes" placeholder="Write your notes here..."></textarea>
+        <p>Fill the quick table.</p>
+        <table class="table">
+          <thead><tr><th>Prompt</th><th>Your answer</th></tr></thead>
+          <tbody>
+            <tr><td>Two ways to reverse</td><td><input type="text" data-field="ways_reverse" placeholder="method names" /></td></tr>
+            <tr><td>List index of last item</td><td><input type="text" data-field="last_index" placeholder="value" /></td></tr>
+            <tr><td>Why copy before reversing?</td><td><input type="text" data-field="copy_reason" placeholder="your reasoning" /></td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
     <div class="card" style="margin-top:12px">
       <h2>Step 3: Build the main task</h2>
       <div class="note"><b>Learning objective:</b> Working with lists</div>
-<p><b>Suggested use:</b> Student self-study</p>
-<p>Solution File: Reverse.py located in the lesson 8 folder in the</p>
-<p>TeacherCodeFiles folder</p>
-<p>red, orange, yellow, green, blue, indigo, violet.</p>
-<p>unlikely that students can achieve this.</p>
-<p>Here's one possible solution:</p>
-<ol>
-  <li>Students write a program that makes a list with the colours of the rainbow,</li>
-  <li>Can they print the list in reverse order?  At this stage in their learning it is</li>
-  <li>Students use an Internet search engine to find a solution and try it out.</li>
-</ol>
+      <p><b>Suggested use:</b> Student self-study</p>
+
+      <h3>Task A: Choose the method</h3>
+      <table class="table">
+        <thead><tr><th>Method</th><th>Mark if you will use it</th></tr></thead>
+        <tbody>
+          <tr><td>Slice syntax (list[::-1])</td><td><input type="checkbox" data-field="method_slice" aria-label="use slice"></td></tr>
+          <tr><td>Built-in reversed()</td><td><input type="checkbox" data-field="method_reversed" aria-label="use reversed"></td></tr>
+          <tr><td>Manual loop</td><td><input type="checkbox" data-field="method_loop" aria-label="use loop"></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task B: Plan the loop steps</h3>
+      <p>Write 1, 2, 3 to put the steps in order for a manual reverse.</p>
+      <table class="table">
+        <thead><tr><th>Statement</th><th>Order</th></tr></thead>
+        <tbody>
+          <tr><td>Create an empty list for output</td><td><input type="number" data-field="order_empty" min="1" max="3" /></td></tr>
+          <tr><td>Loop from last index down to 0</td><td><input type="number" data-field="order_loop" min="1" max="3" /></td></tr>
+          <tr><td>Append each item to the output list</td><td><input type="number" data-field="order_append" min="1" max="3" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task C: Test cases</h3>
+      <p>Fill the table before coding.</p>
+      <table class="table">
+        <thead><tr><th>Input list</th><th>Expected reversed</th><th>Run?</th></tr></thead>
+        <tbody>
+          <tr><td><input type="text" data-field="test1_in" placeholder="e.g., [1,2,3]" /></td><td><input type="text" data-field="test1_out" /></td><td><input type="checkbox" aria-label="run test1"></td></tr>
+          <tr><td><input type="text" data-field="test2_in" placeholder="e.g., ['red','blue']" /></td><td><input type="text" data-field="test2_out" /></td><td><input type="checkbox" aria-label="run test2"></td></tr>
+          <tr><td><input type="text" data-field="test3_in" placeholder="mixed values" /></td><td><input type="text" data-field="test3_out" /></td><td><input type="checkbox" aria-label="run test3"></td></tr>
+        </tbody>
+      </table>
       <ul class="list checklist">
         <li><label><input type="checkbox" data-check="goal"> I can describe the goal in one clear sentence.</label></li>
         <li><label><input type="checkbox" data-check="inputs"> I can list the inputs or information needed.</label></li>
@@ -100,7 +129,36 @@ Requirement 2: ..."></textarea>
     </div>
 
     <div class="card" style="margin-top:12px">
-      <h2>Step 4: Reflection</h2>
+      <h2>Step 4: Run in Python</h2>
+      <div class="note">Paste your reverse function below and verify your three tests.</div>
+      <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn good" id="runBtn" type="button">Run code</button>
+        <button class="btn" id="saveFilesBtn" type="button">Save files</button>
+        <button class="btn bad" id="resetBtn" type="button">Reset</button>
+      </div>
+
+      <div class="grid cols2" style="margin-top:12px">
+        <div class="card">
+          <h3>Output</h3>
+          <label for="stdout"><b>Stdout</b></label>
+          <pre id="stdout" class="code-output"></pre>
+          <label for="stderr"><b>Stderr</b></label>
+          <pre id="stderr" class="code-output warn"></pre>
+          <div id="runMeta" class="note" style="margin-top:10px; display:none"></div>
+        </div>
+        <div class="card">
+          <h3>Run files</h3>
+          <div id="runFiles" class="file-list"></div>
+          <div style="height:8px"></div>
+          <h3>Saved files</h3>
+          <div id="savedFiles" class="file-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 5: Reflection</h2>
       <p>Encourage pupils to note what was easy, what was tricky, and what they would change.</p>
       <textarea data-field="reflection" placeholder="What went well? What would you do differently next time?"></textarea>
     </div>
@@ -112,7 +170,8 @@ Requirement 2: ..."></textarea>
 <li>Quick check 2: immutable</li>
 <li>Quick check 3: 0</li>
 <li>Learning objective focus: Working with lists</li>
-<li>Look for clear steps and correct use of key terms.</li>
+        <li>Task B order: empty list (1), loop backwards (2), append items (3)</li>
+        <li>Look for pupils testing multiple cases and using slice/reversed/loop appropriately.</li>
       </ul>
     </div>
 
@@ -128,6 +187,8 @@ Requirement 2: ..."></textarea>
   </div>
 
   <script src="../../../core/app.js"></script>
+  <script src="../../../core/auth.js"></script>
+  <script src="../../../core/python-runner.js"></script>
   <script src="../../../core/activity-scaffold.js"></script>
 </body>
 </html>

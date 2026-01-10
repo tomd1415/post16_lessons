@@ -24,17 +24,17 @@
   <div class="container">
     <h1>a02 - Source code vs machine code</h1>
     <div class="note">
-      <b>How this works:</b> This activity is broken into small steps with quick checks and spaces to add your own ideas.
+      <b>Goal:</b> Distinguish source code from machine code, show the translation pipeline, and capture examples in your own words.
     </div>
 
     <div class="grid cols2" style="margin-top:12px">
       <div class="card">
         <h2>Step 1: Quick checks</h2>
-        <p><b>Prompt 1:</b> Replace this with a simple question that builds confidence.</p>
-        <div data-quiz="q1" data-correct="b">
-          <label class="choice"><input type="radio" name="q1" value="a"> Option A (replace)</label>
-          <label class="choice"><input type="radio" name="q1" value="b"> Option B (correct)</label>
-          <label class="choice"><input type="radio" name="q1" value="c"> Option C (replace)</label>
+        <p><b>Prompt 1:</b> Source code is written for...</p>
+        <div data-quiz="q1" data-correct="a">
+          <label class="choice"><input type="radio" name="q1" value="a"> humans to read and edit</label>
+          <label class="choice"><input type="radio" name="q1" value="b"> sensors to measure light</label>
+          <label class="choice"><input type="radio" name="q1" value="c"> CPUs to execute directly</label>
         </div>
         <div class="row" style="margin-top:8px">
           <button class="btn good" data-quiz-check="q1" type="button">Check</button>
@@ -42,11 +42,11 @@
         <div class="note" data-quiz-feedback="q1" style="margin-top:10px; display:none"></div>
 
         <div style="height:10px"></div>
-        <p><b>Prompt 2:</b> Add a second quick check for instant feedback.</p>
-        <div data-quiz="q2" data-correct="a">
-          <label class="choice"><input type="radio" name="q2" value="a"> Option A (correct)</label>
-          <label class="choice"><input type="radio" name="q2" value="b"> Option B (replace)</label>
-          <label class="choice"><input type="radio" name="q2" value="c"> Option C (replace)</label>
+        <p><b>Prompt 2:</b> Machine code is best described as...</p>
+        <div data-quiz="q2" data-correct="c">
+          <label class="choice"><input type="radio" name="q2" value="a"> comments about the program</label>
+          <label class="choice"><input type="radio" name="q2" value="b"> a high-level algorithm in English</label>
+          <label class="choice"><input type="radio" name="q2" value="c"> binary instructions ready for the CPU</label>
         </div>
         <div class="row" style="margin-top:8px">
           <button class="btn good" data-quiz-check="q2" type="button">Check</button>
@@ -54,11 +54,11 @@
         <div class="note" data-quiz-feedback="q2" style="margin-top:10px; display:none"></div>
 
         <div style="height:10px"></div>
-        <p><b>Prompt 3:</b> Add a third quick check to reinforce understanding.</p>
-        <div data-quiz="q3" data-correct="c">
-          <label class="choice"><input type="radio" name="q3" value="a"> Option A (replace)</label>
-          <label class="choice"><input type="radio" name="q3" value="b"> Option B (replace)</label>
-          <label class="choice"><input type="radio" name="q3" value="c"> Option C (correct)</label>
+        <p><b>Prompt 3:</b> Which tool turns source code into machine code?</p>
+        <div data-quiz="q3" data-correct="b">
+          <label class="choice"><input type="radio" name="q3" value="a"> Text editor</label>
+          <label class="choice"><input type="radio" name="q3" value="b"> Compiler/assembler</label>
+          <label class="choice"><input type="radio" name="q3" value="c"> Spreadsheet</label>
         </div>
         <div class="row" style="margin-top:8px">
           <button class="btn good" data-quiz-check="q3" type="button">Check</button>
@@ -69,37 +69,117 @@
 
       <div class="card">
         <h2>Step 2: Key ideas in your own words</h2>
-        <p>Prompt pupils to explain a term or idea in one or two sentences.</p>
-        <textarea data-field="step2_notes" placeholder="Write your notes here..."></textarea>
+        <p>Fill the short boxes (no long writing needed).</p>
+        <table class="table">
+          <thead><tr><th>Prompt</th><th>Your answer</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Source code is written for...</td>
+              <td><input type="text" data-field="step2_source_for" placeholder="humans / readable" /></td>
+            </tr>
+            <tr>
+              <td>Example of source code</td>
+              <td><input type="text" data-field="step2_source_example" placeholder="e.g., print('hi')" /></td>
+            </tr>
+            <tr>
+              <td>Example of machine code</td>
+              <td><input type="text" data-field="step2_machine_example" placeholder="e.g., 10110010" /></td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
     <div class="card" style="margin-top:12px">
       <h2>Step 3: Build the main task</h2>
-      <p>Break the big task into smaller checkpoints before pupils attempt the full task.</p>
+      <div class="note"><b>Learning objective:</b> Define code and distinguish source code from machine code.</div>
+      <h3>Task A: Sort the statements</h3>
+      <p>Select <b>S</b> (source) or <b>M</b> (machine) for each.</p>
+      <table class="table">
+        <thead><tr><th>#</th><th>Statement</th><th>Choose</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>1</td><td>Binary bytes like 10110010 11100011</td>
+            <td>
+              <label class="choice inline"><input type="radio" name="s1" value="S"> S</label>
+              <label class="choice inline"><input type="radio" name="s1" value="M"> M</label>
+            </td>
+          </tr>
+          <tr>
+            <td>2</td><td>Python code: <span class="kbd">if score &gt;= 10: print("win")</span></td>
+            <td>
+              <label class="choice inline"><input type="radio" name="s2" value="S"> S</label>
+              <label class="choice inline"><input type="radio" name="s2" value="M"> M</label>
+            </td>
+          </tr>
+          <tr>
+            <td>3</td><td>Assembly instruction <span class="kbd">LDA #$01</span></td>
+            <td>
+              <label class="choice inline"><input type="radio" name="s3" value="S"> S</label>
+              <label class="choice inline"><input type="radio" name="s3" value="M"> M</label>
+            </td>
+          </tr>
+          <tr>
+            <td>4</td><td>High-level comment explaining a function</td>
+            <td>
+              <label class="choice inline"><input type="radio" name="s4" value="S"> S</label>
+              <label class="choice inline"><input type="radio" name="s4" value="M"> M</label>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Task B: Trace the pipeline</h3>
+      <p>Pick the missing step and explain why it matters.</p>
+      <table class="table">
+        <thead><tr><th>Missing step</th><th>Why it is needed</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>
+              <div data-quiz="pipeline" data-correct="compile">
+                <label class="choice"><input type="radio" name="pipeline" value="compile"> Compile / assemble</label>
+                <label class="choice"><input type="radio" name="pipeline" value="save"> Save</label>
+                <label class="choice"><input type="radio" name="pipeline" value="email"> Email code to a friend</label>
+              </div>
+              <div class="row" style="margin-top:8px">
+                <button class="btn good" data-quiz-check="pipeline" type="button">Check</button>
+              </div>
+              <div class="note" data-quiz-feedback="pipeline" style="margin-top:10px; display:none"></div>
+            </td>
+            <td><input type="text" data-field="pipeline_reason" placeholder="It translates to CPU-ready bits" /></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Task C: Translate a tiny snippet</h3>
+      <p>Given source <span class="kbd">x = 2 + 3</span>, finish the sentence:</p>
+      <input type="text" data-field="translate_summary" style="width:100%" placeholder="CPU will ... (e.g., load 2 and 3, add, store result)" />
+
+      <div class="note warn" style="margin-top:10px">Stretch: note one real opcode and what it does.</div>
+      <input type="text" data-field="opcode_example" placeholder="Opcode (optional): e.g., B8 02 00 -> load 2" />
       <ul class="list checklist">
-        <li><label><input type="checkbox" data-check="goal"> I can describe the goal in one clear sentence.</label></li>
-        <li><label><input type="checkbox" data-check="inputs"> I can list the inputs or information needed.</label></li>
-        <li><label><input type="checkbox" data-check="steps"> I can outline the main steps in order.</label></li>
-        <li><label><input type="checkbox" data-check="test"> I can describe how to test if it works.</label></li>
+        <li><label><input type="checkbox" data-check="goal"> Goal described clearly.</label></li>
+        <li><label><input type="checkbox" data-check="inputs"> Inputs listed.</label></li>
+        <li><label><input type="checkbox" data-check="steps"> Steps outlined.</label></li>
+        <li><label><input type="checkbox" data-check="test"> Test idea noted.</label></li>
       </ul>
-      <div style="margin-top:10px"></div>
-      <label for="taskNotes"><b>Your structured notes</b></label>
-      <textarea id="taskNotes" data-field="task_notes" placeholder="Requirement 1: ...&#10;Requirement 2: ..."></textarea>
     </div>
 
     <div class="card" style="margin-top:12px">
       <h2>Step 4: Reflection</h2>
-      <p>Encourage pupils to note what was easy, what was tricky, and what they would change.</p>
-      <textarea data-field="reflection" placeholder="What went well? What would you do differently next time?"></textarea>
+      <p>What parts of the pipeline were clear? Where might errors happen when translating source to machine code?</p>
+      <textarea data-field="reflection" placeholder="Reflection: ..."></textarea>
     </div>
 
     <div class="teacher-only card" style="margin-top:12px; display:none">
       <h2>Teacher guidance (answer prompts)</h2>
       <ul class="list">
-        <li>Quick check answers: replace with the correct options.</li>
-        <li>Key ideas to listen for in pupil notes.</li>
-        <li>Common misconceptions and follow-up prompts.</li>
+        <li>Quick checks: (1) humans, (2) binary instructions, (3) compiler/assembler.</li>
+        <li>Task A: 1=M, 2=S, 3=S (low-level but still source), 4=S (comment, not executed).</li>
+        <li>Task B: missing step is <b>compile/assemble</b>; purpose is to translate to CPU-ready binary.</li>
+        <li>Task C: Expect “load 2 and 3 into registers, add, store result”.</li>
+        <li>Misconceptions: “Python is machine code”; “comments run”; “CPU reads .py directly”.</li>
+        <li>Differentiation: pair a novice with a peer coach to narrate the pipeline aloud; stretch to name real opcodes.</li>
       </ul>
     </div>
 

@@ -330,48 +330,87 @@ def _build_archive(code: str, files: List[dict]) -> bytes:
 
 
 def _build_exec_command(code: str) -> tuple[list[str], dict]:
-    runner_bootstrap = (
-        "import base64,os,shutil\n"
-        "payload=os.environ.get('TLAC_CODE_B64','')\n"
-        "text=base64.b64decode(payload.encode('ascii')).decode('utf-8','replace') if payload else ''\n"
-        "path='/tmp/main.py'\n"
-        "try:\n"
-        "    with open(path,'w',encoding='utf-8') as handle:\n"
-        "        handle.write(text)\n"
-        "except Exception:\n"
-        "    pass\n"
-        "try:\n"
-        "    os.chdir('/tmp')\n"
-        "except Exception:\n"
-        "    pass\n"
-        "cwd=os.getcwd()\n"
-        "def _snapshot(root):\n"
-        "    files=set()\n"
-        "    for base, _, names in os.walk(root):\n"
-        "        for name in names:\n"
-        "            full=os.path.join(base,name)\n"
-        "            try:\n"
-        "                rel=os.path.relpath(full, root)\n"
-        "            except Exception:\n"
-        "                rel=name\n"
-        "            files.add(rel)\n"
-        "    return files\n"
-        "before=_snapshot(cwd)\n"
-        "globals_dict={'__name__':'__main__','__file__':path}\n"
-        "exec(compile(text, path, 'exec'), globals_dict)\n"
-        "after=_snapshot(cwd)\n"
-        "if cwd != '/tmp':\n"
-        "    for rel in sorted(after - before):\n"
-        "        src=os.path.join(cwd, rel)\n"
-        "        dst=os.path.join('/tmp', rel)\n"
-        "        try:\n"
-        "            dirpath=os.path.dirname(dst)\n"
-        "            if dirpath:\n"
-        "                os.makedirs(dirpath, exist_ok=True)\n"
-        "            shutil.copy2(src, dst)\n"
-        "        except Exception:\n"
-        "            pass\n"
-    )
+    fallback_turtle_b64 = base64.b64encode(TURTLE_STUB.encode("utf-8")).decode("ascii")
+
+    runner_bootstrap = f"""
+import base64, os, shutil, sys, types
+payload = os.environ.get('TLAC_CODE_B64','')
+text = base64.b64decode(payload.encode('ascii')).decode('utf-8','replace') if payload else ''
+path = '/tmp/main.py'
+try:
+    with open(path,'w',encoding='utf-8') as handle:
+        handle.write(text)
+except Exception:
+    pass
+try:
+    os.chdir('/tmp')
+except Exception:
+    pass
+cwd = os.getcwd()
+sys.path.insert(0, cwd)
+# Preload turtle stub so stdlib turtle/tkinter are not imported.
+try:
+    turtle_mod = types.ModuleType('turtle')
+    turtle_path = os.path.join(cwd, 'turtle.py')
+    _code = ''
+    try:
+        with open(turtle_path, 'r', encoding='utf-8') as _f:
+            _code = _f.read()
+    except Exception:
+        _code = base64.b64decode('{fallback_turtle_b64}').decode('utf-8','replace')
+    exec(compile(_code, turtle_path, 'exec'), turtle_mod.__dict__)
+    sys.modules['turtle'] = turtle_mod
+except Exception:
+    sys.modules.setdefault('turtle', types.ModuleType('turtle'))
+# Provide a no-op tkinter stub to avoid native Tk loads.
+try:
+    tk_mod = types.ModuleType('tkinter')
+    tk_mod.Tk = lambda *a, **k: None
+    tk_mod.mainloop = lambda *a, **k: None
+    class _SimpleDialog:
+        @staticmethod
+        def askstring(*a, **k):
+            return ''
+    tk_mod.simpledialog = _SimpleDialog
+    sys.modules['tkinter'] = tk_mod
+except Exception:
+    sys.modules.setdefault('tkinter', types.ModuleType('tkinter'))
+def _snapshot(root):
+    files = set()
+    for base, _, names in os.walk(root):
+        for name in names:
+            full = os.path.join(base, name)
+            try:
+                rel = os.path.relpath(full, root)
+            except Exception:
+                rel = name
+            files.add(rel)
+    return files
+before = _snapshot(cwd)
+globals_dict = {{'__name__':'__main__','__file__': path}}
+exec(compile(text, path, 'exec'), globals_dict)
+if 'turtle' in sys.modules:
+    try:
+        mod = sys.modules['turtle']
+        if hasattr(mod, 'write_svg'):
+            mod.write_svg()
+        elif hasattr(mod, 'done'):
+            mod.done()
+    except Exception:
+        pass
+after = _snapshot(cwd)
+if cwd != '/tmp':
+    for rel in sorted(after - before):
+        src = os.path.join(cwd, rel)
+        dst = os.path.join('/tmp', rel)
+        try:
+            dirpath = os.path.dirname(dst)
+            if dirpath:
+                os.makedirs(dirpath, exist_ok=True)
+            shutil.copy2(src, dst)
+        except Exception:
+            pass
+"""
     command = [
         "timeout",
         "-s",
@@ -520,6 +559,7 @@ def run_python(code: str, files: List[dict]) -> dict:
             environment={
                 "PYTHONDONTWRITEBYTECODE": "1",
                 "PYTHONUNBUFFERED": "1",
+                "PYTHONPATH": "/tmp",
                 **exec_env,
             },
         )

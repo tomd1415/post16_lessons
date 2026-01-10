@@ -68,30 +68,93 @@
 
       <div class="card">
         <h2>Step 2: Key ideas in your own words</h2>
-        <p>Explain the main idea of <b>Multiple IFs</b> in one or two sentences.</p>
-        <textarea data-field="step2_notes" placeholder="Write your notes here..."></textarea>
+        <p>Fill the table.</p>
+        <table class="table">
+          <thead><tr><th>Prompt</th><th>Your answer</th></tr></thead>
+          <tbody>
+            <tr><td>AND test does what?</td><td><input type="text" data-field="and_mean" placeholder="your wording" /></td></tr>
+            <tr><td>OR test does what?</td><td><input type="text" data-field="or_mean" placeholder="your wording" /></td></tr>
+            <tr><td>Equality operator</td><td><input type="text" data-field="eq_op" placeholder="symbol" /></td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
     <div class="card" style="margin-top:12px">
       <h2>Step 3: Build the main task</h2>
       <div class="note"><b>Learning objective:</b> AND OR and If</div>
-<p><b>Suggested use:</b> Student activity</p>
-<p>Solution File: Age2.py located in the lesson 10 folder in the</p>
-<p>TeacherCodeFiles folder</p>
-<p>evaluated to see where it is within the age range 13 - 19 inclusive.  Use</p>
-<p>AND and OR to achieve this.</p>
-<p>AND or OR.</p>
-<p>within an IF to achieve the same result as an AND.  They may need hints</p>
-<p>to see that.</p>
-<p>worth comparing solutions.</p>
-<p>One possible solution is:</p>
-<ol>
-  <li>Write a program to determine if the user is a teenager.  User input is</li>
-  <li>Challenge students to re-write the same program, this time without using</li>
-  <li>In attempting this exercise students should learn that they can use an IF</li>
-  <li>Students in the class may come up with different solutions, so it can be</li>
-</ol>
+      <p><b>Suggested use:</b> Student activity</p>
+
+      <h3>Task A: Fill the teen logic table</h3>
+      <table class="table">
+        <thead><tr><th>Input age</th><th>Should say "teen"?</th><th>Logic you will use</th></tr></thead>
+        <tbody>
+          <tr><td>12</td><td><input type="text" data-field="age12" placeholder="yes/no" /></td><td><input type="text" data-field="logic12" placeholder="why" /></td></tr>
+          <tr><td>13</td><td><input type="text" data-field="age13" placeholder="yes/no" /></td><td><input type="text" data-field="logic13" placeholder="why" /></td></tr>
+          <tr><td>19</td><td><input type="text" data-field="age19" placeholder="yes/no" /></td><td><input type="text" data-field="logic19" placeholder="why" /></td></tr>
+          <tr><td>20</td><td><input type="text" data-field="age20" placeholder="yes/no" /></td><td><input type="text" data-field="logic20" placeholder="why" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task B: Order the IF steps</h3>
+      <p>Write 1, 2, 3.</p>
+      <table class="table">
+        <thead><tr><th>Statement</th><th>Order</th></tr></thead>
+        <tbody>
+          <tr><td>Check if age >= 13</td><td><input type="number" data-field="order_lower" min="1" max="3" /></td></tr>
+          <tr><td>Check if age <= 19</td><td><input type="number" data-field="order_upper" min="1" max="3" /></td></tr>
+          <tr><td>Print result</td><td><input type="number" data-field="order_print" min="1" max="3" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task C: Test cases</h3>
+      <table class="table">
+        <thead><tr><th>Input age</th><th>Expected message</th><th>Run?</th></tr></thead>
+        <tbody>
+          <tr><td><input type="text" data-field="test_age1" placeholder="e.g., 15" /></td><td><input type="text" data-field="test_msg1" /></td><td><input type="checkbox" aria-label="run age1"></td></tr>
+          <tr><td><input type="text" data-field="test_age2" /></td><td><input type="text" data-field="test_msg2" /></td><td><input type="checkbox" aria-label="run age2"></td></tr>
+          <tr><td><input type="text" data-field="test_age3" /></td><td><input type="text" data-field="test_msg3" /></td><td><input type="checkbox" aria-label="run age3"></td></tr>
+        </tbody>
+      </table>
+      <ul class="list checklist">
+        <li><label><input type="checkbox" data-check="goal"> I can describe the goal in one clear sentence.</label></li>
+        <li><label><input type="checkbox" data-check="inputs"> I can list the inputs or information needed.</label></li>
+        <li><label><input type="checkbox" data-check="steps"> I can outline the main steps in order.</label></li>
+        <li><label><input type="checkbox" data-check="test"> I can describe how to test if it works.</label></li>
+      </ul>
+      <div style="margin-top:10px"></div>
+      <label for="taskNotes"><b>Your structured notes</b></label>
+      <textarea id="taskNotes" data-field="task_notes" placeholder="Requirement 1: ...
+Requirement 2: ..."></textarea>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 4: Run in Python</h2>
+      <div class="note">Write your age checker and verify the test cases.</div>
+      <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn good" id="runBtn" type="button">Run code</button>
+        <button class="btn" id="saveFilesBtn" type="button">Save files</button>
+        <button class="btn bad" id="resetBtn" type="button">Reset</button>
+      </div>
+      <div class="grid cols2" style="margin-top:12px">
+        <div class="card">
+          <h3>Output</h3>
+          <label for="stdout"><b>Stdout</b></label>
+          <pre id="stdout" class="code-output"></pre>
+          <label for="stderr"><b>Stderr</b></label>
+          <pre id="stderr" class="code-output warn"></pre>
+          <div id="runMeta" class="note" style="margin-top:10px; display:none"></div>
+        </div>
+        <div class="card">
+          <h3>Run files</h3>
+          <div id="runFiles" class="file-list"></div>
+          <div style="height:8px"></div>
+          <h3>Saved files</h3>
+          <div id="savedFiles" class="file-list"></div>
+        </div>
+      </div>
+    </div>
       <ul class="list checklist">
         <li><label><input type="checkbox" data-check="goal"> I can describe the goal in one clear sentence.</label></li>
         <li><label><input type="checkbox" data-check="inputs"> I can list the inputs or information needed.</label></li>
@@ -117,7 +180,8 @@ Requirement 2: ..."></textarea>
 <li>Quick check 2: True or False</li>
 <li>Quick check 3: ==</li>
 <li>Learning objective focus: AND OR and If</li>
-<li>Look for clear steps and correct use of key terms.</li>
+        <li>Task B order: check >=13, check <=19, then print</li>
+        <li>Look for pupils testing boundary ages and verifying with code runs.</li>
       </ul>
     </div>
 
@@ -133,6 +197,8 @@ Requirement 2: ..."></textarea>
   </div>
 
   <script src="../../../core/app.js"></script>
+  <script src="../../../core/auth.js"></script>
+  <script src="../../../core/python-runner.js"></script>
   <script src="../../../core/activity-scaffold.js"></script>
 </body>
 </html>

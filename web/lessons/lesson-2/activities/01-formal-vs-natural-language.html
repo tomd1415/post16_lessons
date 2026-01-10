@@ -30,11 +30,11 @@
     <div class="grid cols2" style="margin-top:12px">
       <div class="card">
         <h2>Step 1: Quick checks</h2>
-        <p><b>Prompt 1:</b> Replace this with a simple question that builds confidence.</p>
+        <p><b>Prompt 1:</b> Which example is a formal language?</p>
         <div data-quiz="q1" data-correct="b">
-          <label class="choice"><input type="radio" name="q1" value="a"> Option A (replace)</label>
-          <label class="choice"><input type="radio" name="q1" value="b"> Option B (correct)</label>
-          <label class="choice"><input type="radio" name="q1" value="c"> Option C (replace)</label>
+          <label class="choice"><input type="radio" name="q1" value="a"> A friendly conversation</label>
+          <label class="choice"><input type="radio" name="q1" value="b"> Python code</label>
+          <label class="choice"><input type="radio" name="q1" value="c"> A story book</label>
         </div>
         <div class="row" style="margin-top:8px">
           <button class="btn good" data-quiz-check="q1" type="button">Check</button>
@@ -42,11 +42,11 @@
         <div class="note" data-quiz-feedback="q1" style="margin-top:10px; display:none"></div>
 
         <div style="height:10px"></div>
-        <p><b>Prompt 2:</b> Add a second quick check for instant feedback.</p>
+        <p><b>Prompt 2:</b> Why do computers prefer formal language?</p>
         <div data-quiz="q2" data-correct="a">
-          <label class="choice"><input type="radio" name="q2" value="a"> Option A (correct)</label>
-          <label class="choice"><input type="radio" name="q2" value="b"> Option B (replace)</label>
-          <label class="choice"><input type="radio" name="q2" value="c"> Option C (replace)</label>
+          <label class="choice"><input type="radio" name="q2" value="a"> It is precise and unambiguous</label>
+          <label class="choice"><input type="radio" name="q2" value="b"> It sounds more polite</label>
+          <label class="choice"><input type="radio" name="q2" value="c"> It changes depending on mood</label>
         </div>
         <div class="row" style="margin-top:8px">
           <button class="btn good" data-quiz-check="q2" type="button">Check</button>
@@ -54,11 +54,11 @@
         <div class="note" data-quiz-feedback="q2" style="margin-top:10px; display:none"></div>
 
         <div style="height:10px"></div>
-        <p><b>Prompt 3:</b> Add a third quick check to reinforce understanding.</p>
+        <p><b>Prompt 3:</b> Which instruction is most natural (ambiguous)?</p>
         <div data-quiz="q3" data-correct="c">
-          <label class="choice"><input type="radio" name="q3" value="a"> Option A (replace)</label>
-          <label class="choice"><input type="radio" name="q3" value="b"> Option B (replace)</label>
-          <label class="choice"><input type="radio" name="q3" value="c"> Option C (correct)</label>
+          <label class="choice"><input type="radio" name="q3" value="a"> Move forward 10 steps</label>
+          <label class="choice"><input type="radio" name="q3" value="b"> Turn right 90 degrees</label>
+          <label class="choice"><input type="radio" name="q3" value="c"> Move forward a bit</label>
         </div>
         <div class="row" style="margin-top:8px">
           <button class="btn good" data-quiz-check="q3" type="button">Check</button>
@@ -69,23 +69,112 @@
 
       <div class="card">
         <h2>Step 2: Key ideas in your own words</h2>
-        <p>Prompt pupils to explain a term or idea in one or two sentences.</p>
-        <textarea data-field="step2_notes" placeholder="Write your notes here..."></textarea>
+        <p>Complete each line so you have a ready-made answer (no long writing needed).</p>
+        <table class="table">
+          <thead>
+            <tr><th>Prompt</th><th>Your answer</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Formal language means...</td>
+              <td><input type="text" data-field="step2_formal_def" placeholder="fixed rules, unambiguous" /></td>
+            </tr>
+            <tr>
+              <td>Example of formal language</td>
+              <td><input type="text" data-field="step2_formal_example" placeholder="e.g., Python code" /></td>
+            </tr>
+            <tr>
+              <td>Example of natural language</td>
+              <td><input type="text" data-field="step2_natural_example" placeholder="e.g., chat with a friend" /></td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
     <div class="card" style="margin-top:12px">
       <h2>Step 3: Build the main task</h2>
-      <p>Break the big task into smaller checkpoints before pupils attempt the full task.</p>
+      <div class="note"><b>Learning objective:</b> Understand the difference between a formal language and a natural language</div>
+      <h3>Task A: Sort the statements</h3>
+      <p>Tick <b>Formal</b> or <b>Natural</b> for each statement.</p>
+      <table class="table">
+        <thead>
+          <tr><th>#</th><th>Statement</th><th>Choose</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>Set speed = 5 and repeat the move command 3 times.</td>
+            <td>
+              <label class="choice inline"><input type="radio" name="s1" value="F"> Formal</label>
+              <label class="choice inline"><input type="radio" name="s1" value="N"> Natural</label>
+            </td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Walk quickly to the door and stop nearby.</td>
+            <td>
+              <label class="choice inline"><input type="radio" name="s2" value="F"> Formal</label>
+              <label class="choice inline"><input type="radio" name="s2" value="N"> Natural</label>
+            </td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>If the temperature &gt; 18, turn the heater off.</td>
+            <td>
+              <label class="choice inline"><input type="radio" name="s3" value="F"> Formal</label>
+              <label class="choice inline"><input type="radio" name="s3" value="N"> Natural</label>
+            </td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>Make the screen brighter.</td>
+            <td>
+              <label class="choice inline"><input type="radio" name="s4" value="F"> Formal</label>
+              <label class="choice inline"><input type="radio" name="s4" value="N"> Natural</label>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Task B: Make it formal</h3>
+      <p>Rewrite the instruction as short numbered steps.</p>
+      <div class="note"><b>"Make a hot chocolate and tidy the table."</b></div>
+      <ol class="list">
+        <li><input type="text" data-field="formal_step1" placeholder="Step 1 (e.g., fill kettle to ...)"></li>
+        <li><input type="text" data-field="formal_step2" placeholder="Step 2"></li>
+        <li><input type="text" data-field="formal_step3" placeholder="Step 3"></li>
+        <li><input type="text" data-field="formal_step4" placeholder="Step 4"></li>
+      </ol>
+      <p>Remove vague words like “some”, “a bit”, or “quickly”.</p>
+
+      <h3>Task C: Test the wording</h3>
+      <p>Swap instructions with a partner. Mark anything unclear, then improve it.</p>
+      <table class="table">
+        <thead><tr><th>Check</th><th>Yes / Needs work</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Any ambiguous words spotted?</td>
+            <td>
+              <label class="choice inline"><input type="radio" name="ambiguous" value="yes"> Yes</label>
+              <label class="choice inline"><input type="radio" name="ambiguous" value="no"> No</label>
+            </td>
+          </tr>
+          <tr>
+            <td>Write a clearer version of one unclear step</td>
+            <td><input type="text" data-field="clearer_step" placeholder="Rewrite unclear step here" /></td>
+          </tr>
+        </tbody>
+      </table>
       <ul class="list checklist">
-        <li><label><input type="checkbox" data-check="goal"> I can describe the goal in one clear sentence.</label></li>
-        <li><label><input type="checkbox" data-check="inputs"> I can list the inputs or information needed.</label></li>
-        <li><label><input type="checkbox" data-check="steps"> I can outline the main steps in order.</label></li>
-        <li><label><input type="checkbox" data-check="test"> I can describe how to test if it works.</label></li>
+        <li><label><input type="checkbox" data-check="goal"> Goal is one clear sentence.</label></li>
+        <li><label><input type="checkbox" data-check="inputs"> Inputs/information are listed.</label></li>
+        <li><label><input type="checkbox" data-check="steps"> Steps are numbered and precise.</label></li>
+        <li><label><input type="checkbox" data-check="test"> There is a way to test it works.</label></li>
       </ul>
       <div style="margin-top:10px"></div>
-      <label for="taskNotes"><b>Your structured notes</b></label>
-      <textarea id="taskNotes" data-field="task_notes" placeholder="Requirement 1: ...&#10;Requirement 2: ..."></textarea>
+      <label for="taskNotes"><b>Summary</b></label>
+      <textarea id="taskNotes" data-field="task_notes" placeholder="Best precise step: ...&#10;Biggest improvement made: ..."></textarea>
     </div>
 
     <div class="card" style="margin-top:12px">
@@ -97,9 +186,11 @@
     <div class="teacher-only card" style="margin-top:12px; display:none">
       <h2>Teacher guidance (answer prompts)</h2>
       <ul class="list">
-        <li>Quick check answers: replace with the correct options.</li>
-        <li>Key ideas to listen for in pupil notes.</li>
-        <li>Common misconceptions and follow-up prompts.</li>
+        <li>Quick check 1: Python code</li>
+        <li>Quick check 2: It is precise and unambiguous</li>
+        <li>Quick check 3: "Move forward a bit"</li>
+        <li>Key ideas: formal language has fixed rules/symbols; natural language is flexible and can be ambiguous.</li>
+        <li>Common misconception: "formal" means polite. Prompt: "Can a computer guess what you mean?"</li>
       </ul>
     </div>
 

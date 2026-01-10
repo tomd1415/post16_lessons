@@ -68,23 +68,86 @@
 
       <div class="card">
         <h2>Step 2: Key ideas in your own words</h2>
-        <p>Explain the main idea of <b>Python libraries</b> in one or two sentences.</p>
-        <textarea data-field="step2_notes" placeholder="Write your notes here..."></textarea>
+        <p>Fill the table.</p>
+        <table class="table">
+          <thead><tr><th>Prompt</th><th>Your answer</th></tr></thead>
+          <tbody>
+            <tr><td>Why use a library instead of rewriting code?</td><td><input type="text" data-field="why_library" placeholder="your wording" /></td></tr>
+            <tr><td>Name one standard library for randomness.</td><td><input type="text" data-field="lib_random" placeholder="library name" /></td></tr>
+            <tr><td>What does an event handler wait for?</td><td><input type="text" data-field="event_wait" placeholder="e.g., key press" /></td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
     <div class="card" style="margin-top:12px">
       <h2>Step 3: Build the main task</h2>
-      <div class="note"><b>Learning objective:</b> Get a sense of the range of libraries available for</div>
-<p><b>Suggested use:</b> Student activity</p>
-<p>Python</p>
-<p>For this exercise students can work in pairs:</p>
-<p>them to find a Python library whose name starts with that letter.</p>
-<p>the library is called and explain what the function within that library is for.</p>
-<ol>
-  <li>Give each student team a letter of the alphabet (excluding Y) and ask</li>
-  <li>Students find a function in that library and report back to the class on what</li>
-</ol>
+      <div class="note"><b>Learning objective:</b> Get a sense of the range of libraries available for Python</div>
+      <p><b>Suggested use:</b> Student activity</p>
+
+      <h3>Task A: Match libraries to goals</h3>
+      <table class="table">
+        <thead><tr><th>Goal</th><th>Best library/tool</th></tr></thead>
+        <tbody>
+          <tr><td>Roll a virtual dice</td><td>
+            <select data-field="lib_match_dice">
+              <option value="">Select...</option>
+              <option>math</option>
+              <option>random</option>
+              <option>time</option>
+              <option>json</option>
+            </select>
+          </td></tr>
+          <tr><td>Get the current timestamp</td><td>
+            <select data-field="lib_match_time">
+              <option value="">Select...</option>
+              <option>math</option>
+              <option>random</option>
+              <option>time</option>
+              <option>json</option>
+            </select>
+          </td></tr>
+          <tr><td>Parse a string that looks like a dictionary</td><td>
+            <select data-field="lib_match_parse">
+              <option value="">Select...</option>
+              <option>math</option>
+              <option>random</option>
+              <option>time</option>
+              <option>json</option>
+            </select>
+          </td></tr>
+          <tr><td>Calculate a square root</td><td>
+            <select data-field="lib_match_sqrt">
+              <option value="">Select...</option>
+              <option>math</option>
+              <option>random</option>
+              <option>time</option>
+              <option>json</option>
+            </select>
+          </td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task B: Plan an event handler</h3>
+      <p>Think of a simple console program that reacts to user input (e.g., menu choice).</p>
+      <table class="table">
+        <thead><tr><th>Event trigger</th><th>Handler name</th><th>Action to take</th></tr></thead>
+        <tbody>
+          <tr><td><input type="text" data-field="event_trigger1" placeholder="e.g., user types 'roll'" /></td><td><input type="text" data-field="event_handler1" placeholder="function name" /></td><td><input type="text" data-field="event_action1" placeholder="what happens" /></td></tr>
+          <tr><td><input type="text" data-field="event_trigger2" /></td><td><input type="text" data-field="event_handler2" /></td><td><input type="text" data-field="event_action2" /></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Task C: Quick test plan</h3>
+      <p>List sample inputs and outputs for a helper that uses a library function (e.g., dice roll or timestamp).</p>
+      <table class="table">
+        <thead><tr><th>Input</th><th>Expected behaviour/output</th><th>Library used</th></tr></thead>
+        <tbody>
+          <tr><td><input type="text" data-field="test_in1" placeholder="e.g., sides=6" /></td><td><input type="text" data-field="test_out1" placeholder="between 1 and 6" /></td><td><input type="text" data-field="test_lib1" placeholder="random" /></td></tr>
+          <tr><td><input type="text" data-field="test_in2" /></td><td><input type="text" data-field="test_out2" /></td><td><input type="text" data-field="test_lib2" /></td></tr>
+        </tbody>
+      </table>
+
       <ul class="list checklist">
         <li><label><input type="checkbox" data-check="goal"> I can describe the goal in one clear sentence.</label></li>
         <li><label><input type="checkbox" data-check="inputs"> I can list the inputs or information needed.</label></li>
@@ -98,7 +161,35 @@ Requirement 2: ..."></textarea>
     </div>
 
     <div class="card" style="margin-top:12px">
-      <h2>Step 4: Reflection</h2>
+      <h2>Step 4: Run in Python</h2>
+      <div class="note">Try a small program that imports <code>random</code>, <code>time</code>, or <code>json</code>. Simulate an event by asking for user input.</div>
+      <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn good" id="runBtn" type="button">Run code</button>
+        <button class="btn" id="saveFilesBtn" type="button">Save files</button>
+        <button class="btn bad" id="resetBtn" type="button">Reset</button>
+      </div>
+      <div class="grid cols2" style="margin-top:12px">
+        <div class="card">
+          <h3>Output</h3>
+          <label for="stdout"><b>Stdout</b></label>
+          <pre id="stdout" class="code-output"></pre>
+          <label for="stderr"><b>Stderr</b></label>
+          <pre id="stderr" class="code-output warn"></pre>
+          <div id="runMeta" class="note" style="margin-top:10px; display:none"></div>
+        </div>
+        <div class="card">
+          <h3>Run files</h3>
+          <div id="runFiles" class="file-list"></div>
+          <div style="height:8px"></div>
+          <h3>Saved files</h3>
+          <div id="savedFiles" class="file-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Step 5: Reflection</h2>
       <p>Encourage pupils to note what was easy, what was tricky, and what they would change.</p>
       <textarea data-field="reflection" placeholder="What went well? What would you do differently next time?"></textarea>
     </div>
@@ -109,8 +200,9 @@ Requirement 2: ..."></textarea>
         <li>Quick check 1: reusable code</li>
 <li>Quick check 2: user actions like clicks</li>
 <li>Quick check 3: import</li>
-<li>Learning objective focus: Get a sense of the range of libraries available for</li>
-<li>Look for clear steps and correct use of key terms.</li>
+      <li>Learning objective focus: Get a sense of the range of libraries available for Python</li>
+      <li>Task A matches: dice → random; timestamp → time; parse string → json; square root → math.</li>
+      <li>Look for clear steps and correct use of key terms.</li>
       </ul>
     </div>
 
@@ -126,6 +218,8 @@ Requirement 2: ..."></textarea>
   </div>
 
   <script src="../../../core/app.js"></script>
+  <script src="../../../core/auth.js"></script>
+  <script src="../../../core/python-runner.js"></script>
   <script src="../../../core/activity-scaffold.js"></script>
 </body>
 </html>
