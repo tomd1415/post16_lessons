@@ -14,6 +14,7 @@ from urllib.parse import quote
 from fastapi import Depends, FastAPI, File, HTTPException, Request, Response, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from .config import (
@@ -27,7 +28,7 @@ from .config import (
     SESSION_TTL_MINUTES,
 )
 from .db import SessionLocal, engine, get_db
-from .models import ActivityMark, ActivityRevision, ActivityState, Base, Session as AuthSession, User
+from .models import AuditLog, ActivityMark, ActivityRevision, ActivityState, Base, Session as AuthSession, User
 from .python_runner import RunnerError, RunnerUnavailable, run_python, runner_diagnostics
 from .rate_limit import LoginLimiter, compute_lock_seconds
 from .security import hash_password, verify_password
@@ -102,6 +103,21 @@ def activity_mark_public(mark: ActivityMark) -> dict:
     }
 
 
+def audit_log_public(entry: AuditLog, actor: User | None, target: User | None) -> dict:
+    return {
+        "id": str(entry.id),
+        "action": entry.action,
+        "actor_username": actor.username if actor else None,
+        "target_username": target.username if target else None,
+        "lesson_id": entry.lesson_id,
+        "activity_id": entry.activity_id,
+        "metadata": entry.metadata_json or {},
+        "ip_address": entry.ip_address,
+        "user_agent": entry.user_agent,
+        "created_at": entry.created_at.isoformat() if entry.created_at else None,
+    }
+
+
 def valid_lesson_id(lesson_id: str) -> bool:
     return bool(re.match(r"^lesson-\d+$", lesson_id))
 
@@ -150,6 +166,29 @@ def ensure_utc(value):
     if value.tzinfo is None:
         return value.replace(tzinfo=timezone.utc)
     return value.astimezone(timezone.utc)
+
+
+def log_audit(
+    db: Session,
+    action: str,
+    actor: User | None = None,
+    target_user: User | None = None,
+    lesson_id: str | None = None,
+    activity_id: str | None = None,
+    metadata: dict | None = None,
+    request: Request | None = None,
+):
+    entry = AuditLog(
+        actor_user_id=actor.id if actor else None,
+        target_user_id=target_user.id if target_user else None,
+        action=action,
+        lesson_id=lesson_id,
+        activity_id=activity_id,
+        metadata_json=metadata or {},
+        ip_address=request.client.host if request and request.client else None,
+        user_agent=request.headers.get("user-agent") if request else None,
+    )
+    db.add(entry)
 
 
 def load_manifest():
@@ -301,6 +340,13 @@ def require_teacher(request: Request) -> User:
     return user
 
 
+def require_admin(request: Request) -> User:
+    user = request.state.user
+    if not user or user.role != "admin":
+        raise HTTPException(status_code=403, detail="Admin required.")
+    return user
+
+
 def forbidden_page() -> HTMLResponse:
     html = """<!doctype html>
 <html lang="en">
@@ -346,7 +392,7 @@ def is_teacher_path(path: str) -> bool:
 
 
 def is_admin_path(path: str) -> bool:
-    return path == "/admin.html"
+    return path.startswith("/admin")
 
 
 def is_student_path(path: str) -> bool:
@@ -422,8 +468,36 @@ def startup():
 
 
 @app.get("/api/health")
-def health():
-    return {"status": "ok"}
+def health(db: Session = Depends(get_db)):
+    db_ok = True
+    try:
+        db.execute(text("select 1"))
+    except Exception:
+        db_ok = False
+    return {
+        "status": "ok" if db_ok else "degraded",
+        "db_ok": db_ok,
+        "time": utcnow().isoformat(),
+    }
+
+
+@app.get("/api/metrics")
+def metrics(request: Request, db: Session = Depends(get_db)):
+    require_admin(request)
+    user_counts = {
+        "pupil": db.query(User).filter(User.role == "pupil", User.active.is_(True)).count(),
+        "teacher": db.query(User).filter(User.role == "teacher", User.active.is_(True)).count(),
+        "admin": db.query(User).filter(User.role == "admin", User.active.is_(True)).count(),
+    }
+    return {
+        "users_active": user_counts,
+        "sessions": db.query(AuthSession).count(),
+        "activity_states": db.query(ActivityState).count(),
+        "activity_revisions": db.query(ActivityRevision).count(),
+        "activity_marks": db.query(ActivityMark).count(),
+        "audit_logs": db.query(AuditLog).count(),
+        "time": utcnow().isoformat(),
+    }
 
 
 @app.get("/api/auth/me")
@@ -1030,6 +1104,79 @@ def teacher_attention(
         "items": items,
     }
 
+
+def audit_entries(
+    db: Session,
+    actor_username: str,
+    target_username: str,
+    action: str,
+    since: str,
+    limit: int,
+):
+    limit = max(1, min(int(limit or 200), 500))
+    query = db.query(AuditLog)
+
+    if actor_username:
+        actor_username = normalize_username(actor_username)
+        actor = db.query(User).filter(User.username == actor_username).first()
+        if not actor:
+            return {"items": []}
+        query = query.filter(AuditLog.actor_user_id == actor.id)
+
+    if target_username:
+        target_username = normalize_username(target_username)
+        target = db.query(User).filter(User.username == target_username).first()
+        if not target:
+            return {"items": []}
+        query = query.filter(AuditLog.target_user_id == target.id)
+
+    if action:
+        query = query.filter(AuditLog.action == action)
+
+    since_dt = parse_client_time(since)
+    if since_dt:
+        query = query.filter(AuditLog.created_at >= ensure_utc(since_dt))
+
+    entries = query.order_by(AuditLog.created_at.desc()).limit(limit).all()
+    user_ids = {entry.actor_user_id for entry in entries if entry.actor_user_id}
+    user_ids.update({entry.target_user_id for entry in entries if entry.target_user_id})
+    user_map = {user.id: user for user in db.query(User).filter(User.id.in_(user_ids)).all()} if user_ids else {}
+
+    return {
+        "items": [
+            audit_log_public(entry, user_map.get(entry.actor_user_id), user_map.get(entry.target_user_id))
+            for entry in entries
+        ]
+    }
+
+
+@app.get("/api/teacher/audit")
+def teacher_audit(
+    request: Request,
+    actor_username: str = "",
+    target_username: str = "",
+    action: str = "",
+    since: str = "",
+    limit: int = 200,
+    db: Session = Depends(get_db),
+):
+    require_admin(request)
+    return audit_entries(db, actor_username, target_username, action, since, limit)
+
+
+@app.get("/api/admin/audit")
+def admin_audit(
+    request: Request,
+    actor_username: str = "",
+    target_username: str = "",
+    action: str = "",
+    since: str = "",
+    limit: int = 200,
+    db: Session = Depends(get_db),
+):
+    require_admin(request)
+    return audit_entries(db, actor_username, target_username, action, since, limit)
+
 @app.get("/api/teacher/pupil/{username}/lesson/{lesson_id}")
 def pupil_lesson_detail(
     request: Request,
@@ -1069,7 +1216,7 @@ def pupil_lesson_detail(
 @app.post("/api/teacher/mark")
 def set_activity_mark(request: Request, payload: dict, db: Session = Depends(get_db)):
     csrf_guard(request)
-    require_teacher(request)
+    actor = require_teacher(request)
     if not isinstance(payload, dict):
         raise HTTPException(status_code=400, detail="Invalid payload.")
     username = normalize_username(payload.get("username", ""))
@@ -1105,6 +1252,16 @@ def set_activity_mark(request: Request, payload: dict, db: Session = Depends(get
             status=status,
         )
         db.add(mark)
+    log_audit(
+        db,
+        action="mark_activity",
+        actor=actor,
+        target_user=pupil,
+        lesson_id=lesson_id,
+        activity_id=activity_id,
+        metadata={"status": status},
+        request=request,
+    )
     db.commit()
     return {"ok": True, "mark": activity_mark_public(mark)}
 
@@ -1117,7 +1274,7 @@ def update_pupil_notes(
     db: Session = Depends(get_db),
 ):
     csrf_guard(request)
-    require_teacher(request)
+    actor = require_teacher(request)
     if not isinstance(payload, dict):
         raise HTTPException(status_code=400, detail="Invalid payload.")
     pupil = db.query(User).filter(User.username == normalize_username(username)).first()
@@ -1125,6 +1282,14 @@ def update_pupil_notes(
         raise HTTPException(status_code=404, detail="Pupil not found.")
     notes = (payload.get("teacher_notes", "") or "").strip() or None
     pupil.teacher_notes = notes
+    log_audit(
+        db,
+        action="update_teacher_notes",
+        actor=actor,
+        target_user=pupil,
+        metadata={"has_notes": bool(notes)},
+        request=request,
+    )
     db.commit()
     return {"ok": True, "teacher_notes": pupil.teacher_notes or ""}
 
@@ -1296,9 +1461,10 @@ def update_link_override(
     request: Request,
     link_id: str,
     payload: dict,
+    db: Session = Depends(get_db),
 ):
     csrf_guard(request)
-    require_teacher(request)
+    actor = require_teacher(request)
     if not isinstance(payload, dict):
         raise HTTPException(status_code=400, detail="Invalid payload.")
     manifest = load_manifest() or {}
@@ -1325,6 +1491,19 @@ def update_link_override(
             "updated_at": utcnow().isoformat(),
         }
         save_link_overrides(overrides)
+    log_audit(
+        db,
+        action="update_link_override",
+        actor=actor,
+        metadata={
+            "link_id": link_id,
+            "replacement_url": replacement_url,
+            "local_path": local_path,
+            "disabled": disabled,
+        },
+        request=request,
+    )
+    db.commit()
 
     override = overrides.get(link_id)
     item = next((item for item in items if item.get("id") == link_id), None)
@@ -1357,6 +1536,12 @@ def bootstrap_admin(payload: dict, db: Session = Depends(get_db)):
         teacher_notes=None,
     )
     db.add(user)
+    log_audit(
+        db,
+        action="bootstrap_admin",
+        target_user=user,
+        metadata={"username": username},
+    )
     db.commit()
     return {"ok": True, "user": user_public(user)}
 
@@ -1364,9 +1549,7 @@ def bootstrap_admin(payload: dict, db: Session = Depends(get_db)):
 @app.post("/api/admin/users")
 def create_user(request: Request, payload: dict, db: Session = Depends(get_db)):
     csrf_guard(request)
-    user = request.state.user
-    if not user or user.role != "admin":
-        raise HTTPException(status_code=403, detail="Admin required.")
+    actor = require_admin(request)
     if not isinstance(payload, dict):
         raise HTTPException(status_code=400, detail="Invalid payload.")
 
@@ -1400,6 +1583,14 @@ def create_user(request: Request, payload: dict, db: Session = Depends(get_db)):
         password_hash=hash_password(password),
     )
     db.add(new_user)
+    log_audit(
+        db,
+        action="create_user",
+        actor=actor,
+        target_user=new_user,
+        metadata={"role": role, "cohort_year": cohort_year},
+        request=request,
+    )
     db.commit()
     return {"ok": True, "user": user_public(new_user)}
 
@@ -1411,9 +1602,7 @@ def import_users(
     db: Session = Depends(get_db),
 ):
     csrf_guard(request)
-    user = request.state.user
-    if not user or user.role != "admin":
-        raise HTTPException(status_code=403, detail="Admin required.")
+    actor = require_admin(request)
 
     raw = file.file.read()
     text = raw.decode("utf-8", errors="replace")
@@ -1476,6 +1665,13 @@ def import_users(
         db.rollback()
         return {"created": 0, "errors": errors}
 
+    log_audit(
+        db,
+        action="import_users",
+        actor=actor,
+        metadata={"created": created, "rows": len(rows)},
+        request=request,
+    )
     db.commit()
     return {"created": created, "errors": []}
 

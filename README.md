@@ -20,7 +20,7 @@ This repo delivers a containerized, on-prem web platform for the ICDL "Thinking 
 - [x] Phase 5: Content expansion automation + link registry tooling.
 - [x] Phase 6: Python runner MVP (safe, isolated execution).
 - [x] Phase 7: Teacher view v2 (stats, attention lists, timing).
-- [ ] Phase 8: Ops hardening (backups, retention purge, audit log, DPIA support).
+- [x] Phase 8: Ops hardening (backups, retention purge, audit log, DPIA support).
 
 Detailed requirements and the phase plan are in `plans/prompt_1`.
 
@@ -31,6 +31,7 @@ Detailed requirements and the phase plan are in `plans/prompt_1`.
 - `docker/Caddyfile` TLS + reverse proxy config (internal CA).
 - `docs/design-system-inventory.md` Lesson 1 UI/behavior inventory (design system).
 - `docs/lesson-manifest.md` lesson manifest schema and usage.
+- `docs/dpia-summary.md` DPIA support summary (data, retention, access).
 - `scripts/` automation tools (lesson pack scaffold, handbook bulk import, link registry checks).
 - `backend/app/python_runner.py` Python execution sandbox (Docker-per-run).
 - `data/` runtime data (link overrides).
@@ -100,6 +101,7 @@ Rules:
 - Teacher revision history: `https://localhost:8443/teacher-history.html`
 - Link registry: `https://localhost:8443/teacher-links.html`
 - Admin hub: `https://localhost:8443/admin.html`
+- Admin audit log: `https://localhost:8443/admin-audit.html`
 - Login: `https://localhost:8443/login.html`
 - Lesson 1 teacher hub: `https://localhost:8443/lessons/lesson-1/index.html`
 - Lesson 1 student hub: `https://localhost:8443/lessons/lesson-1/student.html`
@@ -166,6 +168,38 @@ Stats + attention + timing are delivered at:
   - `many_revisions` when revision count exceeds the threshold.
   - `stuck` when last save is older than the threshold and not complete.
 - Timing metrics: approximate, based on first/last saved timestamps per activity; only activities with 2+ saves contribute to averages.
+
+## Ops hardening (Phase 8)
+Backups:
+```
+scripts/backup.sh
+```
+This creates `backups/backup_YYYYMMDD_HHMMSS/` with:
+- `db.sql.gz` (Postgres dump)
+- `data.tar.gz` (data + reports)
+
+Restore (overwrites existing data):
+```
+scripts/restore.sh backups/backup_YYYYMMDD_HHMMSS --force
+```
+
+Retention purge (dry-run by default):
+```
+scripts/retention_purge.sh --json
+```
+Apply deletion:
+```
+scripts/retention_purge.sh --apply
+```
+Adjust the retention window via `RETENTION_YEARS` in `compose.yml`.
+
+Audit log (admin-only):
+- UI: `https://localhost:8443/admin-audit.html`
+- API: `https://localhost:8443/api/admin/audit`
+
+Monitoring hooks:
+- Health check: `https://localhost:8443/api/health`
+- Metrics (admin-only): `https://localhost:8443/api/metrics`
 
 ## Link registry tooling (Phase 5)
 Handbook links live in the manifest `linksRegistry.items`. Teachers can set replacement URLs or local copies in:
@@ -256,7 +290,7 @@ python -m py_compile backend/app/*.py
 - Static changes not visible: hard refresh to bypass cached assets.
 
 ## Known gaps (planned)
-- Backups, retention purge, audit logs (Phase 8).
+- None (Phase 8 complete).
 - Lesson 2-15 activity wording polish (draft handbook imports).
 
 ## References

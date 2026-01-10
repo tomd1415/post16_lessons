@@ -44,6 +44,12 @@ class User(Base):
     sessions = relationship("Session", back_populates="user", cascade="all, delete-orphan")
     activity_states = relationship("ActivityState", back_populates="user", cascade="all, delete-orphan")
     activity_marks = relationship("ActivityMark", back_populates="user", cascade="all, delete-orphan")
+    audit_logs = relationship(
+        "AuditLog",
+        back_populates="actor",
+        cascade="all, delete-orphan",
+        foreign_keys="AuditLog.actor_user_id",
+    )
 
 
 class Session(Base):
@@ -110,3 +116,20 @@ class ActivityMark(Base):
     updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)
 
     user = relationship("User", back_populates="activity_marks")
+
+
+class AuditLog(Base):
+    __tablename__ = "audit_logs"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    actor_user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True)
+    target_user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True)
+    action = Column(String(80), nullable=False)
+    lesson_id = Column(String(64), nullable=True)
+    activity_id = Column(String(64), nullable=True)
+    metadata_json = Column("metadata", JsonType, nullable=True)
+    ip_address = Column(String(64), nullable=True)
+    user_agent = Column(String(255), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
+
+    actor = relationship("User", foreign_keys=[actor_user_id], back_populates="audit_logs")

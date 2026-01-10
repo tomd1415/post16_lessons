@@ -36,6 +36,7 @@ services:
       - RUNNER_MAX_ARCHIVE_BYTES=250000
       - RUNNER_CONCURRENCY=2
       - RUNNER_AUTO_PULL=0
+      - RETENTION_YEARS=2
     expose:
       - "8000"
     volumes:

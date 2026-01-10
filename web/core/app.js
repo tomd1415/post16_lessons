@@ -45,6 +45,7 @@ const ROLE_MENUS = {
     label: "Admin",
     items: [
       { label: "Admin hub", href: "/admin.html" },
+      { label: "Audit log", href: "/admin-audit.html" },
       { label: "Create user", href: "/admin.html#admin-create-user" },
       { label: "Import CSV", href: "/admin.html#admin-import" },
       { label: "Teacher view", href: "/teacher-view.html" },

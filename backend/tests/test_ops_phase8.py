@@ -1,0 +1,114 @@
+from datetime import datetime, timedelta, timezone
+
+from backend.app.models import ActivityMark, ActivityRevision, ActivityState, AuditLog, Session as AuthSession, User
+from backend.tests.utils import login, seed_user
+
+
+def test_metrics_requires_admin(client, db_session):
+    seed_user(db_session, "teacher.one", role="teacher", cohort_year=None, password="Secret123!")
+    seed_user(db_session, "admin.one", role="admin", cohort_year=None, password="Secret123!")
+
+    login(client, "teacher.one", "Secret123!")
+    res = client.get("/api/metrics")
+    assert res.status_code == 403
+
+    login(client, "admin.one", "Secret123!")
+    res = client.get("/api/metrics")
+    assert res.status_code == 200
+    data = res.json()
+    assert "users_active" in data
+    assert "activity_states" in data
+
+
+def test_audit_log_create_user(client, db_session):
+    seed_user(db_session, "admin.one", role="admin", cohort_year=None, password="Secret123!")
+
+    csrf = login(client, "admin.one", "Secret123!")
+    res = client.post(
+        "/api/admin/users",
+        json={
+            "username": "teacher.two",
+            "name": "Teacher Two",
+            "role": "teacher",
+            "cohort_year": "",
+            "password": "Secret123!",
+            "teacher_notes": "",
+        },
+        headers={"X-CSRF-Token": csrf},
+    )
+    assert res.status_code == 200
+
+    audit = client.get("/api/admin/audit?action=create_user")
+    assert audit.status_code == 200
+    items = audit.json().get("items", [])
+    assert any(item.get("action") == "create_user" for item in items)
+
+
+def test_retention_purge_deletes_old_pupil(app, db_session):
+    from backend.app import retention
+
+    now = datetime.now(timezone.utc)
+    old_time = now - timedelta(days=365 * 3)
+
+    user = seed_user(db_session, "pupil.old", role="pupil", cohort_year="2022", password="Secret123!")
+    user.created_at = old_time
+    user.last_login_at = old_time
+    db_session.add(user)
+    db_session.commit()
+
+    state = ActivityState(
+        user_id=user.id,
+        lesson_id="lesson-1",
+        activity_id="a01",
+        state={"answer": "old"},
+        created_at=old_time,
+        updated_at=old_time,
+    )
+    db_session.add(state)
+    db_session.flush()
+
+    revision = ActivityRevision(
+        activity_state_id=state.id,
+        user_id=user.id,
+        lesson_id="lesson-1",
+        activity_id="a01",
+        state={"answer": "old"},
+        created_at=old_time,
+    )
+    mark = ActivityMark(
+        user_id=user.id,
+        lesson_id="lesson-1",
+        activity_id="a01",
+        status="complete",
+        created_at=old_time,
+        updated_at=old_time,
+    )
+    session = AuthSession(
+        id="sess-old",
+        user_id=user.id,
+        csrf_token="csrf-old",
+        created_at=old_time,
+        expires_at=old_time + timedelta(hours=1),
+    )
+    audit = AuditLog(
+        actor_user_id=None,
+        target_user_id=user.id,
+        action="mark_activity",
+        created_at=old_time,
+    )
+    db_session.add_all([revision, mark, session, audit])
+    db_session.commit()
+
+    cutoff = retention.retention_cutoff(years=2, now=now)
+    targets = retention.collect_retention_targets(db_session, cutoff)
+    target_ids = [item["user"].id for item in targets]
+    assert user.id in target_ids
+
+    counts = retention.purge_users(db_session, target_ids)
+    assert counts["users"] == 1
+    assert db_session.query(User).count() == 0
+    assert db_session.query(ActivityState).count() == 0
+    assert db_session.query(ActivityRevision).count() == 0
+    assert db_session.query(ActivityMark).count() == 0
+    assert db_session.query(AuthSession).count() == 0
+    assert db_session.query(AuditLog).count() == 0

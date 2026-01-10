@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Thinking like a Coder - Audit log</title>
+  <link rel="stylesheet" href="./core/app.css" />
+</head>
+<body data-requires-role="admin">
+  <div class="topbar no-print">
+    <div class="container">
+      <div class="brand">
+        <b>Thinking like a Coder - Audit log</b>
+        <span>Teacher/admin actions (read-only)</span>
+      </div>
+      <div class="row">
+        <a class="pill" href="./teacher.html"><strong>TEACHER</strong> <span>Teacher hub</span></a>
+        <a class="pill" href="./index.html"><strong>STUDENT</strong> <span>Student hub</span></a>
+        <span id="userBadge" class="badge" style="display:none"></span>
+        <button class="btn" id="logoutBtn" type="button">Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>Audit log</h1>
+    <div class="note">
+      Use this page to review teacher/admin actions (marking, notes updates, user creation, link overrides).
+    </div>
+
+    <div class="grid cols2" style="margin-top:12px">
+      <div class="card">
+        <h2>Filters</h2>
+        <label for="actorInput"><b>Actor username</b></label>
+        <input class="input" id="actorInput" placeholder="teacher.username" />
+        <div style="height:10px"></div>
+        <label for="targetInput"><b>Target username</b></label>
+        <input class="input" id="targetInput" placeholder="pupil.username" />
+        <div style="height:10px"></div>
+        <label for="actionInput"><b>Action</b></label>
+        <input class="input" id="actionInput" placeholder="mark_activity" />
+        <div style="height:10px"></div>
+        <label for="sinceInput"><b>Since (date)</b></label>
+        <input class="input" id="sinceInput" type="date" />
+        <div style="height:10px"></div>
+        <label for="limitInput"><b>Limit</b></label>
+        <input class="input" id="limitInput" type="number" min="1" max="500" value="200" />
+        <div style="height:12px"></div>
+        <button class="btn primary" id="refreshBtn" type="button">Refresh log</button>
+      </div>
+      <div class="card">
+        <h2>Notes</h2>
+        <div class="note">
+          Actions are stored with actor, target, lesson/activity IDs, and metadata.
+        </div>
+        <div class="note" id="auditMeta" style="margin-top:10px">
+          Load the audit log to see recent entries.
+        </div>
+      </div>
+    </div>
+
+    <h2>Recent entries</h2>
+    <div class="card">
+      <table class="table" id="auditTable">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Action</th>
+            <th>Actor</th>
+            <th>Target</th>
+            <th>Lesson / Activity</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="footer">
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <script src="./core/app.js"></script>
+  <script src="./core/auth.js"></script>
+  <script>
+    const actorInput = document.getElementById("actorInput");
+    const targetInput = document.getElementById("targetInput");
+    const actionInput = document.getElementById("actionInput");
+    const sinceInput = document.getElementById("sinceInput");
+    const limitInput = document.getElementById("limitInput");
+    const refreshBtn = document.getElementById("refreshBtn");
+    const auditMeta = document.getElementById("auditMeta");
+    const tableBody = document.querySelector("#auditTable tbody");
+
+    function escapeHtml(value){
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    function renderMeta(meta){
+      if(!meta || typeof meta !== "object") return "n/a";
+      const entries = Object.entries(meta).map(([key, value])=>{
+        const safeKey = escapeHtml(key);
+        const displayValue = value && typeof value === "object" ? JSON.stringify(value) : value;
+        const safeValue = escapeHtml(displayValue);
+        return `${safeKey}: ${safeValue}`;
+      });
+      return entries.join("<br />") || "n/a";
+    }
+
+    function renderRow(item){
+      const time = item.created_at ? new Date(item.created_at).toLocaleString() : "n/a";
+      const lesson = item.lesson_id || "n/a";
+      const activity = item.activity_id || "";
+      const lessonActivity = activity ? `${lesson} / ${activity}` : lesson;
+      return `
+        <tr>
+          <td>${escapeHtml(time)}</td>
+          <td><span class="tag">${escapeHtml(item.action || "")}</span></td>
+          <td>${escapeHtml(item.actor_username || "n/a")}</td>
+          <td>${escapeHtml(item.target_username || "n/a")}</td>
+          <td>${escapeHtml(lessonActivity)}</td>
+          <td>${renderMeta(item.metadata)}</td>
+        </tr>
+      `;
+    }
+
+    async function loadAudit(){
+      tableBody.innerHTML = "<tr><td colspan='6'>Loading...</td></tr>";
+      const params = new URLSearchParams();
+      if(actorInput.value.trim()) params.set("actor_username", actorInput.value.trim());
+      if(targetInput.value.trim()) params.set("target_username", targetInput.value.trim());
+      if(actionInput.value.trim()) params.set("action", actionInput.value.trim());
+      if(sinceInput.value) params.set("since", sinceInput.value);
+      if(limitInput.value) params.set("limit", limitInput.value);
+
+      const url = `/api/admin/audit?${params.toString()}`;
+      const res = await fetch(url, { credentials: "same-origin" });
+      if(!res.ok){
+        tableBody.innerHTML = "<tr><td colspan='6'>Unable to load audit log.</td></tr>";
+        auditMeta.textContent = "Failed to load.";
+        return;
+      }
+      const data = await res.json().catch(()=>({}));
+      const items = Array.isArray(data.items) ? data.items : [];
+      if(!items.length){
+        tableBody.innerHTML = "<tr><td colspan='6'>No entries.</td></tr>";
+        auditMeta.textContent = "No entries match the filter.";
+        return;
+      }
+      tableBody.innerHTML = items.map(renderRow).join("");
+      auditMeta.textContent = `Loaded ${items.length} entries.`;
+    }
+
+    refreshBtn.addEventListener("click", loadAudit);
+    loadAudit();
+  </script>
+</body>
+</html>

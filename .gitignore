@@ -32,3 +32,4 @@ build/
 # Runtime data
 data/*.json
 reports/
+backups/
