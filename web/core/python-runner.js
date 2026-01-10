@@ -16,6 +16,55 @@
   const runFilesEl = document.getElementById("runFiles");
   const savedFilesEl = document.getElementById("savedFiles");
 
+  function initFloatingEditor(){
+    if(!codeEditor || !runBtn) return;
+    const editorCard = codeEditor.closest(".card");
+    if(!editorCard) return;
+    const container = editorCard.closest(".container");
+    if(!container || container.dataset.codeLayout === "1") return;
+    container.dataset.codeLayout = "1";
+
+    const layout = document.createElement("div");
+    layout.className = "code-layout";
+    const main = document.createElement("div");
+    main.className = "code-main";
+    const side = document.createElement("div");
+    side.className = "code-side";
+
+    const children = Array.from(container.children);
+    children.forEach(child => main.appendChild(child));
+    layout.appendChild(main);
+    layout.appendChild(side);
+    container.appendChild(layout);
+
+    const panel = document.createElement("div");
+    panel.className = "card code-panel";
+    const title = document.createElement("h2");
+    title.textContent = "Code editor";
+    panel.appendChild(title);
+
+    const editorParent = codeEditor.parentElement;
+    const editorNext = codeEditor.nextSibling;
+    const editorNote = Array.from(editorCard.children).find(el => el.classList && el.classList.contains("note"));
+    if(editorNote){
+      panel.appendChild(editorNote);
+    }
+
+    panel.appendChild(codeEditor);
+    const runRow = runBtn.closest(".row");
+    if(runRow){
+      panel.appendChild(runRow);
+    }
+    side.appendChild(panel);
+
+    if(editorParent){
+      const placeholder = document.createElement("div");
+      placeholder.className = "note";
+      placeholder.innerHTML = "<b>Editor panel:</b> The code editor and buttons are on the right.";
+      editorParent.insertBefore(placeholder, editorNext || null);
+    }
+  }
+
   const DEFAULT_CODE = [
     "# Python runner demo",
     "name = \"Coder\"",
@@ -41,6 +90,7 @@
   });
 
   let runFiles = [];
+  initFloatingEditor();
 
   function decodeBase64Text(value){
     try{

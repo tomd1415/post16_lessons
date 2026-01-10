@@ -20,6 +20,13 @@
   --pad: 18px;
 }
 
+@media (min-width: 1400px){
+  :root{
+    --maxw: 1400px;
+    --pad: 24px;
+  }
+}
+
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
@@ -91,8 +98,23 @@ h3{font-size: 20px; margin-top: 16px}
 .grid{display:grid; gap:14px}
 .grid.cols2{grid-template-columns: repeat(2, minmax(0,1fr))}
 .grid.cols3{grid-template-columns: repeat(3, minmax(0,1fr))}
+
+.code-layout{
+  display:grid;
+  grid-template-columns: minmax(0,1fr) minmax(320px,420px);
+  gap:14px;
+  align-items:start;
+}
+.code-side{
+  position:sticky;
+  top: 90px;
+  align-self:start;
+}
+.code-panel h2{margin-top:0}
 @media (max-width: 900px){
   .grid.cols2, .grid.cols3{grid-template-columns: 1fr}
+  .code-layout{grid-template-columns: 1fr}
+  .code-side{position:static}
   body{font-size: 17px}
   h1{font-size: 30px}
 }
