@@ -48,7 +48,26 @@ h3{font-size: 20px; margin-top: 16px}
   background: rgba(11,15,20,.75);
   border-bottom: 1px solid var(--border);
 }
-.topbar .container{display:flex; gap:12px; align-items:center; justify-content:space-between}
+.topbar .container{display:flex; flex-direction:column; gap:10px; align-items:stretch; justify-content:flex-start}
+.top-header{display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap}
+.top-controls{display:flex; align-items:center; justify-content:flex-end; gap:14px; flex-wrap:wrap}
+.nav-row{display:flex; flex-direction:column}
+.nav-host{display:flex; flex-direction:column; gap:6px; min-width:240px}
+.global-nav{display:flex; flex-wrap:wrap; gap:8px; align-items:center}
+.global-nav .nav-item{
+  padding:8px 12px;
+  border-radius: 12px;
+  border:1px solid transparent;
+  color: var(--text);
+  background: rgba(255,255,255,.03);
+}
+.global-nav .nav-item:hover{border-color: var(--border); background: rgba(255,255,255,.06)}
+.global-nav .nav-item.active{border-color: rgba(106,166,255,.55); background: rgba(106,166,255,.14)}
+.session-actions{display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end}
+.breadcrumb{font-size:14px; color: var(--muted)}
+.breadcrumb a{color: var(--text)}
+.crumb-sep{margin:0 6px; color: var(--muted)}
+.crumb-current{color: var(--text)}
 .brand{display:flex; flex-direction:column}
 .brand b{font-size:16px; letter-spacing:.02em}
 .brand span{font-size:13px; color:var(--muted)}

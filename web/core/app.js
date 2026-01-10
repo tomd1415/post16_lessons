@@ -19,11 +19,10 @@ const store = {
 
 const ROLE_MENUS = {
   pupil: {
-    label: "Pupil",
+    label: "Student",
     items: [
       { label: "Student hub", href: "/index.html" },
-      { label: "Course catalogue", href: "/index.html#catalog" },
-      { label: "Lesson 1 student hub", href: "/lessons/lesson-1/student.html" }
+      { label: "Course catalogue", href: "/index.html#catalog" }
     ]
   },
   teacher: {
@@ -34,24 +33,14 @@ const ROLE_MENUS = {
       { label: "Teacher stats", href: "/teacher-stats.html" },
       { label: "Revision history", href: "/teacher-history.html" },
       { label: "Link registry", href: "/teacher-links.html" },
-      { label: "Lesson 1 teacher hub", href: "/lessons/lesson-1/index.html" },
-      { label: "Lesson 1 lesson plan", href: "/lessons/lesson-1/teacher/lesson-plan.html" },
-      { label: "Lesson 1 print cards", href: "/lessons/lesson-1/teacher/print-cards.html" },
-      { label: "Lesson 1 answer key", href: "/lessons/lesson-1/teacher/answer-key.html" },
       { label: "Student hub", href: "/index.html" }
     ]
   },
   admin: {
     label: "Admin",
     items: [
-      { label: "Admin hub", href: "/admin.html" },
+      { label: "Admin home", href: "/admin.html" },
       { label: "Audit log", href: "/admin-audit.html" },
-      { label: "Create user", href: "/admin.html#admin-create-user" },
-      { label: "Import CSV", href: "/admin.html#admin-import" },
-      { label: "Teacher view", href: "/teacher-view.html" },
-      { label: "Teacher stats", href: "/teacher-stats.html" },
-      { label: "Revision history", href: "/teacher-history.html" },
-      { label: "Link registry", href: "/teacher-links.html" },
       { label: "Teacher hub", href: "/teacher.html" },
       { label: "Student hub", href: "/index.html" }
     ]
@@ -212,45 +201,196 @@ function preferredMenuFromPath(){
 
 let roleMenuHost = null;
 
+function normalizedPath(href){
+  try{ return new URL(href, window.location.origin).pathname; }catch{ return href; }
+}
+
+function isActiveLink(href){
+  const current = window.location.pathname || "/";
+  return normalizedPath(href) === current;
+}
+
+const BREADCRUMB_RULES = [
+  {
+    test: path => path.startsWith("/admin-audit"),
+    trail: (role) => [
+      { label: "Admin", href: "/admin.html" },
+      { label: "Audit log" }
+    ]
+  },
+  {
+    test: path => path.startsWith("/admin"),
+    trail: (role) => [
+      { label: "Admin", href: "/admin.html" }
+    ]
+  },
+  {
+    test: path => path.startsWith("/teacher-view"),
+    trail: (role) => [
+      { label: "Teacher hub", href: "/teacher.html" },
+      { label: "Teacher view" }
+    ]
+  },
+  {
+    test: path => path.startsWith("/teacher-stats"),
+    trail: (role) => [
+      { label: "Teacher hub", href: "/teacher.html" },
+      { label: "Teacher stats" }
+    ]
+  },
+  {
+    test: path => path.startsWith("/teacher-history"),
+    trail: (role) => [
+      { label: "Teacher hub", href: "/teacher.html" },
+      { label: "Revision history" }
+    ]
+  },
+  {
+    test: path => path.startsWith("/teacher-links"),
+    trail: (role) => [
+      { label: "Teacher hub", href: "/teacher.html" },
+      { label: "Link registry" }
+    ]
+  },
+  {
+    test: path => /\/lessons\/lesson-\d+\/activities\//.test(path),
+    trail: (role, path) => {
+      const match = /\/lessons\/(lesson-(\d+))\/activities\/(\d+)/.exec(path) || [];
+      const lessonSlug = match[1];
+      const lessonNum = match[2];
+      const activityNum = match[3];
+      const lessonLabel = lessonNum ? `Lesson ${lessonNum}` : "Lesson";
+      const activityLabel = activityNum ? `Activity ${activityNum}` : "Activity";
+      const lessonPath = role === "teacher" || role === "admin"
+        ? `/${lessonSlug}/index.html`.replace("lesson-", "lessons/lesson-")
+        : `/${lessonSlug}/student.html`.replace("lesson-", "lessons/lesson-");
+      return [
+        role === "teacher" || role === "admin"
+          ? { label: "Teacher hub", href: "/teacher.html" }
+          : { label: "Student hub", href: "/index.html" },
+        { label: lessonLabel, href: lessonPath },
+        { label: activityLabel }
+      ];
+    }
+  },
+  {
+    test: path => /\/lessons\/lesson-\d+\//.test(path),
+    trail: (role, path) => {
+      const match = /\/lessons\/(lesson-(\d+))\//.exec(path) || [];
+      const lessonNum = match[2];
+      const lessonLabel = lessonNum ? `Lesson ${lessonNum}` : "Lesson";
+      return [
+        role === "teacher" || role === "admin"
+          ? { label: "Teacher hub", href: "/teacher.html" }
+          : { label: "Student hub", href: "/index.html" },
+        { label: lessonLabel }
+      ];
+    }
+  }
+];
+
+function breadcrumbBase(role){
+  if(role === "teacher" || role === "admin") return [{ label: "Teacher hub", href: "/teacher.html" }];
+  return [{ label: "Student hub", href: "/index.html" }];
+}
+
+function resolveBreadcrumb(role){
+  const path = window.location.pathname || "/";
+  for(const rule of BREADCRUMB_RULES){
+    if(rule.test(path)){
+      const trail = typeof rule.trail === "function" ? rule.trail(role, path) : rule.trail;
+      if(trail && trail.length) return trail;
+    }
+  }
+  const fallback = document.title || "This page";
+  return [...breadcrumbBase(role), { label: fallback }];
+}
+
+function renderBreadcrumb(trail){
+  if(!trail || !trail.length) return "";
+  return trail.map((item, idx)=>{
+    const isLast = idx === trail.length - 1;
+    if(!isLast && item.href){
+      return `<a href="${escapeHtml(item.href)}">${escapeHtml(item.label)}</a>`;
+    }
+    return `<span class="crumb-current">${escapeHtml(item.label)}</span>`;
+  }).join('<span class="crumb-sep">/</span>');
+}
+
 function renderRoleMenu(menuKey){
   if(!roleMenuHost) return;
   const menu = ROLE_MENUS[menuKey] || ROLE_MENUS.pupil;
   const items = menu.items
-    .map(item => `<li><a href="${escapeHtml(item.href)}">${escapeHtml(item.label)}</a></li>`)
+    .map(item => {
+      const active = isActiveLink(item.href);
+      return `<a class="nav-item ${active ? "active" : ""}" href="${escapeHtml(item.href)}">${escapeHtml(item.label)}</a>`;
+    })
     .join("");
+  const breadcrumbHtml = renderBreadcrumb(resolveBreadcrumb(menuKey));
   roleMenuHost.innerHTML = `
-    <details class="role-menu">
-      <summary>
-        <span class="menu-label">Menu</span>
-        <span class="tag">${escapeHtml(menu.label)}</span>
-      </summary>
-      <nav aria-label="${escapeHtml(menu.label)} menu">
-        <ul class="list menu-items">
-          ${items}
-        </ul>
-      </nav>
-    </details>
+    <nav class="global-nav" aria-label="${escapeHtml(menu.label)} navigation">
+      ${items}
+    </nav>
+    <div class="breadcrumb" aria-label="Breadcrumb">
+      ${breadcrumbHtml}
+    </div>
   `;
 }
 
 function initRoleMenu(){
   const container = $(".topbar .container");
   if(!container) return;
-  let row = container.querySelector(".row");
-  if(!row){
-    row = document.createElement("div");
-    row.className = "row";
-    container.appendChild(row);
+  let header = container.querySelector(".top-header");
+  if(!header){
+    header = document.createElement("div");
+    header.className = "top-header";
+    const brand = container.querySelector(".brand");
+    if(brand){
+      header.appendChild(brand);
+    }
+    container.prepend(header);
   }
-  roleMenuHost = row.querySelector("#roleMenu");
+
+  container.querySelectorAll(".pill").forEach(el => el.remove());
+
+  let actions = header.querySelector(".session-actions");
+  if(!actions){
+    actions = document.createElement("div");
+    actions.className = "session-actions";
+    header.appendChild(actions);
+  }
+
+  let navRow = container.querySelector(".nav-row");
+  if(!navRow){
+    navRow = document.createElement("div");
+    navRow.className = "nav-row";
+    container.appendChild(navRow);
+  }
+
+  roleMenuHost = navRow.querySelector("#roleMenu");
   if(!roleMenuHost){
     roleMenuHost = document.createElement("div");
     roleMenuHost.id = "roleMenu";
-    row.appendChild(roleMenuHost);
+    roleMenuHost.className = "nav-host";
+    navRow.appendChild(roleMenuHost);
   }
+
+  ["#userBadge", "#teacherToggle", "#logoutBtn", "#loginBtn"].forEach(sel => {
+    const el = container.querySelector(sel);
+    if(el){
+      el.style.display = "";
+      actions.appendChild(el);
+    }
+  });
+
   const stored = readStoredRole();
-  const menuKey = stored ? roleToMenu(stored) : preferredMenuFromPath();
+  const params = new URLSearchParams(window.location.search || "");
+  const preferred = preferredMenuFromPath();
+  const menuKey = params.get("teacher") === "1" ? "teacher" : (stored ? roleToMenu(stored) : preferred);
   renderRoleMenu(menuKey);
+  if(roleMenuHost && !roleMenuHost.textContent.trim()){
+    renderRoleMenu("pupil");
+  }
 }
 
 function updateRoleMenu(role){
