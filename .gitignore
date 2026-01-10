@@ -33,3 +33,6 @@ build/
 data/*.json
 reports/
 backups/
+
+.vscode/
+*.code-workspace*
