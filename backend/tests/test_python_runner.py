@@ -82,6 +82,18 @@ def test_runner_exec_command_uses_inline_code():
     assert decoded == code
 
 
+def test_runner_file_listing_command_targets_tmp():
+    from backend.app import python_runner
+
+    cmd, env = python_runner._build_file_listing_command()
+    assert cmd[0] == "python"
+    assert cmd[1] == "-c"
+    script = cmd[2]
+    assert "root='/tmp'" in script
+    assert "os.walk" in script
+    assert env["TLAC_MAX_FILES"].isdigit()
+
+
 def test_sanitize_files_rejects_absolute_path():
     from backend.app import python_runner
 

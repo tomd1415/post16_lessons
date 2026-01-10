@@ -1,5 +1,6 @@
 import base64
 import io
+import json
 import os
 import re
 import stat
@@ -386,6 +387,45 @@ def _build_exec_command(code: str) -> tuple[list[str], dict]:
     return command, env
 
 
+def _build_file_listing_command() -> tuple[list[str], dict]:
+    script = (
+        "import base64,json,os\n"
+        "root='/tmp'\n"
+        "max_files=int(os.environ.get('TLAC_MAX_FILES','8'))\n"
+        "max_bytes=int(os.environ.get('TLAC_MAX_FILE_BYTES','50000'))\n"
+        "skip={'main.py','turtle.py'}\n"
+        "items=[]\n"
+        "for base, _, names in os.walk(root):\n"
+        "    for name in names:\n"
+        "        rel=os.path.relpath(os.path.join(base, name), root)\n"
+        "        rel=rel.replace(os.sep, '/')\n"
+        "        if rel in skip:\n"
+        "            continue\n"
+        "        if rel.startswith('__pycache__/'):\n"
+        "            continue\n"
+        "        if len(items) >= max_files:\n"
+        "            break\n"
+        "        path=os.path.join(base, name)\n"
+        "        try:\n"
+        "            with open(path, 'rb') as handle:\n"
+        "                data=handle.read(max_bytes + 1)\n"
+        "        except Exception:\n"
+        "            continue\n"
+        "        if len(data) > max_bytes:\n"
+        "            data=data[:max_bytes]\n"
+        "        items.append({'path': rel, 'size': len(data), 'content_base64': base64.b64encode(data).decode('ascii')})\n"
+        "    if len(items) >= max_files:\n"
+        "        break\n"
+        "print(json.dumps({'items': items}))\n"
+    )
+    command = ["python", "-c", script]
+    env = {
+        "TLAC_MAX_FILES": str(config.RUNNER_MAX_FILES),
+        "TLAC_MAX_FILE_BYTES": str(config.RUNNER_MAX_FILE_BYTES),
+    }
+    return command, env
+
+
 def _read_archive(stream, max_bytes: int) -> bytes:
     buf = io.BytesIO()
     size = 0
@@ -454,6 +494,7 @@ def run_python(code: str, files: List[dict]) -> dict:
     stdout = ""
     stderr = ""
     exit_code = None
+    files_out = []
     try:
         container = client.create_container(
             image=config.RUNNER_IMAGE,
@@ -511,8 +552,48 @@ def run_python(code: str, files: List[dict]) -> dict:
         if len(stderr) > config.RUNNER_MAX_OUTPUT:
             stderr = stderr[: config.RUNNER_MAX_OUTPUT] + "\n...[truncated]"
 
-        stream, _ = client.get_archive(container_id, "/tmp")
-        archive_bytes = _read_archive(stream, config.RUNNER_MAX_ARCHIVE_BYTES)
+        listing_command, listing_env = _build_file_listing_command()
+        try:
+            listing_info = client.exec_create(
+                container_id,
+                cmd=listing_command,
+                workdir="/tmp",
+                user="65534:65534",
+                environment=listing_env,
+            )
+            listing_id = listing_info.get("Id")
+            if listing_id:
+                listing_output = client.exec_start(listing_id, demux=True)
+                if isinstance(listing_output, tuple):
+                    listing_stdout, _ = listing_output
+                else:
+                    listing_stdout = listing_output
+                payload = json.loads((listing_stdout or b"{}").decode("utf-8", errors="replace"))
+                items = payload.get("items") if isinstance(payload, dict) else []
+                if isinstance(items, list):
+                    for item in items:
+                        if not isinstance(item, dict):
+                            continue
+                        path = item.get("path") or ""
+                        content_base64 = item.get("content_base64") or ""
+                        try:
+                            safe_path = _safe_path(path)
+                        except ValueError:
+                            continue
+                        if not isinstance(content_base64, str):
+                            continue
+                        size = int(item.get("size") or 0)
+                        files_out.append(
+                            {
+                                "path": safe_path,
+                                "size": size,
+                                "mime": _mime_for(safe_path),
+                                "content_base64": content_base64,
+                            }
+                        )
+                files_out = files_out[: config.RUNNER_MAX_FILES]
+        except Exception:
+            files_out = []
     except DockerException as exc:
         raise RunnerUnavailable(f"Docker execution failed: {exc}") from exc
     finally:
@@ -523,38 +604,6 @@ def run_python(code: str, files: List[dict]) -> dict:
                 pass
 
     duration_ms = int((time.monotonic() - start) * 1000)
-    files_out = []
-
-    with tarfile.open(fileobj=io.BytesIO(archive_bytes), mode="r:*") as tar:
-        for member in tar.getmembers():
-            if not member.isfile():
-                continue
-            name = member.name.lstrip("./")
-            if name.startswith("tmp/"):
-                name = name[len("tmp/") :]
-            name = name.lstrip("./")
-            if not name:
-                continue
-            if name in {"main.py", "turtle.py"}:
-                continue
-            extracted = tar.extractfile(member)
-            if not extracted:
-                continue
-            content = extracted.read()
-
-            if len(files_out) >= config.RUNNER_MAX_FILES:
-                continue
-            if len(content) > config.RUNNER_MAX_FILE_BYTES:
-                content = content[: config.RUNNER_MAX_FILE_BYTES]
-            files_out.append(
-                {
-                    "path": name,
-                    "size": len(content),
-                    "mime": _mime_for(name),
-                    "content_base64": base64.b64encode(content).decode("ascii"),
-                }
-            )
-
     if exit_code in {124, 137}:
         timed_out = True
 
