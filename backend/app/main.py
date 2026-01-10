@@ -7,6 +7,7 @@ import re
 import secrets
 import statistics
 import time
+from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import quote
@@ -33,9 +34,25 @@ from .python_runner import RunnerError, RunnerUnavailable, run_python, runner_di
 from .rate_limit import LoginLimiter, compute_lock_seconds
 from .security import hash_password, verify_password
 
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    last_err = None
+    for _ in range(10):
+        try:
+            Base.metadata.create_all(bind=engine)
+            break
+        except Exception as exc:  # pragma: no cover - startup resilience
+            last_err = exc
+            await asyncio.sleep(1)
+    if last_err:
+        raise last_err
+    yield
+
+
 app = FastAPI(
     title="Thinking like a Coder API",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 login_limiter = LoginLimiter()
@@ -451,22 +468,6 @@ async def auth_middleware(request: Request, call_next):
         return await call_next(request)
     finally:
         db.close()
-
-
-@app.on_event("startup")
-def startup():
-    last_err = None
-    for _ in range(10):
-        try:
-            Base.metadata.create_all(bind=engine)
-            return
-        except Exception as exc:  # pragma: no cover - startup resilience
-            last_err = exc
-            time.sleep(1)
-    if last_err:
-        raise last_err
-
-
 @app.get("/api/health")
 def health(db: Session = Depends(get_db)):
     db_ok = True
