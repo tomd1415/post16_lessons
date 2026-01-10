@@ -55,6 +55,11 @@ sudo docker compose up -d --build
 - Turtle stub: run a turtle activity; confirm `turtle.svg` appears in “Run files”.
 
 ## 8) Maintenance
+- **Ops checklist (quick):**
+  - Ensure any overrides live in `.env` (for example: `RUNNER_TIMEOUT_SEC`, `RUNNER_MEMORY_MB`, `RUNNER_CPUS`, `RUNNER_IMAGE`, `RUNNER_AUTO_PULL`, `RETENTION_YEARS`).
+  - Backups: run `scripts/backup.sh`, copy the backup off the VM, and test restore with `scripts/restore.sh <backup_dir> --force` on a schedule.
+  - Upgrade flow: `git pull` -> `sudo docker compose build --pull` -> `sudo docker compose up -d`.
+  - Post-upgrade checks: `/api/health` and `/api/python/diagnostics`.
 - **Update app:**
   ```bash
   git pull

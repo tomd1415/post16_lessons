@@ -601,10 +601,12 @@ async function initTeacherToggle(){
   if(!btn) return;
   btn.style.display = "";
   btn.textContent = on ? "Teacher mode: ON" : "Teacher mode: OFF";
+  btn.setAttribute("aria-pressed", on ? "true" : "false");
   btn.addEventListener("click", ()=>{
     const now = !getTeacherMode(role);
     setTeacherMode(now);
     btn.textContent = now ? "Teacher mode: ON" : "Teacher mode: OFF";
+    btn.setAttribute("aria-pressed", now ? "true" : "false");
     toast(now ? "Teacher mode enabled" : "Teacher mode disabled");
   });
 }

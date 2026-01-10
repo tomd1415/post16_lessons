@@ -69,6 +69,11 @@ h3{font-size: 20px; margin-top: 16px}
   background: rgba(255,255,255,.03);
 }
 .global-nav .nav-item:hover{border-color: var(--border); background: rgba(255,255,255,.06)}
+.global-nav .nav-item:focus-visible{
+  outline:none;
+  box-shadow: var(--focus);
+  border-color: rgba(106,166,255,.55);
+}
 .global-nav .nav-item.active{border-color: rgba(106,166,255,.55); background: rgba(106,166,255,.14)}
 .session-actions{display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end}
 .breadcrumb{font-size:14px; color: var(--muted)}
@@ -86,6 +91,7 @@ h3{font-size: 20px; margin-top: 16px}
   border-radius:999px;
   font-size:14px;
 }
+.pill:focus-visible{outline:none; box-shadow: var(--focus)}
 .pill strong{font-family:var(--mono); font-size:13px; font-weight:600; color:var(--muted)}
 
 .card{
