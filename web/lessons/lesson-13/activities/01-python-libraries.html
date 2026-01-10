@@ -129,7 +129,7 @@
       </table>
 
       <h3>Task B: Plan an event handler</h3>
-      <p>Think of a simple console program that reacts to user input (e.g., menu choice).</p>
+      <p>Think of a simple console program that reacts to a menu choice stored in a variable or list (use a fixed value when testing in the runner).</p>
       <table class="table">
         <thead><tr><th>Event trigger</th><th>Handler name</th><th>Action to take</th></tr></thead>
         <tbody>
@@ -162,7 +162,7 @@ Requirement 2: ..."></textarea>
 
     <div class="card" style="margin-top:12px">
       <h2>Step 4: Run in Python</h2>
-      <div class="note">Try a small program that imports <code>random</code>, <code>time</code>, or <code>json</code>. Simulate an event by asking for user input.</div>
+      <div class="note">Try a small program that imports <code>random</code>, <code>time</code>, or <code>json</code>. Simulate an event using a fixed variable or list (avoid live input in the runner).</div>
       <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
       <div class="row" style="margin-top:10px">
         <button class="btn good" id="runBtn" type="button">Run code</button>
@@ -192,6 +192,46 @@ Requirement 2: ..."></textarea>
       <h2>Step 5: Reflection</h2>
       <p>Encourage pupils to note what was easy, what was tricky, and what they would change.</p>
       <textarea data-field="reflection" placeholder="What went well? What would you do differently next time?"></textarea>
+    </div>
+
+    <div class="card debug-quick-match" style="margin-top:12px">
+      <h2>Debugging quick match</h2>
+      <div class="note warn">Runner tip: this runner does not accept live <code>input()</code>. For testing, replace <code>input()</code> with a fixed value, then switch back.</div>
+
+      <p><b>Prompt 1:</b> NameError: name 'score' is not defined</p>
+      <div data-quiz="dbg1" data-correct="b">
+        <label class="choice"><input type="radio" name="dbg1" value="a"> Add quotes around score</label>
+        <label class="choice"><input type="radio" name="dbg1" value="b"> Define score before using it</label>
+        <label class="choice"><input type="radio" name="dbg1" value="c"> Replace = with ==</label>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn good" data-quiz-check="dbg1" type="button">Check</button>
+      </div>
+      <div class="note" data-quiz-feedback="dbg1" style="margin-top:10px; display:none"></div>
+
+      <div style="height:10px"></div>
+      <p><b>Prompt 2:</b> SyntaxError: invalid syntax (line ends with <code>if score &gt; 10</code>)</p>
+      <div data-quiz="dbg2" data-correct="c">
+        <label class="choice"><input type="radio" name="dbg2" value="a"> Add print() around the line</label>
+        <label class="choice"><input type="radio" name="dbg2" value="b"> Remove indentation</label>
+        <label class="choice"><input type="radio" name="dbg2" value="c"> Add a colon at the end of the line</label>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn good" data-quiz-check="dbg2" type="button">Check</button>
+      </div>
+      <div class="note" data-quiz-feedback="dbg2" style="margin-top:10px; display:none"></div>
+
+      <div style="height:10px"></div>
+      <p><b>Prompt 3:</b> TypeError: can only concatenate str (not "int") to str</p>
+      <div data-quiz="dbg3" data-correct="a">
+        <label class="choice"><input type="radio" name="dbg3" value="a"> Convert the int to a string (str(...) or f-string)</label>
+        <label class="choice"><input type="radio" name="dbg3" value="b"> Replace + with -</label>
+        <label class="choice"><input type="radio" name="dbg3" value="c"> Delete the integer value</label>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn good" data-quiz-check="dbg3" type="button">Check</button>
+      </div>
+      <div class="note" data-quiz-feedback="dbg3" style="margin-top:10px; display:none"></div>
     </div>
 
     <div class="teacher-only card" style="margin-top:12px; display:none">

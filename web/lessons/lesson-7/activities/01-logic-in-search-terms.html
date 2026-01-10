@@ -86,13 +86,14 @@
       <p><b>Suggested use:</b> Student activity</p>
 
       <h3>Task A: Map boxes to logic</h3>
-      <p>Use Google advanced search (or similar). Fill which box is which.</p>
+      <p>Use the common advanced-search box labels below (or a school-approved search tool if available). Map each label to AND/OR/NOT.</p>
+      <div class="note">If web access is unavailable, use these labels: <b>all these words</b>, <b>any of these words</b>, <b>none of these words</b>.</div>
       <table class="table">
-        <thead><tr><th>Logic</th><th>Box name/position</th></tr></thead>
+        <thead><tr><th>Logic</th><th>Box label</th></tr></thead>
         <tbody>
-          <tr><td>AND</td><td><input type="text" data-field="and_box" placeholder="box label/position" /></td></tr>
-          <tr><td>OR</td><td><input type="text" data-field="or_box" placeholder="box label/position" /></td></tr>
-          <tr><td>NOT</td><td><input type="text" data-field="not_box" placeholder="box label/position" /></td></tr>
+          <tr><td>AND</td><td><input type="text" data-field="and_box" placeholder="all these words" /></td></tr>
+          <tr><td>OR</td><td><input type="text" data-field="or_box" placeholder="any of these words" /></td></tr>
+          <tr><td>NOT</td><td><input type="text" data-field="not_box" placeholder="none of these words" /></td></tr>
         </tbody>
       </table>
 
@@ -108,7 +109,7 @@
 
       <h3>Task C: Capture results</h3>
       <table class="table">
-        <thead><tr><th>Search</th><th>Good result found?</th><th>Link/title</th></tr></thead>
+        <thead><tr><th>Search</th><th>Good result found?</th><th>Example result title (real or predicted)</th></tr></thead>
         <tbody>
           <tr><td>Search 1</td><td><input type="checkbox" aria-label="s1 ok" /></td><td><input type="text" data-field="search1_result" placeholder="page title" /></td></tr>
           <tr><td>Search 2</td><td><input type="checkbox" aria-label="s2 ok" /></td><td><input type="text" data-field="search2_result" placeholder="page title" /></td></tr>
@@ -142,7 +143,7 @@ Requirement 2: ..."></textarea>
         <li>Step 2 answers: AND = both true; OR = at least one true; NOT = exclude the term</li>
         <li>Task A mapping: AND → all these words; OR → any of these words; NOT → none of these words</li>
         <li>Task B examples: pumpkins -halloween; snowflakes -song -lyrics</li>
-        <li>Task C: expect a relevant page title/URL for each search and a checked box if found</li>
+        <li>Task C: expect a relevant page title/URL for each search (or a predicted title if offline) and a checked box if found</li>
       </ul>
     </div>
 

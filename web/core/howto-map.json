@@ -2,7 +2,7 @@
   "lesson-1": {
     "a01": [
       "Pick a device card from the left column (it highlights when selected).",
-      "Click a bin’s “Place here” button (Computer / Not a computer / Depends) to drop the selected card.",
+      "Click a bin\u2019s \u201cPlace here\u201d button (Computer / Not a computer / Depends) to drop the selected card.",
       "If you change your mind, use Move to reselect the card, then place it in a different bin or Remove to take it out.",
       "Read the prompts and add a reflection in the text box.",
       "Click Export to download your placements and notes; Reset clears everything to start again."
@@ -37,8 +37,8 @@
     ],
     "a06": [
       "Pick a mode: Line (easy) or Circle (harder). Click Generate new class any time to reshuffle heights.",
-      "Line mode: use ↑/↓ buttons to reorder students shortest → tallest. Press Check to verify; Auto sort shows the correct order.",
-      "Circle mode: use ←/→ to move students around the circle; watch the Total neighbour difference score drop. Try the heuristic to see an automatic attempt; Shuffle to change the order.",
+      "Line mode: use \u2191/\u2193 buttons to reorder students shortest \u2192 tallest. Press Check to verify; Auto sort shows the correct order.",
+      "Circle mode: use \u2190/\u2192 to move students around the circle; watch the Total neighbour difference score drop. Try the heuristic to see an automatic attempt; Shuffle to change the order.",
       "Use Export to download your final arrangements; Reset wipes and reloads the page state."
     ],
     "a07": [
@@ -62,7 +62,8 @@
       "Task A: For each statement, pick Formal or Natural. Aim for clear, unambiguous wording.",
       "Task B: Rewrite the hot chocolate instruction as numbered, precise steps with no vague words.",
       "Task C: Swap with a partner (or self-review), mark unclear wording, rewrite one step, tick the checklist, and summarise in the notes box.",
-      "Fill the final reflection box about what you improved; leave your answers in the boxes for review."
+      "Fill the final reflection box about what you improved; leave your answers in the boxes for review.",
+      "Support: use the examples and placeholders; complete one full task if time is short. Stretch: add one extra example and explain why it works."
     ],
     "a02": [
       "Answer the three quick checks on source vs machine code and click Check for feedback.",
@@ -70,23 +71,26 @@
       "Task A: Mark each statement S (source) or M (machine).",
       "Task B: Pick the missing pipeline step, click Check, and write why that step is needed.",
       "Task C: Complete the translation sentence for x = 2 + 3 and (optional) note an opcode; tick the checklist items when covered.",
-      "Write a short reflection on where errors can happen in translation; leave your answers in the boxes for review."
+      "Write a short reflection on where errors can happen in translation; leave your answers in the boxes for review.",
+      "Support: use the examples and placeholders; complete one full task if time is short. Stretch: add one extra example and explain why it works."
     ],
     "a03": [
       "Do the three quick checks about phase order, testing timing, and enhancement; click Check on each.",
       "Fill Step 2 with one short line describing what happens in each phase (analysis, design, programming, testing, enhancement).",
-      "Task A: Assign an order number 1–5 to every phase (no blanks).",
+      "Task A: Assign an order number 1\u20135 to every phase (no blanks).",
       "Task B: Choose the matching artefact/output for each phase (requirements, wireframe, code, test report, change log).",
       "Task C: For the focus timer mini-case, add one concrete action per phase. Tick the checklist when goal/inputs/steps/test are covered.",
-      "Add a reflection on which phase is most important and where bugs creep in."
+      "Add a reflection on which phase is most important and where bugs creep in.",
+      "Support: use the examples and placeholders; complete one full task if time is short. Stretch: add one extra example and explain why it works."
     ],
     "a04": [
       "Answer the three quick checks (spec quality, functional vs non-functional, example). Click Check for each.",
       "Fill Step 2 with one functional and one non-functional example in your own words.",
       "Task A: Choose a simple game idea (write a short title).",
       "Task B: Fill the spec table: goal, inputs, outputs, rules, constraints. Keep each as one clear line.",
-      "Task C: Write three testable acceptance statements (“The game should…”). Add an accessibility constraint in the stretch if you can.",
-      "Tick the checklist, then add a reflection on the hardest requirement to test."
+      "Task C: Write three testable acceptance statements (\u201cThe game should\u2026\u201d). Add an accessibility constraint in the stretch if you can.",
+      "Tick the checklist, then add a reflection on the hardest requirement to test.",
+      "Support: use the examples and placeholders; complete one full task if time is short. Stretch: add one extra example and explain why it works."
     ]
   },
   "lesson-3": {
@@ -96,7 +100,8 @@
       "Task A: Pick a daily routine and write 5 short steps; tick Decision? where a branch happens.",
       "Task B: Add one IF condition and complete both Yes and No paths in the table.",
       "Task C: Use the checklist to plan your flowchart: Start/End ovals, rectangles for actions, diamonds for decisions with Yes/No labels, arrows/loops with exits.",
-      "Write the structured notes and a brief reflection on decisions/loops; Export/Print if you need a copy."
+      "Write the structured notes and a brief reflection on decisions/loops.",
+      "Support: use the examples and placeholders; complete one full task if time is short. Stretch: add one extra example and explain why it works."
     ],
     "a02": [
       "Answer the three quick checks (IO symbol, what input means, output example) and click Check for each.",
@@ -104,24 +109,27 @@
       "Task A: Choose two devices; list at least two inputs and two outputs for each (include sensors, lights, sounds).",
       "Task B: Plan a snippet: write the input trigger, any decision, and the output action; tick IO parallelogram added when you draw it in your flowchart/sketch.",
       "Task C: Tick the completeness checks (path starts with input, ends with output, test idea written).",
-      "Finish with a reflection on hidden IO or clarity; Export/Print if needed."
+      "Finish with a reflection on hidden IO or clarity.",
+      "Support: use the examples and placeholders; complete one full task if time is short. Stretch: add one extra example and explain why it works."
     ],
     "a03": [
       "Answer the quick checks (decision symbol, input/output meaning, loop awareness) and click Check on each.",
       "Fill the machine/IO table: list inputs and outputs for the given machine scenario.",
       "Add flowchart elements: start/end, processes, decisions, IO symbols; note any loop and how it exits.",
       "If pseudocode is offered, rewrite the flow in short numbered steps to match your chart.",
-      "Tick the checklist when you have inputs, outputs, steps, and a test. Export/Print to keep your plan; Reset only if restarting."
+      "Tick the checklist when you have inputs, outputs, steps, and a test.",
+      "Support: use the examples and placeholders; complete one full task if time is short. Stretch: add one extra example and explain why it works."
     ]
   },
   "lesson-4": {
     "a01": [
-      "Complete the three quick checks about file extension, running, and saving; press Check for each.",
+      "Complete the three quick checks about file extensions, running, and saving; press Check for each.",
       "Fill Step 2 with the file name, what should happen when Run is clicked, and one control key.",
-      "Task A: Locate the starter file aliens.py, open it, and note the file path; tick the checkboxes.",
-      "Task B: Run the game once; record whether it ran and what output or error appeared.",
-      "Task C: Make one small edit (caption, speed, lives), run again, and log whether it worked; tick evidence boxes for saved file, screenshot, and notes.",
-      "Add a short reflection on what was easy or any error you fixed; Export/Print if you need to submit."
+      "Task A: Open aliens.py; if the starter file is missing, create it using the snippet on the page and note the file path.",
+      "Task B: Run the program once and record whether it ran or showed an error.",
+      "Task C: Make one small edit (caption, speed, or lives), run again, and log what changed.",
+      "Add a short reflection on what was easy or any error you fixed.",
+      "Support: use the examples and placeholders; complete one full task if time is short. Stretch: add one extra example and explain why it works."
     ],
     "a02": [
       "Answer the three quick checks (print, comment symbol, input) and click Check for each.",
@@ -129,7 +137,9 @@
       "In Plan your run, fill test input, expected output, and the change you will test before pressing Run code.",
       "Use the Run log table to record what changed on each run and whether output was OK or errors occurred.",
       "Review Stdout/Stderr after each run; save any generated files you need as evidence.",
-      "Write a reflection on what you changed and what worked; Reset only if you need a clean slate."
+      "Write a reflection on what you changed and what worked; Reset only if you need a clean slate.",
+      "Complete the debugging quick match prompts. If you use input(), swap in a fixed test value before running.",
+      "Support: start from the example code and change one line at a time. Stretch: add another test case or refactor into a helper function."
     ]
   },
   "lesson-5": {
@@ -137,13 +147,17 @@
       "Review the prompt/goal, then for each target number fill an expression using exactly four 4s and the allowed operators.",
       "Use parentheses to control order; check the operator checklist as you employ each one.",
       "Test tricky expressions in the runner (if available) or evaluate mentally; adjust until the target matches.",
-      "Add a short reflection on which targets were hardest and which operators helped most; export/print if needed."
+      "Add a short reflection on which targets were hardest and which operators helped most.",
+      "Complete the debugging quick match prompts. If you use input(), swap in a fixed test value before running.",
+      "Support: start from the example code and change one line at a time. Stretch: add another test case or refactor into a helper function."
     ],
     "a02": [
       "Work through the given expressions: rewrite them with correct parentheses so they evaluate as intended.",
       "Show the working/evaluation steps (what gets computed first) in the provided boxes or notes.",
       "Optionally run your corrected expressions in the runner to confirm outputs match your prediction.",
-      "Complete the checklist and add a brief note on common mistakes with precedence; export/print if required."
+      "Complete the checklist and add a brief note on common mistakes with precedence.",
+      "Complete the debugging quick match prompts. If you use input(), swap in a fixed test value before running.",
+      "Support: start from the example code and change one line at a time. Stretch: add another test case or refactor into a helper function."
     ]
   },
   "lesson-6": {
@@ -151,27 +165,35 @@
       "Follow the swap scenario: note starting values, then order the swap steps correctly (including a temp variable).",
       "Fill the value-tracking table after each step to prove the swap works.",
       "Write the final Python swap snippet and run it in the runner; record the output/proof it worked.",
-      "Check the checklist items (init, assign, test) and add a short reflection on why the temp is needed."
+      "Check the checklist items (init, assign, test) and add a short reflection on why the temp is needed.",
+      "Complete the debugging quick match prompts. If you use input(), swap in a fixed test value before running.",
+      "Support: start from the example code and change one line at a time. Stretch: add another test case or refactor into a helper function."
     ],
     "a02": [
       "Plan your prompts: list what inputs you will ask the user and what types you expect (string/int/float/bool).",
       "Write code to collect input with input(), convert to the right type (int/float/bool), and print a confirmation line.",
-      "Run the code in the runner with at least two test inputs; note the outputs and any errors.",
-      "Tick the checklist for input, conversion, and output; reflect on where type errors appeared."
+      "For runner tests, temporarily replace input() with a test value (e.g., name = \"Ada\") so you can run it without live input.",
+      "Run the code in the runner with at least two test values; note the outputs and any errors.",
+      "Tick the checklist for input, conversion, and output; reflect on where type errors appeared.",
+      "Complete the debugging quick match prompts. If you use input(), swap in a fixed test value before running.",
+      "Support: start from the example code and change one line at a time. Stretch: add another test case or refactor into a helper function."
     ]
   },
   "lesson-7": {
     "a01": [
-      "Read the AND/OR/NOT examples; craft three search strings using the required operators for given scenarios.",
-      "Record which results/links you find and note how the operator changed the results.",
-      "Map each operator to its effect (narrows/widens/excludes) in the provided table or notes.",
-      "Add a short reflection on which operator combination was most useful."
+      "Review AND/OR/NOT and complete the quick checks; press Check for each.",
+      "Task A: Map the common advanced-search labels (all/any/none) to AND/OR/NOT.",
+      "Task B: Build two search strings that include and exclude terms.",
+      "Task C: If you can search, record a real result title; if not, write the title you would expect to see.",
+      "Add a short reflection on which operator combination was most useful.",
+      "Support: use the examples and placeholders; complete one full task if time is short. Stretch: add one extra example and explain why it works."
     ],
     "a02": [
       "List the washing machine inputs (sensors/buttons) and outputs (actions) in the table.",
       "Write Boolean rules using AND/OR/NOT to control heater, motor, and door lock (or given components).",
       "Add troubleshooting logic: what should happen if a condition fails (e.g., door open, water low).",
-      "Reflect on how the logic prevents unsafe states; export/print if required."
+      "Reflect on how the logic prevents unsafe states.",
+      "Support: use the examples and placeholders; complete one full task if time is short. Stretch: add one extra example and explain why it works."
     ]
   },
   "lesson-8": {
@@ -179,13 +201,17 @@
       "Choose a method to reverse a list (slicing, loop, built-in) and write the steps in order.",
       "Create a few test lists and predict the reversed output before running.",
       "Run your reversal in the runner, record outputs, and adjust if a test fails.",
-      "Note which method you used and why; tick evidence/checklist items."
+      "Note which method you used and why; tick evidence/checklist items.",
+      "Complete the debugging quick match prompts. If you use input(), swap in a fixed test value before running.",
+      "Support: start from the example code and change one line at a time. Stretch: add another test case or refactor into a helper function."
     ],
     "a02": [
       "Complete the toolkit examples: create tuples and lists, practice indexing, slicing, append/extend, and unpacking.",
       "Run each snippet in the runner and capture the printed results as evidence.",
       "Try one custom example combining list + tuple operations (e.g., tuple to list, modify, back to tuple).",
-      "Summarise what each operation does and any surprises; mark the checklist."
+      "Summarise what each operation does and any surprises; mark the checklist.",
+      "Complete the debugging quick match prompts. If you use input(), swap in a fixed test value before running.",
+      "Support: start from the example code and change one line at a time. Stretch: add another test case or refactor into a helper function."
     ]
   },
   "lesson-9": {
@@ -193,13 +219,17 @@
       "Read the provided code/comments; decide what each comment is trying to convey (purpose, warning, todo).",
       "Mark whether each comment is clear or needs improvement; rewrite unclear ones in the notes box.",
       "Run the snippet if present to see behaviour and ensure comments match the code.",
-      "Tick the checklist for indentation, naming, and commenting; add a brief reflection on good vs bad comments."
+      "Tick the checklist for indentation, naming, and commenting; add a brief reflection on good vs bad comments.",
+      "Complete the debugging quick match prompts. If you use input(), swap in a fixed test value before running.",
+      "Support: start from the example code and change one line at a time. Stretch: add another test case or refactor into a helper function."
     ],
     "a02": [
       "Inspect the starter code; list quick refactors (better names, smaller functions, clearer comments).",
       "Apply those changes in the editor, then run to confirm behaviour still matches the original intent.",
       "Document before/after for at least one function or block, noting why each change improves readability.",
-      "Complete the checklist and add a reflection on which change helped most; export/print if needed."
+      "Complete the checklist and add a reflection on which change helped most.",
+      "Complete the debugging quick match prompts. If you use input(), swap in a fixed test value before running.",
+      "Support: start from the example code and change one line at a time. Stretch: add another test case or refactor into a helper function."
     ]
   },
   "lesson-10": {
@@ -207,13 +237,17 @@
       "Fill the logic table for the age-checker (conditions and outcomes).",
       "Write the ordered IF/ELSE steps as pseudocode, then convert to Python-style syntax in the notes/editor if provided.",
       "Test the logic with several ages (boundary values) and record outputs; fix any misplaced conditions.",
-      "Tick the checklist and note how you tested the branches."
+      "Tick the checklist and note how you tested the branches.",
+      "Complete the debugging quick match prompts. If you use input(), swap in a fixed test value before running.",
+      "Support: start from the example code and change one line at a time. Stretch: add another test case or refactor into a helper function."
     ],
     "a02": [
       "List inputs (e.g., light colour, pedestrian button) and desired outputs (go/stop signals).",
       "Write the IF/ELSE rules for the traffic light, including safety constraints (e.g., never both green).",
       "Test the rules against sample states; record any conflicts and adjust conditions or order.",
-      "Summarise the final rule set and how you would test it in code or a flowchart."
+      "Summarise the final rule set and how you would test it in code or a flowchart.",
+      "Complete the debugging quick match prompts. If you use input(), swap in a fixed test value before running.",
+      "Support: start from the example code and change one line at a time. Stretch: add another test case or refactor into a helper function."
     ]
   },
   "lesson-11": {
@@ -221,69 +255,104 @@
       "Write a function header with clear parameters; state what it should return.",
       "Add at least two test calls with expected outputs; run or mentally check them.",
       "Refine the body to handle edge cases; note any assumptions in the notes box.",
-      "Tick the checklist and add a brief reflection on why functions help reuse."
+      "Tick the checklist and add a brief reflection on why functions help reuse.",
+      "Complete the debugging quick match prompts. If you use input(), swap in a fixed test value before running.",
+      "Support: start from the example code and change one line at a time. Stretch: add another test case or refactor into a helper function."
     ],
     "a02": [
       "Practice defining and calling functions with positional and optional parameters as prompted.",
       "Record expected vs actual outputs for each call; adjust default values if outputs are wrong.",
       "Add one custom helper function of your own and test it with two inputs.",
-      "Summarise what changed when you altered parameters or defaults."
+      "Summarise what changed when you altered parameters or defaults.",
+      "Complete the debugging quick match prompts. If you use input(), swap in a fixed test value before running.",
+      "Support: start from the example code and change one line at a time. Stretch: add another test case or refactor into a helper function."
     ]
   },
   "lesson-12": {
     "a01": [
-      "Convert each loop description into a working for/while loop as directed on the page.",
-      "Trace one iteration by hand (values per step) to confirm the loop stops correctly.",
-      "Run or reason through a boundary case (empty list or zero count) and note the outcome.",
-      "Tick the checklist and add a reflection on where loops can get stuck."
+      "Complete the quick checks on loops and infinite loops; press Check for each.",
+      "Fill the key-ideas table (loop purpose, while condition, infinite loop risk).",
+      "Task A: Order the loop statements (start value, while condition, double the value).",
+      "Task B: Track the doubling values and digit counts for at least three iterations.",
+      "Task C: Write two stop conditions to prevent an infinite loop.",
+      "Run the loop in Python and record where it stopped.",
+      "Complete the debugging quick match prompts. If you use input(), swap in a fixed test value before running.",
+      "Support: start from the example code and change one line at a time. Stretch: add another test case or refactor into a helper function."
     ],
     "a02": [
-      "Rewrite repetitive code into a loop; note the variable that changes each pass.",
-      "Add a condition to break/continue as required by the prompt and test it with two scenarios.",
-      "Record outputs and confirm the loop covers all items without infinite looping.",
-      "Summarise one improvement from using the loop."
+      "Complete the quick checks on loops; press Check for each.",
+      "Fill the table on function purpose, width parameter, and loop safety.",
+      "Task A: Plan the arrow parts (head/shaft) with characters and widths.",
+      "Task B: Order the drawing steps (left head, shaft, right head).",
+      "Task C: Define two test cases (width/height/character).",
+      "Run your function in Python and confirm output matches your tests.",
+      "Reflect on what you would change next time.",
+      "Complete the debugging quick match prompts. If you use input(), swap in a fixed test value before running.",
+      "Support: start from the example code and change one line at a time. Stretch: add another test case or refactor into a helper function."
     ]
   },
   "lesson-13": {
     "a01": [
-      "Use the Pygame drawing panel/prompts to create shapes; note which functions you used (draw.line, draw.circle, etc.).",
-      "Change at least one parameter (colour, thickness, coords) and observe the effect; record before/after.",
-      "Save or export your canvas if the page allows; otherwise screenshot as evidence.",
-      "Reflect on which draw calls are reusable for other scenes."
+      "Complete the quick checks on libraries, handlers, and import; press Check for each.",
+      "Fill the key ideas table with library examples and event definitions.",
+      "Task A: Match each goal to the right library.",
+      "Task B: Plan an event handler using a fixed menu choice or list.",
+      "Task C: Draft two test inputs/outputs for a library helper.",
+      "Run a small program using random/time/json and record outputs.",
+      "Complete the debugging quick match prompts. If you use input(), swap in a fixed test value before running.",
+      "Support: start from the example code and change one line at a time. Stretch: add another test case or refactor into a helper function."
     ],
     "a02": [
-      "Follow the music/sound task: load a file as instructed, play/stop it, and tweak volume or loop settings.",
-      "Test start/stop behaviour and note any errors (missing file, format).",
-      "Record the parameter changes you tried and their effects.",
-      "Add a brief reflection on how you would trigger sounds from game events."
+      "Complete the quick checks on events and handlers; press Check for each.",
+      "Map event triggers to handler names and actions.",
+      "Sketch loop steps: initialise, get event from a list, dispatch, exit.",
+      "Run a simple event loop in Python using a fixed event list.",
+      "Reflect on your exit condition and handled events.",
+      "Complete the debugging quick match prompts. If you use input(), swap in a fixed test value before running.",
+      "Support: start from the example code and change one line at a time. Stretch: add another test case or refactor into a helper function."
     ]
   },
   "lesson-14": {
     "a01": [
-      "Step through the recursion visualiser/drawing task; note the base case and the recursive call.",
-      "Change one parameter (depth/angle) and observe the new pattern; record what changed.",
-      "Explain in one sentence how the recursion stops; tick the checklist when base/recursive parts are clear.",
-      "Capture a screenshot/export of your recursive drawing if available."
+      "Complete quick checks about recursion and base cases; press Check for each.",
+      "Fill the base-case and shrinking notes in Step 2.",
+      "Task A: Describe base case vs recursive step and how parameters change.",
+      "Task B: Order the three Hanoi moves for n disks.",
+      "Task C: Estimate moves for n=1,3,4 and check them.",
+      "Run a recursive function to print moves for at least two n values.",
+      "Complete the debugging quick match prompts. If you use input(), swap in a fixed test value before running.",
+      "Support: start from the example code and change one line at a time. Stretch: add another test case or refactor into a helper function."
     ],
     "a02": [
-      "Follow the recursion explanation: trace the given algorithm with a small input and log each call/return.",
-      "Identify the base case and the work done before/after the recursive call.",
-      "Try a second input to confirm the call stack pattern; note any risk of infinite recursion.",
-      "Summarise how you would test or visualise the recursion in code."
+      "Complete quick checks on base cases and recursion; press Check for each.",
+      "Define the pattern per level, max depth, and stop condition.",
+      "Plan the recursion (signature, base case, work, recursive call).",
+      "Run in Python for multiple depths and compare outputs.",
+      "Reflect on how depth changes the pattern.",
+      "Complete the debugging quick match prompts. If you use input(), swap in a fixed test value before running.",
+      "Support: start from the example code and change one line at a time. Stretch: add another test case or refactor into a helper function."
     ]
   },
   "lesson-15": {
     "a01": [
-      "Read the software spec samples; list what makes a spec well-defined (measurable, unambiguous).",
-      "Annotate the provided spec or code snippets with clearer names/comments as directed.",
-      "Write one short improvement for scope, acceptance criteria, or stakeholder note.",
-      "Summarise the biggest risk if the spec stays vague."
+      "Complete quick checks on syntax, logic, and testing; press Check for each.",
+      "Fill key ideas on annotations, regressions, and good test cases.",
+      "Task A: Classify each issue as syntax/logic/regression/style.",
+      "Task B: Write three test cases with expected outputs and types.",
+      "Task C: Log observations, hypotheses, and fixes.",
+      "Run a small snippet with prints/asserts and record the output.",
+      "Reflect on which checks helped most.",
+      "Complete the debugging quick match prompts. If you use input(), swap in a fixed test value before running.",
+      "Support: start from the example code and change one line at a time. Stretch: add another test case or refactor into a helper function."
     ],
     "a02": [
-      "Review the cartoon/project stages; map each panel to a real software activity (analysis, design, build, test, deploy).",
-      "List one failure mode per stage and a mitigation.",
-      "Tick checklist items once every stage has a clear activity and risk.",
-      "Add a reflection on which stage most often slips and how to prevent it."
+      "Complete quick checks on tests and errors; press Check for each.",
+      "Choose a buggy snippet and record how to reproduce it.",
+      "Fill the test matrix with inputs, expected outputs, and test types.",
+      "Patch the code, rerun tests, and record before/after.",
+      "Reflect on the root cause and the next enhancement.",
+      "Complete the debugging quick match prompts. If you use input(), swap in a fixed test value before running.",
+      "Support: start from the example code and change one line at a time. Stretch: add another test case or refactor into a helper function."
     ]
   }
 }
