@@ -66,9 +66,6 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Add Prometheus metrics middleware
-app.add_middleware(prom_metrics.PrometheusMiddleware)
-
 login_limiter = LoginLimiter()
 api_rate_limiter = ApiRateLimiter(window_minutes=1)
 runner_semaphore = asyncio.Semaphore(RUNNER_CONCURRENCY)
@@ -535,6 +532,51 @@ async def auth_middleware(request: Request, call_next):
         return await call_next(request)
     finally:
         db.close()
+
+
+@app.middleware("http")
+async def metrics_middleware(request: Request, call_next):
+    """Collect Prometheus metrics for HTTP requests"""
+    # Skip metrics collection for the metrics endpoint itself
+    if request.url.path == "/api/metrics":
+        return await call_next(request)
+
+    method = request.method
+    # Normalize endpoint path (remove IDs, etc.)
+    endpoint = request.url.path
+    for pattern in [r'/\d+', r'/[a-f0-9-]{36}']:
+        endpoint = re.sub(pattern, '/{id}', endpoint)
+
+    prom_metrics.http_requests_in_progress.labels(method=method, endpoint=endpoint).inc()
+    start_time = time.time()
+
+    try:
+        response = await call_next(request)
+        status = response.status_code
+
+        prom_metrics.http_requests_total.labels(
+            method=method,
+            endpoint=endpoint,
+            status=status
+        ).inc()
+
+        duration = time.time() - start_time
+        prom_metrics.http_request_duration_seconds.labels(
+            method=method,
+            endpoint=endpoint
+        ).observe(duration)
+
+        return response
+    except Exception as e:
+        prom_metrics.errors_total.labels(
+            error_type=type(e).__name__,
+            endpoint=endpoint
+        ).inc()
+        raise
+    finally:
+        prom_metrics.http_requests_in_progress.labels(method=method, endpoint=endpoint).dec()
+
+
 @app.get("/api/health")
 def health(db: Session = Depends(get_db)):
     db_ok = True
@@ -550,7 +592,7 @@ def health(db: Session = Depends(get_db)):
     }
 
 
-@app.get("/metrics")
+@app.get("/api/metrics")
 def prometheus_metrics(db: Session = Depends(get_db)):
     """
     Prometheus metrics endpoint
@@ -578,6 +620,135 @@ def prometheus_metrics(db: Session = Depends(get_db)):
         content=generate_latest(REGISTRY),
         media_type="text/plain; charset=utf-8"
     )
+
+
+@app.get("/api/admin/metrics")
+def admin_metrics_summary(request: Request, db: Session = Depends(get_db)):
+    """
+    Admin metrics summary endpoint
+    Returns a JSON summary of key metrics for the admin dashboard
+    """
+    require_admin(request)
+
+    from prometheus_client import REGISTRY
+    from datetime import datetime, timedelta
+
+    # Helper function to get metric value
+    def get_metric_value(name, labels=None):
+        try:
+            for metric in REGISTRY.collect():
+                if metric.name == name:
+                    for sample in metric.samples:
+                        if labels is None or all(sample.labels.get(k) == v for k, v in labels.items()):
+                            return sample.value
+        except:
+            pass
+        return 0
+
+    # Helper function to sum metric values across labels
+    def sum_metric(name, label_filter=None):
+        try:
+            total = 0
+            for metric in REGISTRY.collect():
+                if metric.name == name:
+                    for sample in metric.samples:
+                        if label_filter is None or label_filter(sample.labels):
+                            total += sample.value
+            return total
+        except:
+            pass
+        return 0
+
+    # Update dynamic metrics
+    try:
+        active_sessions = db.query(AuthSession).filter(
+            AuthSession.expires_at > utcnow()
+        ).count()
+        prom_metrics.update_active_sessions(active_sessions)
+
+        if hasattr(engine.pool, 'size'):
+            prom_metrics.update_db_connections(engine.pool.size())
+    except Exception as e:
+        logger.warning(f"Failed to update dynamic metrics: {e}")
+
+    # Gather metrics
+    total_requests = sum_metric("tlac_http_requests_total")
+    successful_requests = sum_metric("tlac_http_requests_total", lambda l: l.get("status", "").startswith("2"))
+    error_requests = sum_metric("tlac_http_requests_total", lambda l: l.get("status", "").startswith(("4", "5")))
+
+    total_logins = sum_metric("tlac_auth_login_attempts_total")
+    successful_logins = get_metric_value("tlac_auth_login_attempts_total", {"status": "success"})
+    failed_logins = get_metric_value("tlac_auth_login_attempts_total", {"status": "failed"})
+    rate_limited_logins = get_metric_value("tlac_auth_login_attempts_total", {"status": "rate_limited"})
+
+    active_sessions_count = get_metric_value("tlac_auth_sessions_active")
+
+    total_python_runs = sum_metric("tlac_python_runs_total")
+    successful_runs = get_metric_value("tlac_python_runs_total", {"status": "success"})
+    error_runs = get_metric_value("tlac_python_runs_total", {"status": "error"})
+    timeout_runs = get_metric_value("tlac_python_runs_total", {"status": "timeout"})
+
+    total_activity_saves = sum_metric("tlac_activity_saves_total")
+    rate_limit_violations = sum_metric("tlac_rate_limit_exceeded_total")
+
+    db_connections = get_metric_value("tlac_db_connections_active")
+    total_errors = sum_metric("tlac_errors_total")
+
+    # Get database stats
+    total_users = db.query(User).count()
+    total_pupils = db.query(User).filter(User.role == "pupil").count()
+    total_teachers = db.query(User).filter(User.role == "teacher").count()
+    total_admins = db.query(User).filter(User.role == "admin").count()
+    active_users = db.query(User).filter(User.active == True).count()
+
+    # Get recent activity (last 7 days)
+    week_ago = utcnow() - timedelta(days=7)
+    recent_logins = db.query(User).filter(User.last_login_at > week_ago).count()
+
+    # Calculate success rates
+    login_success_rate = (successful_logins / total_logins * 100) if total_logins > 0 else 100
+    request_success_rate = (successful_requests / total_requests * 100) if total_requests > 0 else 100
+    python_success_rate = (successful_runs / total_python_runs * 100) if total_python_runs > 0 else 100
+
+    return {
+        "summary": {
+            "total_users": total_users,
+            "active_users": active_users,
+            "total_pupils": total_pupils,
+            "total_teachers": total_teachers,
+            "total_admins": total_admins,
+            "active_sessions": int(active_sessions_count),
+            "recent_logins_7d": recent_logins
+        },
+        "http": {
+            "total_requests": int(total_requests),
+            "successful_requests": int(successful_requests),
+            "error_requests": int(error_requests),
+            "success_rate": round(request_success_rate, 1)
+        },
+        "authentication": {
+            "total_login_attempts": int(total_logins),
+            "successful_logins": int(successful_logins),
+            "failed_logins": int(failed_logins),
+            "rate_limited_logins": int(rate_limited_logins),
+            "success_rate": round(login_success_rate, 1)
+        },
+        "python_runner": {
+            "total_runs": int(total_python_runs),
+            "successful_runs": int(successful_runs),
+            "error_runs": int(error_runs),
+            "timeout_runs": int(timeout_runs),
+            "success_rate": round(python_success_rate, 1)
+        },
+        "activity": {
+            "total_saves": int(total_activity_saves),
+            "rate_limit_violations": int(rate_limit_violations)
+        },
+        "system": {
+            "db_connections": int(db_connections),
+            "total_errors": int(total_errors)
+        }
+    }
 
 
 @app.get("/api/metrics")

@@ -12,9 +12,9 @@ https://localhost:8443 {
   # Security headers
   header {
     # Content Security Policy - prevents XSS and injection attacks
-    # Note: 'unsafe-inline' for style-src is needed for inline styles in the app
-    # Consider moving to nonces or hashes for production
-    Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
+    # Note: 'unsafe-inline' for script-src and style-src is needed for inline scripts and styles
+    # TODO: Consider moving to nonces or hashes for production for better security
+    Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
 
     # Prevent clickjacking attacks
     X-Frame-Options "DENY"

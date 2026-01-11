@@ -37,7 +37,7 @@ docker compose -f compose.monitoring.yml up -d prometheus grafana
 
 Raw Prometheus metrics endpoint:
 ```bash
-curl http://localhost:8000/metrics
+curl http://localhost:8000/api/metrics
 ```
 
 ## Available Metrics
@@ -395,7 +395,7 @@ docker/grafana/provisioning/datasources/
 
 **Check endpoint is accessible:**
 ```bash
-curl http://localhost:8000/metrics
+curl http://localhost:8000/api/metrics
 ```
 
 **Check Prometheus targets:**
@@ -564,7 +564,7 @@ For issues with monitoring:
 1. Check [Troubleshooting](#troubleshooting) section
 2. Review Prometheus logs: `docker compose logs prometheus`
 3. Review Grafana logs: `docker compose logs grafana`
-4. Check metric endpoint: `curl http://localhost:8000/metrics`
+4. Check metric endpoint: `curl http://localhost:8000/api/metrics`
 5. Consult Prometheus documentation: https://prometheus.io/docs/
 6. Consult Grafana documentation: https://grafana.com/docs/
 
