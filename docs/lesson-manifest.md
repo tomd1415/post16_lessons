@@ -69,8 +69,16 @@ Fields in `linksRegistry.items`:
 - `section` (`additional` or `exercise`)
 - `status` (string, optional; set by link checker)
 - `lastChecked` (ISO timestamp, optional)
-- `replacementUrl` (string, optional)
-- `localPath` (string, optional)
 
 Link overrides are stored in `data/link-overrides.json` and exposed via `GET /api/teacher/links`.
 Use `scripts/link_registry_check.py` to refresh `status` + `lastChecked` in the manifest.
+
+## Link overrides file
+`data/link-overrides.json` is a map keyed by link id. Fields are snake_case:
+- `replacement_url` (string, optional)
+- `local_path` (string, optional)
+- `disabled` (boolean, optional)
+- `notes` (string, optional; informational only)
+- `updated_at` (ISO timestamp, optional; informational only)
+
+Only `replacement_url`, `local_path`, and `disabled` affect runtime behavior.

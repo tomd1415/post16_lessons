@@ -147,17 +147,22 @@ The MVP runner executes Python in a short-lived container with no network access
 - File I/O works inside a per-run virtual folder; use **Save files** to persist outputs.
 - `import turtle` writes `turtle.svg` for preview (SVG stub, no GUI).
 
-Runner configuration (compose envs):
-- `RUNNER_IMAGE` (default `python:3.12-slim`)
+Runner configuration (compose envs; defaults below come from `compose.yml`):
+- `RUNNER_ENABLED` (default `1`)
+- `RUNNER_IMAGE` (default `post16_lessons-api`; config default is `python:3.12-slim`)
 - `RUNNER_DOCKER_HOST` (default `unix:///var/run/docker.sock`)
-- `RUNNER_DOCKER_API_VERSION` (default `1.50`, set lower if your daemon is older)
-- `RUNNER_TIMEOUT_SEC`, `RUNNER_MEMORY_MB`, `RUNNER_CPUS`, `RUNNER_CONCURRENCY`
-- `RUNNER_MAX_OUTPUT`, `RUNNER_MAX_CODE_SIZE`, `RUNNER_MAX_FILES`, `RUNNER_MAX_FILE_BYTES`
+- `RUNNER_DOCKER_API_VERSION` (default `1.50`; config default is `1.41`, set lower if your daemon is older)
+- `RUNNER_TIMEOUT_SEC`, `RUNNER_MEMORY_MB`, `RUNNER_CPUS`
+- `RUNNER_PIDS_LIMIT`, `RUNNER_TMPFS_MB`
+- `RUNNER_CONCURRENCY`
+- `RUNNER_MAX_OUTPUT`, `RUNNER_MAX_CODE_SIZE`, `RUNNER_MAX_FILES`, `RUNNER_MAX_FILE_BYTES`, `RUNNER_MAX_ARCHIVE_BYTES`
+- `RUNNER_AUTO_PULL`
+If you run the API outside compose, defaults come from `backend/app/config.py`.
 
 Note: The API container needs access to the Docker socket.
 If you are using rootless Docker/Podman, set `RUNNER_DOCKER_HOST` to the correct socket and mount it into the API container.
 If the runner image is not present, set `RUNNER_AUTO_PULL=1` or pre-pull it with `docker pull python:3.12-slim`.
-Offline fallback: set `RUNNER_IMAGE=post16_lessons-api` and `RUNNER_AUTO_PULL=0` to use the locally built API image.
+Offline fallback: use `RUNNER_IMAGE=post16_lessons-api` with `RUNNER_AUTO_PULL=0` (this is the compose default).
 
 Diagnostics (teacher/admin only):
 - `https://localhost:8443/api/python/diagnostics` shows runner config, socket status, and Docker client errors.
