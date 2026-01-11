@@ -636,27 +636,43 @@ def admin_metrics_summary(request: Request, db: Session = Depends(get_db)):
     # Helper function to get metric value
     def get_metric_value(name, labels=None):
         try:
+            # Strip _total suffix if present to get base metric name
+            base_name = name.replace('_total', '') if name.endswith('_total') else name
+
             for metric in REGISTRY.collect():
-                if metric.name == name:
+                if metric.name == base_name:
                     for sample in metric.samples:
-                        if labels is None or all(sample.labels.get(k) == v for k, v in labels.items()):
-                            return sample.value
-        except:
-            pass
+                        # Skip _created timestamps
+                        if sample.name.endswith('_created'):
+                            continue
+                        # Match both base name and _total suffix
+                        if sample.name in (base_name, f"{base_name}_total"):
+                            if labels is None or all(sample.labels.get(k) == v for k, v in labels.items()):
+                                return sample.value
+        except Exception as e:
+            logger.warning(f"Error getting metric {name}: {e}")
         return 0
 
     # Helper function to sum metric values across labels
     def sum_metric(name, label_filter=None):
         try:
             total = 0
+            # Strip _total suffix if present to get base metric name
+            base_name = name.replace('_total', '') if name.endswith('_total') else name
+
             for metric in REGISTRY.collect():
-                if metric.name == name:
+                if metric.name == base_name:
                     for sample in metric.samples:
-                        if label_filter is None or label_filter(sample.labels):
-                            total += sample.value
+                        # Skip _created timestamps and histogram buckets
+                        if sample.name.endswith('_created') or sample.name.endswith('_bucket'):
+                            continue
+                        # Match both base name and _total suffix
+                        if sample.name in (base_name, f"{base_name}_total"):
+                            if label_filter is None or label_filter(sample.labels):
+                                total += sample.value
             return total
-        except:
-            pass
+        except Exception as e:
+            logger.warning(f"Error summing metric {name}: {e}")
         return 0
 
     # Update dynamic metrics
@@ -907,6 +923,7 @@ def save_activity_state(
     )
     if not is_allowed:
         logger.warning(f"Rate limit exceeded for user {user.username} on activity_save: {current}/{limit}")
+        prom_metrics.record_rate_limit_exceeded("activity_save", "api")
         raise HTTPException(
             status_code=429,
             detail=f"Too many requests. Limit: {limit} per minute."
@@ -957,7 +974,15 @@ def save_activity_state(
         created_at=now,
     )
     db.add(revision)
+
+    import time
+    start_time = time.time()
     db.commit()
+    duration = time.time() - start_time
+
+    # Record activity save metrics
+    prom_metrics.record_activity_save(lesson_id, duration)
+
     return {
         "ok": True,
         "updated_at": row.updated_at.isoformat() if row.updated_at else None,
@@ -979,6 +1004,7 @@ async def python_run(request: Request, payload: dict, db: Session = Depends(get_
     )
     if not is_allowed:
         logger.warning(f"Rate limit exceeded for user {user.username} on python_run: {current}/{limit}")
+        prom_metrics.record_rate_limit_exceeded("python_run", "api")
         raise HTTPException(
             status_code=429,
             detail=f"Too many code executions. Limit: {limit} per minute."
@@ -995,14 +1021,37 @@ async def python_run(request: Request, payload: dict, db: Session = Depends(get_
     if not isinstance(code, str) or not code.strip():
         raise HTTPException(status_code=400, detail="Code is required.")
 
+    import time
+    start_time = time.time()
+    status = "error"  # Default status
+
     async with runner_semaphore:
         try:
             result = await asyncio.to_thread(run_python, code, files)
+
+            # Determine status from result
+            if result.get("timed_out"):
+                status = "timeout"
+            elif result.get("exit_code") == 0:
+                status = "success"
+            else:
+                status = "error"
+
+            # Record metrics
+            duration = time.time() - start_time
+            prom_metrics.record_python_run(status, duration)
+
         except ValueError as exc:
+            duration = time.time() - start_time
+            prom_metrics.record_python_run("error", duration)
             raise HTTPException(status_code=400, detail=str(exc)) from exc
         except RunnerUnavailable as exc:
+            duration = time.time() - start_time
+            prom_metrics.record_python_run("error", duration)
             raise HTTPException(status_code=503, detail=str(exc)) from exc
         except RunnerError as exc:
+            duration = time.time() - start_time
+            prom_metrics.record_python_run("error", duration)
             raise HTTPException(status_code=500, detail=str(exc)) from exc
 
     return {"ok": True, **result}

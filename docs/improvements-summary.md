@@ -504,24 +504,202 @@ See [docs/backup-and-recovery.md](backup-and-recovery.md) for complete documenta
 
 ---
 
+### Ongoing: Monitoring & Metrics Infrastructure ✓
+**Files Created:**
+- `backend/app/metrics.py` - Prometheus metrics collection
+- `docker/prometheus.yml` - Prometheus configuration
+- `compose.monitoring.yml` - Monitoring stack (Prometheus + Grafana)
+- `docker/grafana/dashboards/tlac-overview.json` - Pre-configured dashboard
+- `docker/grafana/provisioning/` - Auto-provisioning configs
+- `docs/monitoring-guide.md` - Comprehensive monitoring documentation
+- `docs/monitoring-quickstart.md` - 5-minute setup guide
+- `web/admin-metrics.html` - Admin metrics dashboard page
+
+**Files Modified:**
+- `backend/requirements.txt` - Added `prometheus-client==0.20.0`
+- `backend/app/main.py` - Added metrics middleware, `/api/metrics`, `/api/admin/metrics` endpoints, and Python execution tracking
+- `web/admin.html`, `web/admin-audit.html` - Added navigation links
+- `docker/Caddyfile` - Updated CSP policy for inline scripts
+
+**Changes:**
+Implemented comprehensive Prometheus metrics collection with 20+ metrics including:
+
+**Metrics Categories:**
+1. **HTTP Metrics**: Request rate, latency histograms, in-progress requests
+2. **Authentication**: Login attempts (success/failed/rate-limited), active sessions
+3. **Activity**: Save operations and latency
+4. **Python Runner**: Execution counts by status (success/error/timeout)
+5. **Rate Limiting**: Violations by endpoint
+6. **Database**: Active connections, query latency
+7. **Backups**: Duration, size, last success timestamp
+8. **Errors**: Application errors by type
+
+**Monitoring Stack:**
+```bash
+# Start with monitoring
+docker compose -f compose.yml -f compose.monitoring.yml up -d
+
+# Access dashboards
+# Grafana: http://localhost:3000 (admin/admin)
+# Prometheus: http://localhost:9090
+# Admin Dashboard: https://localhost:8443/admin-metrics.html
+```
+
+**Admin Metrics Dashboard:**
+- Real-time system summary (users, sessions, recent logins)
+- HTTP request metrics with color-coded success rates
+- Authentication metrics and login success rates
+- Python execution statistics
+- Activity saves and rate limit violations
+- System health (DB connections, errors)
+- Auto-refreshes every 30 seconds
+- Mobile-responsive card layout
+- Fixed Prometheus metric reading to properly handle `_total` suffix and sample names
+
+**Key Features:**
+- Middleware automatically tracks all HTTP requests
+- Python code execution tracking with status classification (success/error/timeout)
+- Activity save tracking per lesson with duration metrics
+- Rate limit violation tracking for all endpoints
+- Metrics endpoint at `/api/metrics` for Prometheus scraping
+- Admin-only summary endpoint at `/api/admin/metrics` for dashboard
+- Pre-configured Grafana dashboard with 6 panels
+- Alerting rules examples in monitoring guide
+- Comprehensive troubleshooting documentation
+
+**Example Metrics:**
+```promql
+# Request rate
+rate(tlac_http_requests_total[5m])
+
+# 95th percentile latency
+histogram_quantile(0.95, rate(tlac_http_request_duration_seconds_bucket[5m]))
+
+# Login success rate
+rate(tlac_auth_login_attempts_total{status="success"}[5m]) / rate(tlac_auth_login_attempts_total[5m])
+```
+
+See [docs/monitoring-guide.md](monitoring-guide.md) for complete documentation.
+
+---
+
+### Ongoing: Performance Testing ✓
+**Files Created:**
+- `performance/requirements.txt` - Performance testing dependencies
+- `performance/locustfile.py` - Load testing with Locust (3 user types)
+- `performance/benchmark.py` - API endpoint benchmarking
+- `performance/stress_test.py` - Concurrent load stress testing
+- `performance/test_rate_limiter.py` - Rate limiter validation
+- `performance/run_all_tests.sh` - Test runner script
+- `performance/README.md` - Quick start guide
+- `docs/performance-testing.md` - Comprehensive testing guide
+
+**Changes:**
+Implemented comprehensive performance testing suite to validate system behavior under load:
+
+**Test Types:**
+
+1. **API Benchmarking** (`benchmark.py`)
+   - Measures baseline response times for key endpoints
+   - 100 iterations per endpoint
+   - Reports average, median, P95, P99 latencies
+   - Color-coded results (excellent/good/fair/slow)
+   - Tests: health, auth, activity, Python execution
+
+2. **Load Testing** (`locustfile.py`)
+   - Simulates realistic user behavior with Locust
+   - Three user types: Pupils (70%), Teachers (20%), Admins (10%)
+   - Configurable user count and spawn rate
+   - Web UI for real-time monitoring
+   - Headless mode for CI/CD integration
+
+3. **Stress Testing** (`stress_test.py`)
+   - Tests system under extreme concurrent load
+   - Authentication stress: 100 concurrent logins
+   - Activity save stress: 200 concurrent saves
+   - Python runner stress: 30 concurrent executions
+   - Concurrent user simulation: 20 users, 30 seconds
+   - Detailed success rate and response time analysis
+
+4. **Rate Limiter Validation** (`test_rate_limiter.py`)
+   - Validates login rate limiting (5 attempts before lockout)
+   - Tests API rate limiting under heavy load
+   - Validates Python runner rate limiting
+   - Confirms HTTP 429 responses
+
+**Performance Targets:**
+
+Response Times:
+- Health check: < 50ms average
+- API reads: < 100ms average
+- API writes: < 150ms average
+- Python execution: < 500ms average
+
+Throughput:
+- Support 50+ concurrent users
+- Handle 100+ requests/second
+- Execute 60+ Python programs/minute
+
+Success Rates:
+- HTTP success rate: > 99%
+- Login success rate: > 80%
+- Python execution success: > 95%
+
+**Usage:**
+```bash
+# Install dependencies
+pip install -r performance/requirements.txt
+
+# Run all tests
+bash performance/run_all_tests.sh
+
+# Individual tests
+python performance/benchmark.py
+python performance/stress_test.py
+python performance/test_rate_limiter.py
+
+# Load testing
+locust -f performance/locustfile.py --host=https://localhost:8443
+# Open http://localhost:8089
+```
+
+**Monitoring During Tests:**
+- Admin dashboard: https://localhost:8443/admin-metrics.html
+- Prometheus: http://localhost:9090
+- Docker stats: `docker stats`
+- Application logs: `docker compose logs -f api`
+
+**Results Storage:**
+- Results saved to `performance/results/` with timestamps
+- Example: `performance/results/test_results_20260111_210000.txt`
+
+**CI/CD Integration:**
+- All tests can run headless
+- Exit codes indicate pass/fail
+- Results parseable for automated analysis
+- Example GitHub Actions workflow included in guide
+
+See [docs/performance-testing.md](performance-testing.md) and [performance/README.md](../performance/README.md) for complete documentation.
+
+---
+
 ## Next Steps
 
 **Immediate (Before Production):**
-1. Test all changes thoroughly in staging environment
-2. Update frontend to handle paginated audit logs
-3. Change default database password in `.env`
-4. Review and adjust rate limits based on usage patterns
+1. ✅ ~~Test all changes thoroughly in staging environment~~
+2. Change default database password in `.env`
+3. Review and adjust rate limits based on usage patterns
+4. Run performance tests to establish baselines
 
-**Short Term:**
-1. Improve frontend error handling (Week 3 task 10)
-2. Add missing test coverage (Week 3 task 11)
-3. Set up automated backups (Week 3 task 12)
+**Remaining Tasks:**
+1. **Document API Endpoints** - Create OpenAPI/Swagger documentation
+2. **Create Production Deployment Guide** - Document production setup, security hardening, scaling
 
-**Long Term:**
-1. Add monitoring infrastructure (Prometheus + Grafana)
-2. Write performance/load tests
-3. Complete API documentation
-4. Create production deployment guide
+**Optional Enhancements:**
+1. Implement CSP nonces/hashes (currently using 'unsafe-inline')
+2. Add email notifications for critical alerts
+3. Implement automated performance regression testing
+4. Add database query performance monitoring
 
 ---
 
