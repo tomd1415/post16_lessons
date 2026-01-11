@@ -121,6 +121,15 @@ Requirement 2: ..."></textarea>
       <h2>Step 4: Run in Python</h2>
       <div class="note">Paste your expressions and verify outputs. Save runs for evidence.</div>
       <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
+      <template data-hint-code-template="code-step-1">
+        # Evaluate expressions
+        expr1 = (3 + 4) * 2 - 5
+        expr2 = 12 / 3 + 4 * 2
+        expr3 = 4 * 4 - 4 ** 2
+        print(expr1, expr2, expr3)
+        
+        # TODO: add your fixed expressions
+      </template>
       <div class="row" style="margin-top:10px">
         <button class="btn good" id="runBtn" type="button">Run code</button>
         <button class="btn" id="saveFilesBtn" type="button">Save files</button>

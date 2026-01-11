@@ -104,6 +104,17 @@
       <h2>Step 4: Patch and prove</h2>
       <div class="note">Apply the fix, rerun tests, and capture outputs before/after.</div>
       <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
+      <template data-hint-code-template="code-step-1">
+        # Bug hunt: fix the logic
+        score = 7
+        
+        if score &gt; 10:
+            print("High score")
+        else:
+            print("Needs work")
+        
+        # TODO: adjust the condition to match the requirement
+      </template>
       <div class="row" style="margin-top:10px">
         <button class="btn good" id="runBtn" type="button">Run code</button>
         <button class="btn" id="saveFilesBtn" type="button">Save files</button>

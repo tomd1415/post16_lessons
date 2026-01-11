@@ -130,6 +130,12 @@ Requirement 2: ..."></textarea>
       <h2>Step 4: Run in Python</h2>
       <div class="note">Write your doubling loop and record when it stops.</div>
       <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
+      <template data-hint-code-template="code-step-1">
+        n = 1
+        for i in range(1, 11):
+            n = n * 2
+            print(i, n, "digits:", len(str(n)))
+      </template>
       <div class="row" style="margin-top:10px">
         <button class="btn good" id="runBtn" type="button">Run code</button>
         <button class="btn" id="saveFilesBtn" type="button">Save files</button>

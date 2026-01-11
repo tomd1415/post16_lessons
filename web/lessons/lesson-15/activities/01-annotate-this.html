@@ -154,6 +154,16 @@ Requirement 2: ..."></textarea>
       <h2>Step 4: Run in Python</h2>
       <div class="note">Paste a small program, add print statements or <code>assert</code> checks, and fix any failing cases.</div>
       <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
+      <template data-hint-code-template="code-step-1">
+        # TODO: add comments to explain why each step exists
+        def average(nums):
+            total = 0
+            for n in nums:
+                total += n
+            return total / len(nums)
+        
+        print(average([2, 4, 6]))
+      </template>
       <div class="row" style="margin-top:10px">
         <button class="btn good" id="runBtn" type="button">Run code</button>
         <button class="btn" id="saveFilesBtn" type="button">Save files</button>

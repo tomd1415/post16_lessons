@@ -134,6 +134,18 @@ Requirement 2: ..."></textarea>
       <h2>Step 4: Run in Python</h2>
       <div class="note">Use the runner to prove your swap works. Change A and B values and run again.</div>
       <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
+      <template data-hint-code-template="code-step-1">
+        # Swap two variables
+        a = 10
+        b = 3
+        print("Before:", a, b)
+        
+        temp = a
+        a = b
+        b = temp
+        
+        print("After:", a, b)
+      </template>
       <div class="row" style="margin-top:10px">
         <button class="btn good" id="runBtn" type="button">Run code</button>
         <button class="btn" id="saveFilesBtn" type="button">Save files</button>

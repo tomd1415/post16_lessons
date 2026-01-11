@@ -52,6 +52,7 @@ def test_lessons_3_to_15_have_activity_scaffolds():
             assert html.count("data-quiz=") >= 3
             assert "Teacher guidance (answer prompts)" in html
             if "python-runner.js" in html:
+                assert "data-hint-code-template" in html
                 assert "codeEditor" in html
             else:
                 assert "activity-scaffold.js" in html
@@ -72,3 +73,4 @@ def test_python_runner_activity_present():
     assert "python-runner.js" in html
     assert html.count("data-quiz=") >= 3
     assert "codeEditor" in html
+    assert "data-hint-code-template" in html

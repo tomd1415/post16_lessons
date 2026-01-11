@@ -9,12 +9,19 @@
     ? (stateKeyFromIds(lessonId, activityId) || fallbackKey)
     : fallbackKey;
 
-  const state = store.get(stateKey, {
+  let state = store.get(stateKey, {
     answers: {},
     notes: {},
     checklist: {},
     checked: {}
   });
+  if (!state || typeof state !== "object" || Array.isArray(state)) {
+    state = { answers: {}, notes: {}, checklist: {}, checked: {} };
+  }
+  if (!state.answers || typeof state.answers !== "object") state.answers = {};
+  if (!state.notes || typeof state.notes !== "object") state.notes = {};
+  if (!state.checklist || typeof state.checklist !== "object") state.checklist = {};
+  if (!state.checked || typeof state.checked !== "object") state.checked = {};
 
   const save = () => store.set(stateKey, state);
 

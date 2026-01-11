@@ -131,6 +131,17 @@ Requirement 2: ..."></textarea>
       <h2>Step 4: Run in Python</h2>
       <div class="note">Write a recursive function that prints the moves, and test it with different <b>n</b>.</div>
       <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
+      <template data-hint-code-template="code-step-1">
+        def move(n, source, target, spare):
+            if n == 1:
+                print(source, "-&gt;", target)
+                return
+            move(n - 1, source, spare, target)
+            print(source, "-&gt;", target)
+            move(n - 1, spare, target, source)
+        
+        move(3, "A", "C", "B")
+      </template>
       <div class="row" style="margin-top:10px">
         <button class="btn good" id="runBtn" type="button">Run code</button>
         <button class="btn" id="saveFilesBtn" type="button">Save files</button>

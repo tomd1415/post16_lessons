@@ -106,6 +106,14 @@
       <h2>Step 4: Run in Python</h2>
       <div class="note">Implement the recursive pattern and run it for at least three depths.</div>
       <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
+      <template data-hint-code-template="code-step-1">
+        def pattern(n):
+            if n == 0:
+                return ""
+            return pattern(n - 1) + ("*" * n) + "\n"
+        
+        print(pattern(5))
+      </template>
       <div class="row" style="margin-top:10px">
         <button class="btn good" id="runBtn" type="button">Run code</button>
         <button class="btn" id="saveFilesBtn" type="button">Save files</button>

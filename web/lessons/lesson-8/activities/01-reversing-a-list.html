@@ -132,6 +132,14 @@ Requirement 2: ..."></textarea>
       <h2>Step 4: Run in Python</h2>
       <div class="note">Paste your reverse function below and verify your three tests.</div>
       <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
+      <template data-hint-code-template="code-step-1">
+        # Reverse a list with a loop
+        items = [1, 2, 3, 4]
+        reversed_items = []
+        for i in range(len(items) - 1, -1, -1):
+            reversed_items.append(items[i])
+        print(items, "-&gt;", reversed_items)
+      </template>
       <div class="row" style="margin-top:10px">
         <button class="btn good" id="runBtn" type="button">Run code</button>
         <button class="btn" id="saveFilesBtn" type="button">Save files</button>

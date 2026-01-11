@@ -122,6 +122,20 @@ Requirement 2: ..."></textarea>
       <h2>Step 4: Run in Python</h2>
       <div class="note">Implement the controller as a function, simulate different inputs, and show outputs for each branch.</div>
       <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
+      <template data-hint-code-template="code-step-1">
+        light = "red"
+        
+        if light == "red":
+            action = "stop"
+        elif light == "amber":
+            action = "ready"
+        elif light == "green":
+            action = "go"
+        else:
+            action = "unknown"
+        
+        print(action)
+      </template>
       <div class="row" style="margin-top:10px">
         <button class="btn good" id="runBtn" type="button">Run code</button>
         <button class="btn" id="saveFilesBtn" type="button">Save files</button>

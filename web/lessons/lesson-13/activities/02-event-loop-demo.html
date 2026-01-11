@@ -106,6 +106,21 @@
       <h2>Step 4: Run in Python</h2>
       <div class="note">Simulate events with a list (no live input in the runner). Show how each handler runs.</div>
       <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
+      <template data-hint-code-template="code-step-1">
+        events = ["click", "tick", "tick", "quit"]
+        running = True
+        
+        for event in events:
+            if event == "click":
+                print("handle click")
+            elif event == "tick":
+                print("handle tick")
+            elif event == "quit":
+                print("handle quit")
+                running = False
+            if not running:
+                break
+      </template>
       <div class="row" style="margin-top:10px">
         <button class="btn good" id="runBtn" type="button">Run code</button>
         <button class="btn" id="saveFilesBtn" type="button">Save files</button>

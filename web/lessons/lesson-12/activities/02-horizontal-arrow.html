@@ -130,6 +130,14 @@ Requirement 2: ..."></textarea>
       <h2>Step 4: Run in Python</h2>
       <div class="note">Write a function to draw the arrow using print statements or loops.</div>
       <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
+      <template data-hint-code-template="code-step-1">
+        def draw_arrow(width=6):
+            body = "-" * width
+            head = "&gt;&gt;"
+            print(body + head)
+        
+        draw_arrow(6)
+      </template>
       <div class="row" style="margin-top:10px">
         <button class="btn good" id="runBtn" type="button">Run code</button>
         <button class="btn" id="saveFilesBtn" type="button">Save files</button>

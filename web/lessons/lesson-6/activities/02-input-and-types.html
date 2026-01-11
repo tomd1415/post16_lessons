@@ -122,6 +122,16 @@ Requirement 2: ..."></textarea>
       <h2>Step 4: Run in Python</h2>
       <div class="note">Write the full script with input(), conversion, and print. For runner tests, replace input() with fixed values (e.g., name = &quot;Ada&quot;), then switch back. Save a run that shows each type.</div>
       <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
+      <template data-hint-code-template="code-step-1">
+        # Replace input() with fixed values for testing
+        name = "Ada"
+        age = 12
+        score = 9.5
+        likes_python = True
+        
+        print(name, age, score, likes_python)
+        print(type(name), type(age), type(score), type(likes_python))
+      </template>
       <div class="row" style="margin-top:10px">
         <button class="btn good" id="runBtn" type="button">Run code</button>
         <button class="btn" id="saveFilesBtn" type="button">Save files</button>

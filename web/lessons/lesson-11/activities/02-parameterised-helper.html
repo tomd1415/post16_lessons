@@ -119,6 +119,14 @@
       <h2>Step 5: Run in Python</h2>
       <div class="note">Write the function, call it with at least three inputs, and show outputs.</div>
       <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
+      <template data-hint-code-template="code-step-1">
+        def format_score(name, score):
+            # TODO: improve the formatting
+            return f"{name}: {score}"
+        
+        print(format_score("Ada", 7))
+        print(format_score("Sam", 12))
+      </template>
       <div class="row" style="margin-top:10px">
         <button class="btn good" id="runBtn" type="button">Run code</button>
         <button class="btn" id="saveFilesBtn" type="button">Save files</button>

@@ -72,6 +72,16 @@
         <h2>Step 2: Code editor</h2>
         <p>Start with the example, then make changes and run.</p>
         <textarea id="codeEditor" class="code-editor" spellcheck="false"></textarea>
+        <template data-hint-code-template="code-step-1">
+          # Starter: run a simple program
+          name = "Coder"
+          print("Hello", name)
+          
+          # TODO: add another print line
+          # TODO: write a note to a file
+          with open("notes.txt", "w") as f:
+              f.write("My first note")
+        </template>
         <div class="row" style="margin-top:10px">
           <button class="btn good" id="runBtn" type="button">Run code</button>
           <button class="btn" id="saveFilesBtn" type="button">Save files</button>

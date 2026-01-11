@@ -130,6 +130,17 @@ Requirement 2: ..."></textarea>
       <h2>Step 4: Run in Python</h2>
       <div class="note">Write your fizz_buzz function and test it.</div>
       <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
+      <template data-hint-code-template="code-step-1">
+        for n in range(1, 21):
+            if n % 15 == 0:
+                print("FizzBuzz")
+            elif n % 3 == 0:
+                print("Fizz")
+            elif n % 5 == 0:
+                print("Buzz")
+            else:
+                print(n)
+      </template>
       <div class="row" style="margin-top:10px">
         <button class="btn good" id="runBtn" type="button">Run code</button>
         <button class="btn" id="saveFilesBtn" type="button">Save files</button>

@@ -164,6 +164,16 @@ Requirement 2: ..."></textarea>
       <h2>Step 4: Run in Python</h2>
       <div class="note">Try a small program that imports <code>random</code>, <code>time</code>, or <code>json</code>. Simulate an event using a fixed variable or list (avoid live input in the runner).</div>
       <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
+      <template data-hint-code-template="code-step-1">
+        import random
+        import json
+        
+        items = ["red", "blue", "green"]
+        choice = random.choice(items)
+        data = {"choice": choice}
+        print("Choice:", choice)
+        print(json.dumps(data))
+      </template>
       <div class="row" style="margin-top:10px">
         <button class="btn good" id="runBtn" type="button">Run code</button>
         <button class="btn" id="saveFilesBtn" type="button">Save files</button>

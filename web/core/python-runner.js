@@ -16,6 +16,31 @@
   const runFilesEl = document.getElementById("runFiles");
   const savedFilesEl = document.getElementById("savedFiles");
 
+  let hintTemplateText = null;
+  let hintTemplateStep = "code-step-1";
+
+  function captureHintTemplate(){
+    if(!codeEditor) return;
+    const editorCard = codeEditor.closest(".card");
+    if(!editorCard) return;
+    if(!editorCard.dataset.hintLabel){
+      const heading = editorCard.querySelector("h2, h3");
+      if(heading){
+        editorCard.dataset.hintLabel = heading.textContent.trim();
+      }
+    }
+    let template = editorCard.querySelector("template[data-hint-code-template]");
+    if(!template){
+      template = document.querySelector("template[data-hint-code-template]");
+    }
+    if(!template) return;
+    const text = template.textContent || "";
+    const normalized = normalizeHintCode(text);
+    if(!normalized.trim()) return;
+    hintTemplateText = normalized;
+    hintTemplateStep = template.dataset.hintCodeTemplate || "code-step-1";
+  }
+
   function initFloatingEditor(){
     if(!codeEditor || !runBtn) return;
     const editorCard = codeEditor.closest(".card");
@@ -95,6 +120,258 @@
     "print(\"Result:\", result)",
   ].join("\n");
 
+  const HINT_LIBRARY = {
+    "lesson-10": {
+      "a01": `
+        age = 14
+
+        if age < 13:
+            print("Child")
+        if age >= 13 and age < 18:
+            print("Teen")
+        if age >= 18:
+            print("Adult")
+`,
+      "a02": `
+        light = "red"
+
+        if light == "red":
+            action = "stop"
+        elif light == "amber":
+            action = "ready"
+        elif light == "green":
+            action = "go"
+        else:
+            action = "unknown"
+
+        print(action)
+`,
+    },
+    "lesson-11": {
+      "a01": `
+        for n in range(1, 21):
+            if n % 15 == 0:
+                print("FizzBuzz")
+            elif n % 3 == 0:
+                print("Fizz")
+            elif n % 5 == 0:
+                print("Buzz")
+            else:
+                print(n)
+`,
+      "a02": `
+        def format_score(name, score):
+            # TODO: improve the formatting
+            return f"{name}: {score}"
+
+        print(format_score("Ada", 7))
+        print(format_score("Sam", 12))
+`,
+    },
+    "lesson-12": {
+      "a01": `
+        n = 1
+        for i in range(1, 11):
+            n = n * 2
+            print(i, n, "digits:", len(str(n)))
+`,
+      "a02": `
+        def draw_arrow(width=6):
+            body = "-" * width
+            head = ">>"
+            print(body + head)
+
+        draw_arrow(6)
+`,
+    },
+    "lesson-13": {
+      "a01": `
+        import random
+        import json
+
+        items = ["red", "blue", "green"]
+        choice = random.choice(items)
+        data = {"choice": choice}
+        print("Choice:", choice)
+        print(json.dumps(data))
+`,
+      "a02": `
+        events = ["click", "tick", "tick", "quit"]
+        running = True
+
+        for event in events:
+            if event == "click":
+                print("handle click")
+            elif event == "tick":
+                print("handle tick")
+            elif event == "quit":
+                print("handle quit")
+                running = False
+            if not running:
+                break
+`,
+    },
+    "lesson-14": {
+      "a01": `
+        def move(n, source, target, spare):
+            if n == 1:
+                print(source, "->", target)
+                return
+            move(n - 1, source, spare, target)
+            print(source, "->", target)
+            move(n - 1, spare, target, source)
+
+        move(3, "A", "C", "B")
+`,
+      "a02": `
+        def pattern(n):
+            if n == 0:
+                return ""
+            return pattern(n - 1) + ("*" * n) + "\\n"
+
+        print(pattern(5))
+`,
+    },
+    "lesson-15": {
+      "a01": `
+        # TODO: add comments to explain why each step exists
+        def average(nums):
+            total = 0
+            for n in nums:
+                total += n
+            return total / len(nums)
+
+        print(average([2, 4, 6]))
+`,
+      "a02": `
+        # Bug hunt: fix the logic
+        score = 7
+
+        if score > 10:
+            print("High score")
+        else:
+            print("Needs work")
+
+        # TODO: adjust the condition to match the requirement
+`,
+    },
+    "lesson-4": {
+      "a02": `
+          # Starter: run a simple program
+          name = "Coder"
+          print("Hello", name)
+
+          # TODO: add another print line
+          # TODO: write a note to a file
+          with open("notes.txt", "w") as f:
+              f.write("My first note")
+`,
+    },
+    "lesson-5": {
+      "a01": `
+        # Four 4s challenge
+        # Use exactly four 4s each line
+        print(44/4 - 4)  # target 1
+        # TODO: add expressions for other targets
+`,
+      "a02": `
+        # Evaluate expressions
+        expr1 = (3 + 4) * 2 - 5
+        expr2 = 12 / 3 + 4 * 2
+        expr3 = 4 * 4 - 4 ** 2
+        print(expr1, expr2, expr3)
+
+        # TODO: add your fixed expressions
+`,
+    },
+    "lesson-6": {
+      "a01": `
+        # Swap two variables
+        a = 10
+        b = 3
+        print("Before:", a, b)
+
+        temp = a
+        a = b
+        b = temp
+
+        print("After:", a, b)
+`,
+      "a02": `
+        # Replace input() with fixed values for testing
+        name = "Ada"
+        age = 12
+        score = 9.5
+        likes_python = True
+
+        print(name, age, score, likes_python)
+        print(type(name), type(age), type(score), type(likes_python))
+`,
+    },
+    "lesson-8": {
+      "a01": `
+        # Reverse a list with a loop
+        items = [1, 2, 3, 4]
+        reversed_items = []
+        for i in range(len(items) - 1, -1, -1):
+            reversed_items.append(items[i])
+        print(items, "->", reversed_items)
+`,
+      "a02": `
+        sizes = ("small", "medium", "large")
+        orders = ["tea", "latte"]
+        print("Sizes:", sizes)
+        print("Orders:", orders)
+
+        print("First two:", orders[0:2])
+        orders.append("hot chocolate")
+        orders[0] = "espresso"
+        print("Updated:", orders)
+
+        # TODO: try the tuple error
+        # sizes.append("xl")
+`,
+    },
+    "lesson-9": {
+      "a01": `
+        # TODO: adjust the values using the comments
+        speed = 3  # adjust speed
+        lives = 3  # limit lives
+        name = "Ada"  # ask for name
+
+        print("Speed:", speed)
+        print("Lives:", lives)
+        print("Name:", name)
+`,
+      "a02": `
+        # TODO: refactor names and add why comments
+        def total_score(scores):
+            total = 0
+            for score in scores:
+                total += score
+            return total
+
+        scores = [5, 3, 2]
+        print(total_score(scores))
+`,
+    },
+  };
+
+  function normalizeHintCode(value){
+    if(!value) return "";
+    let text = String(value).replace(/\r\n/g, "\n");
+    text = text.replace(/^\n+/, "").replace(/\n+$/, "");
+    const lines = text.split("\n");
+    const indents = lines
+      .filter(line => line.trim().length)
+      .map(line => line.match(/^ */)[0].length);
+    const minIndent = indents.length ? Math.min(...indents) : 0;
+    if(minIndent > 0){
+      return lines.map(line => line.slice(minIndent)).join("\n");
+    }
+    return lines.join("\n");
+  }
+
   const state = store.get(stateKey, {
     code: DEFAULT_CODE,
     output: null,
@@ -105,15 +382,31 @@
   });
 
   let runFiles = [];
+  captureHintTemplate();
   initFloatingEditor();
   initHintButton();
 
   function hintCodeForStep(stepId){
-    const template = document.querySelector(`template[data-hint-code-template="${stepId}"]`);
+    const library = HINT_LIBRARY[lessonId];
+    if(library && library[activityId]){
+      const mapped = normalizeHintCode(library[activityId]);
+      if(mapped.trim()) return mapped;
+    }
+    if(hintTemplateText && (!hintTemplateStep || hintTemplateStep === stepId)){
+      return hintTemplateText;
+    }
+    let template = document.querySelector(`template[data-hint-code-template="${stepId}"]`);
+    if(!template){
+      template = document.querySelector("template[data-hint-code-template]");
+    }
     if(template){
       const text = template.textContent || "";
-      return text.trim() ? text.replace(/^\n/, "") : HINT_DEFAULT_CODE;
+      const normalized = normalizeHintCode(text);
+      if(normalized.trim()){
+        return normalized;
+      }
     }
+    console.warn("Hint template not found; using default skeleton.");
     return HINT_DEFAULT_CODE;
   }
 
@@ -140,7 +433,7 @@
     const runRow = runBtn.closest(".row");
     if(!runRow || runRow.querySelector("[data-hint-code]")) return;
     const editorCard = codeEditor.closest(".card");
-    const stepId = (editorCard && editorCard.dataset.hintStep) ? editorCard.dataset.hintStep : "code-step-1";
+    const stepId = (editorCard && editorCard.dataset.hintStep) ? editorCard.dataset.hintStep : (hintTemplateStep || "code-step-1");
     const label = hintLabelForStep(editorCard, stepId);
 
     const hintBtn = document.createElement("button");

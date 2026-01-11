@@ -131,6 +131,20 @@ Requirement 2: ..."></textarea>
       <h2>Step 4: Run in Python</h2>
       <div class="note">Write the code for your structures, slices, and edits. Show prints before/after and capture the tuple mutation error.</div>
       <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Python code editor"></textarea>
+      <template data-hint-code-template="code-step-1">
+        sizes = ("small", "medium", "large")
+        orders = ["tea", "latte"]
+        print("Sizes:", sizes)
+        print("Orders:", orders)
+        
+        print("First two:", orders[0:2])
+        orders.append("hot chocolate")
+        orders[0] = "espresso"
+        print("Updated:", orders)
+        
+        # TODO: try the tuple error
+        # sizes.append("xl")
+      </template>
       <div class="row" style="margin-top:10px">
         <button class="btn good" id="runBtn" type="button">Run code</button>
         <button class="btn" id="saveFilesBtn" type="button">Save files</button>
