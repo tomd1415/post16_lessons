@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Thinking like a Coder - System Metrics</title>
+  <link rel="stylesheet" href="./core/app.css" />
+  <style>
+    .metric-card {
+      padding: 16px;
+      border-radius: 6px;
+      background: #f5f5f5;
+      margin-bottom: 12px;
+    }
+    .metric-value {
+      font-size: 32px;
+      font-weight: bold;
+      color: #2c5aa0;
+      margin: 8px 0;
+    }
+    .metric-label {
+      font-size: 14px;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .metric-sublabel {
+      font-size: 13px;
+      color: #888;
+      margin-top: 4px;
+    }
+    .success-rate {
+      color: #2d7d46;
+    }
+    .warning-rate {
+      color: #d97706;
+    }
+    .error-rate {
+      color: #dc2626;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+    }
+    .section-header {
+      margin-top: 24px;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #e5e7eb;
+    }
+  </style>
+</head>
+<body data-requires-role="admin">
+  <div class="topbar no-print">
+    <div class="container">
+      <div class="brand">
+        <b>Thinking like a Coder - System Metrics</b>
+        <span>Real-time monitoring dashboard</span>
+      </div>
+      <div class="row">
+        <a class="pill" href="./admin.html"><strong>ADMIN</strong> <span>Admin tools</span></a>
+        <a class="pill" href="./teacher.html"><strong>TEACHER</strong> <span>Teacher hub</span></a>
+        <a class="pill" href="./index.html"><strong>STUDENT</strong> <span>Student hub</span></a>
+        <span id="userBadge" class="badge" style="display:none"></span>
+        <button class="btn" id="logoutBtn" type="button">Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>System Metrics</h1>
+    <div class="note">
+      Real-time system monitoring and performance metrics. Data refreshes automatically every 30 seconds.
+    </div>
+    <div class="note" style="margin-top:12px">
+      <b>Quick links:</b>
+      <a href="./admin.html">Admin tools</a> |
+      <a href="./admin-audit.html">Audit log</a>
+    </div>
+
+    <button class="btn primary" id="refreshBtn" type="button" style="margin-top:16px">Refresh Now</button>
+    <span id="lastUpdate" style="margin-left:12px;color:#666;font-size:14px"></span>
+
+    <!-- System Summary -->
+    <h2 class="section-header">System Summary</h2>
+    <div class="stats-grid">
+      <div class="metric-card">
+        <div class="metric-label">Total Users</div>
+        <div class="metric-value" id="totalUsers">-</div>
+        <div class="metric-sublabel">
+          <span id="totalPupils">-</span> pupils,
+          <span id="totalTeachers">-</span> teachers,
+          <span id="totalAdmins">-</span> admins
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Active Users</div>
+        <div class="metric-value" id="activeUsers">-</div>
+        <div class="metric-sublabel">Currently enabled accounts</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Active Sessions</div>
+        <div class="metric-value" id="activeSessions">-</div>
+        <div class="metric-sublabel">Users currently logged in</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Recent Logins (7d)</div>
+        <div class="metric-value" id="recentLogins">-</div>
+        <div class="metric-sublabel">Unique logins in past week</div>
+      </div>
+    </div>
+
+    <!-- HTTP Requests -->
+    <h2 class="section-header">HTTP Requests</h2>
+    <div class="stats-grid">
+      <div class="metric-card">
+        <div class="metric-label">Total Requests</div>
+        <div class="metric-value" id="totalRequests">-</div>
+        <div class="metric-sublabel">Since server start</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Successful</div>
+        <div class="metric-value success-rate" id="successfulRequests">-</div>
+        <div class="metric-sublabel">HTTP 2xx responses</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Errors</div>
+        <div class="metric-value error-rate" id="errorRequests">-</div>
+        <div class="metric-sublabel">HTTP 4xx/5xx responses</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Success Rate</div>
+        <div class="metric-value" id="requestSuccessRate">-</div>
+        <div class="metric-sublabel">Percentage of successful requests</div>
+      </div>
+    </div>
+
+    <!-- Authentication -->
+    <h2 class="section-header">Authentication</h2>
+    <div class="stats-grid">
+      <div class="metric-card">
+        <div class="metric-label">Total Login Attempts</div>
+        <div class="metric-value" id="totalLogins">-</div>
+        <div class="metric-sublabel">Since server start</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Successful Logins</div>
+        <div class="metric-value success-rate" id="successfulLogins">-</div>
+        <div class="metric-sublabel">Valid credentials</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Failed Logins</div>
+        <div class="metric-value error-rate" id="failedLogins">-</div>
+        <div class="metric-sublabel">Invalid credentials</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Rate Limited</div>
+        <div class="metric-value warning-rate" id="rateLimitedLogins">-</div>
+        <div class="metric-sublabel">Too many attempts</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Login Success Rate</div>
+        <div class="metric-value" id="loginSuccessRate">-</div>
+        <div class="metric-sublabel">Percentage of successful logins</div>
+      </div>
+    </div>
+
+    <!-- Python Runner -->
+    <h2 class="section-header">Python Code Execution</h2>
+    <div class="stats-grid">
+      <div class="metric-card">
+        <div class="metric-label">Total Runs</div>
+        <div class="metric-value" id="totalPythonRuns">-</div>
+        <div class="metric-sublabel">Code executions</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Successful</div>
+        <div class="metric-value success-rate" id="successfulRuns">-</div>
+        <div class="metric-sublabel">Completed without error</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Errors</div>
+        <div class="metric-value error-rate" id="errorRuns">-</div>
+        <div class="metric-sublabel">Runtime errors</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Timeouts</div>
+        <div class="metric-value warning-rate" id="timeoutRuns">-</div>
+        <div class="metric-sublabel">Execution timeout</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Success Rate</div>
+        <div class="metric-value" id="pythonSuccessRate">-</div>
+        <div class="metric-sublabel">Percentage without errors</div>
+      </div>
+    </div>
+
+    <!-- Activity & Rate Limiting -->
+    <h2 class="section-header">Activity & Rate Limiting</h2>
+    <div class="stats-grid">
+      <div class="metric-card">
+        <div class="metric-label">Activity Saves</div>
+        <div class="metric-value" id="totalActivitySaves">-</div>
+        <div class="metric-sublabel">Student progress saves</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Rate Limit Violations</div>
+        <div class="metric-value warning-rate" id="rateLimitViolations">-</div>
+        <div class="metric-sublabel">Requests blocked by rate limiter</div>
+      </div>
+    </div>
+
+    <!-- System Health -->
+    <h2 class="section-header">System Health</h2>
+    <div class="stats-grid">
+      <div class="metric-card">
+        <div class="metric-label">Database Connections</div>
+        <div class="metric-value" id="dbConnections">-</div>
+        <div class="metric-sublabel">Active DB connections</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Total Errors</div>
+        <div class="metric-value error-rate" id="totalErrors">-</div>
+        <div class="metric-sublabel">Application errors logged</div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <script src="./core/error-handler.js"></script>
+  <script src="./core/app.js"></script>
+  <script src="./core/auth.js"></script>
+  <script>
+    let autoRefreshInterval = null;
+
+    async function loadMetrics() {
+      try {
+        const auth = await window.tlacAuthReady;
+        if (!auth) {
+          toast("Not signed in.");
+          return;
+        }
+
+        const res = await fetch("/api/admin/metrics", {
+          credentials: "same-origin"
+        });
+
+        if (!res.ok) {
+          throw new Error("Failed to load metrics");
+        }
+
+        const data = await res.json();
+
+        // Update summary
+        document.getElementById("totalUsers").textContent = data.summary.total_users;
+        document.getElementById("activeUsers").textContent = data.summary.active_users;
+        document.getElementById("totalPupils").textContent = data.summary.total_pupils;
+        document.getElementById("totalTeachers").textContent = data.summary.total_teachers;
+        document.getElementById("totalAdmins").textContent = data.summary.total_admins;
+        document.getElementById("activeSessions").textContent = data.summary.active_sessions;
+        document.getElementById("recentLogins").textContent = data.summary.recent_logins_7d;
+
+        // Update HTTP metrics
+        document.getElementById("totalRequests").textContent = data.http.total_requests.toLocaleString();
+        document.getElementById("successfulRequests").textContent = data.http.successful_requests.toLocaleString();
+        document.getElementById("errorRequests").textContent = data.http.error_requests.toLocaleString();
+        document.getElementById("requestSuccessRate").textContent = data.http.success_rate + "%";
+
+        // Color code success rate
+        const reqSuccessEl = document.getElementById("requestSuccessRate");
+        if (data.http.success_rate >= 95) {
+          reqSuccessEl.className = "metric-value success-rate";
+        } else if (data.http.success_rate >= 80) {
+          reqSuccessEl.className = "metric-value warning-rate";
+        } else {
+          reqSuccessEl.className = "metric-value error-rate";
+        }
+
+        // Update authentication metrics
+        document.getElementById("totalLogins").textContent = data.authentication.total_login_attempts.toLocaleString();
+        document.getElementById("successfulLogins").textContent = data.authentication.successful_logins.toLocaleString();
+        document.getElementById("failedLogins").textContent = data.authentication.failed_logins.toLocaleString();
+        document.getElementById("rateLimitedLogins").textContent = data.authentication.rate_limited_logins.toLocaleString();
+        document.getElementById("loginSuccessRate").textContent = data.authentication.success_rate + "%";
+
+        // Color code login success rate
+        const loginSuccessEl = document.getElementById("loginSuccessRate");
+        if (data.authentication.success_rate >= 80) {
+          loginSuccessEl.className = "metric-value success-rate";
+        } else if (data.authentication.success_rate >= 50) {
+          loginSuccessEl.className = "metric-value warning-rate";
+        } else {
+          loginSuccessEl.className = "metric-value error-rate";
+        }
+
+        // Update Python runner metrics
+        document.getElementById("totalPythonRuns").textContent = data.python_runner.total_runs.toLocaleString();
+        document.getElementById("successfulRuns").textContent = data.python_runner.successful_runs.toLocaleString();
+        document.getElementById("errorRuns").textContent = data.python_runner.error_runs.toLocaleString();
+        document.getElementById("timeoutRuns").textContent = data.python_runner.timeout_runs.toLocaleString();
+        document.getElementById("pythonSuccessRate").textContent = data.python_runner.success_rate + "%";
+
+        // Color code Python success rate
+        const pySuccessEl = document.getElementById("pythonSuccessRate");
+        if (data.python_runner.success_rate >= 80) {
+          pySuccessEl.className = "metric-value success-rate";
+        } else if (data.python_runner.success_rate >= 60) {
+          pySuccessEl.className = "metric-value warning-rate";
+        } else {
+          pySuccessEl.className = "metric-value error-rate";
+        }
+
+        // Update activity metrics
+        document.getElementById("totalActivitySaves").textContent = data.activity.total_saves.toLocaleString();
+        document.getElementById("rateLimitViolations").textContent = data.activity.rate_limit_violations.toLocaleString();
+
+        // Update system health
+        document.getElementById("dbConnections").textContent = data.system.db_connections;
+        document.getElementById("totalErrors").textContent = data.system.total_errors.toLocaleString();
+
+        // Update last refresh time
+        const now = new Date();
+        document.getElementById("lastUpdate").textContent = "Last updated: " + now.toLocaleTimeString();
+
+      } catch (error) {
+        console.error("Failed to load metrics:", error);
+        toast("Failed to load metrics. Please try again.");
+      }
+    }
+
+    // Refresh button handler
+    document.getElementById("refreshBtn").addEventListener("click", loadMetrics);
+
+    // Auto-refresh every 30 seconds
+    function startAutoRefresh() {
+      if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+      }
+      autoRefreshInterval = setInterval(loadMetrics, 30000);
+    }
+
+    // Stop auto-refresh when page is hidden
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        if (autoRefreshInterval) {
+          clearInterval(autoRefreshInterval);
+          autoRefreshInterval = null;
+        }
+      } else {
+        loadMetrics();
+        startAutoRefresh();
+      }
+    });
+
+    // Initial load
+    window.addEventListener("DOMContentLoaded", async () => {
+      await loadMetrics();
+      startAutoRefresh();
+    });
+  </script>
+</body>
+</html>
