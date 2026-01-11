@@ -56,6 +56,7 @@ def check_http(url: str, timeout: int = 3):
             return "error", None
         except Exception:
             return "error", None
+    return "error", None
 
 
 def main():

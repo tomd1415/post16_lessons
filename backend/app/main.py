@@ -10,6 +10,7 @@ import time
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from typing import cast
 from urllib.parse import quote
 
 from fastapi import Depends, FastAPI, File, HTTPException, Request, Response, UploadFile
@@ -35,7 +36,7 @@ from .rate_limit import LoginLimiter, compute_lock_seconds
 from .security import hash_password, verify_password
 
 @asynccontextmanager
-async def lifespan(_: FastAPI):
+async def lifespan(_app: FastAPI):
     last_err = None
     for _ in range(10):
         try:
@@ -529,10 +530,10 @@ def login(request: Request, payload: dict, db: Session = Depends(get_db)):
     if user and user.locked_until and user.locked_until > utcnow():
         raise HTTPException(status_code=429, detail="Too many attempts. Try again shortly.")
 
-    if not user or not verify_password(user.password_hash, password):
+    if not user or not verify_password(cast(str, user.password_hash), password):
         if user:
             user.failed_login_count += 1
-            lock_seconds = compute_lock_seconds(user.failed_login_count)
+            lock_seconds = compute_lock_seconds(cast(int, user.failed_login_count))
             if lock_seconds:
                 user.locked_until = utcnow() + timedelta(seconds=lock_seconds)
             db.commit()
@@ -550,7 +551,7 @@ def login(request: Request, payload: dict, db: Session = Depends(get_db)):
 
     session = create_session(db, user, request)
     response = JSONResponse({"ok": True, "user": user_public(user)})
-    set_session_cookie(response, session.id)
+    set_session_cookie(response, cast(str, session.id))
     login_limiter.reset(ip_key)
     return response
 

@@ -2,7 +2,13 @@ from backend.app.models import User
 from backend.app.security import hash_password
 
 
-def seed_user(db, username, role="pupil", cohort_year="2024", password="Pass123!"):
+def seed_user(
+    db,
+    username: str,
+    role: str = "pupil",
+    cohort_year: str | None = "2024",
+    password: str = "Pass123!",
+) -> User:
     user = User(
         username=username,
         name=f"{username} User",

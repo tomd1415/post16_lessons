@@ -152,7 +152,7 @@ class RunnerError(Exception):
     pass
 
 
-class UnixHTTPAdapterCompat(docker.transport.unixconn.UnixHTTPAdapter):
+class UnixHTTPAdapterCompat(docker.transport.unixconn.UnixHTTPAdapter):  # type: ignore[attr-defined]
     def get_connection_with_tls_context(self, request, verify, proxies=None, cert=None):
         return self.get_connection(request.url, proxies)
 
