@@ -2,6 +2,7 @@ import asyncio
 import csv
 import io
 import json
+import logging
 import os
 import re
 import secrets
@@ -30,10 +31,18 @@ from .config import (
     SESSION_TTL_MINUTES,
 )
 from .db import SessionLocal, engine, get_db
-from .models import AuditLog, ActivityMark, ActivityRevision, ActivityState, Base, Session as AuthSession, User
+from .models import AuditLog, ActivityMark, ActivityRevision, ActivityState, ApiRateLimit, Base, LoginAttempt, Session as AuthSession, User
 from .python_runner import RunnerError, RunnerUnavailable, run_python, runner_diagnostics
-from .rate_limit import LoginLimiter, compute_lock_seconds
+from .rate_limit import ApiRateLimiter, LoginLimiter, compute_lock_seconds, ensure_timezone_aware
 from .security import hash_password, verify_password
+
+# Configure structured logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
@@ -57,6 +66,7 @@ app = FastAPI(
 )
 
 login_limiter = LoginLimiter()
+api_rate_limiter = ApiRateLimiter(window_minutes=1)
 runner_semaphore = asyncio.Semaphore(RUNNER_CONCURRENCY)
 STATIC_ROOT = os.getenv("STATIC_ROOT", "/srv")
 MANIFEST_PATH = os.getenv("LESSON_MANIFEST_PATH", os.path.join(STATIC_ROOT, "lessons", "manifest.json"))
@@ -68,6 +78,32 @@ _link_overrides_mtime = None
 
 def utcnow():
     return datetime.now(timezone.utc)
+
+
+def get_client_ip(request: Request) -> str:
+    """
+    Get the real client IP address, handling X-Forwarded-For headers from proxies.
+    Returns the leftmost IP in X-Forwarded-For chain (the original client).
+    """
+    # Check X-Forwarded-For header (set by reverse proxies like Caddy)
+    forwarded_for = request.headers.get("X-Forwarded-For")
+    if forwarded_for:
+        # X-Forwarded-For can be a comma-separated list: client, proxy1, proxy2
+        # The first IP is the original client
+        client_ip = forwarded_for.split(",")[0].strip()
+        if client_ip:
+            return client_ip
+
+    # Check X-Real-IP header (alternative header used by some proxies)
+    real_ip = request.headers.get("X-Real-IP")
+    if real_ip:
+        return real_ip.strip()
+
+    # Fallback to direct connection IP
+    if request.client and request.client.host:
+        return request.client.host
+
+    return "unknown"
 
 
 def normalize_username(username: str) -> str:
@@ -151,12 +187,14 @@ def parse_client_time(value):
     if isinstance(value, (int, float)):
         try:
             return datetime.fromtimestamp(float(value) / 1000, tz=timezone.utc)
-        except Exception:
+        except (ValueError, OSError, OverflowError) as e:
+            logger.warning(f"Failed to parse timestamp {value}: {e}")
             return None
     if isinstance(value, str):
         try:
             return datetime.fromisoformat(value.replace("Z", "+00:00"))
-        except Exception:
+        except (ValueError, TypeError) as e:
+            logger.warning(f"Failed to parse ISO datetime {value}: {e}")
             return None
     return None
 
@@ -204,7 +242,7 @@ def log_audit(
         lesson_id=lesson_id,
         activity_id=activity_id,
         metadata_json=metadata or {},
-        ip_address=request.client.host if request and request.client else None,
+        ip_address=get_client_ip(request) if request else None,
         user_agent=request.headers.get("user-agent") if request else None,
     )
     db.add(entry)
@@ -214,17 +252,31 @@ def load_manifest():
     global _manifest_cache, _manifest_mtime
     try:
         mtime = os.path.getmtime(MANIFEST_PATH)
-    except OSError:
-        return None
+    except FileNotFoundError:
+        logger.warning(f"Manifest file not found: {MANIFEST_PATH}")
+        return {}
+    except OSError as e:
+        logger.error(f"Failed to stat manifest file {MANIFEST_PATH}: {e}")
+        return {}
+
     if _manifest_cache is not None and _manifest_mtime == mtime:
         return _manifest_cache
+
     try:
         with open(MANIFEST_PATH, "r", encoding="utf-8") as handle:
             _manifest_cache = json.load(handle)
             _manifest_mtime = mtime
+            logger.info(f"Loaded manifest from {MANIFEST_PATH}")
             return _manifest_cache
-    except Exception:
-        return None
+    except FileNotFoundError:
+        logger.warning(f"Manifest file not found: {MANIFEST_PATH}")
+        return {}
+    except json.JSONDecodeError as e:
+        logger.error(f"Invalid JSON in manifest file {MANIFEST_PATH}: {e}")
+        return {}
+    except Exception as e:
+        logger.exception(f"Unexpected error loading manifest from {MANIFEST_PATH}: {e}")
+        return {}
 
 
 def load_link_overrides():
@@ -236,18 +288,27 @@ def load_link_overrides():
         _link_overrides_cache = {}
         _link_overrides_mtime = None
         return {}
-    except OSError:
+    except OSError as e:
+        logger.error(f"Failed to stat link overrides file {LINK_OVERRIDES_PATH}: {e}")
         return {}
+
     if _link_overrides_cache is not None and _link_overrides_mtime == mtime:
         return _link_overrides_cache
+
     try:
         data = json.loads(path.read_text())
         if not isinstance(data, dict):
+            logger.warning(f"Link overrides file {LINK_OVERRIDES_PATH} contains non-dict data, using empty dict")
             data = {}
         _link_overrides_cache = data
         _link_overrides_mtime = mtime
+        logger.info(f"Loaded link overrides from {LINK_OVERRIDES_PATH}")
         return data
-    except Exception:
+    except json.JSONDecodeError as e:
+        logger.error(f"Invalid JSON in link overrides file {LINK_OVERRIDES_PATH}: {e}")
+        return {}
+    except Exception as e:
+        logger.exception(f"Unexpected error loading link overrides from {LINK_OVERRIDES_PATH}: {e}")
         return {}
 
 
@@ -311,7 +372,7 @@ def create_session(db: Session, user: User, request: Request) -> AuthSession:
         csrf_token=csrf,
         created_at=now,
         expires_at=expires,
-        ip_address=request.client.host if request.client else None,
+        ip_address=get_client_ip(request),
         user_agent=request.headers.get("user-agent"),
     )
     db.add(session)
@@ -475,7 +536,8 @@ def health(db: Session = Depends(get_db)):
     db_ok = True
     try:
         db.execute(text("select 1"))
-    except Exception:
+    except Exception as e:
+        logger.error(f"Database health check failed: {e}")
         db_ok = False
     return {
         "status": "ok" if db_ok else "degraded",
@@ -521,13 +583,16 @@ def login(request: Request, payload: dict, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Invalid payload.")
     username = normalize_username(payload.get("username", ""))
     password = payload.get("password", "")
-    ip_key = f"{request.client.host if request.client else 'unknown'}:{username}"
+    client_ip = get_client_ip(request)
+    ip_key = f"{client_ip}:{username}"
 
-    if login_limiter.check(ip_key) > 0:
+    # Check database-backed rate limiter
+    if login_limiter.check(db, ip_key) > 0:
         raise HTTPException(status_code=429, detail="Too many attempts. Try again shortly.")
 
     user = db.query(User).filter(User.username == username).first()
-    if user and user.locked_until and user.locked_until > utcnow():
+    locked_until_aware = ensure_timezone_aware(user.locked_until) if user else None
+    if user and locked_until_aware and locked_until_aware > utcnow():
         raise HTTPException(status_code=429, detail="Too many attempts. Try again shortly.")
 
     if not user or not verify_password(cast(str, user.password_hash), password):
@@ -538,7 +603,8 @@ def login(request: Request, payload: dict, db: Session = Depends(get_db)):
                 user.locked_until = utcnow() + timedelta(seconds=lock_seconds)
             db.commit()
         else:
-            login_limiter.record_failure(ip_key)
+            # Record failed attempt in database
+            login_limiter.record_failure(db, ip_key)
         raise HTTPException(status_code=401, detail="Invalid username or password.")
 
     if not user.active:
@@ -552,7 +618,8 @@ def login(request: Request, payload: dict, db: Session = Depends(get_db)):
     session = create_session(db, user, request)
     response = JSONResponse({"ok": True, "user": user_public(user)})
     set_session_cookie(response, cast(str, session.id))
-    login_limiter.reset(ip_key)
+    # Clear rate limiting on successful login
+    login_limiter.reset(db, ip_key)
     return response
 
 
@@ -622,6 +689,19 @@ def save_activity_state(
     user = request.state.user
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated.")
+
+    # Apply rate limiting
+    identifier = f"user:{user.id}"
+    is_allowed, current, limit = api_rate_limiter.check_and_increment(
+        db, identifier, "activity_save"
+    )
+    if not is_allowed:
+        logger.warning(f"Rate limit exceeded for user {user.username} on activity_save: {current}/{limit}")
+        raise HTTPException(
+            status_code=429,
+            detail=f"Too many requests. Limit: {limit} per minute."
+        )
+
     if not valid_lesson_id(lesson_id) or not valid_activity_id(activity_id):
         raise HTTPException(status_code=400, detail="Invalid lesson or activity id.")
     if not isinstance(payload, dict):
@@ -676,11 +756,24 @@ def save_activity_state(
 
 
 @app.post("/api/python/run")
-async def python_run(request: Request, payload: dict):
+async def python_run(request: Request, payload: dict, db: Session = Depends(get_db)):
     csrf_guard(request)
     user = request.state.user
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated.")
+
+    # Apply rate limiting
+    identifier = f"user:{user.id}"
+    is_allowed, current, limit = api_rate_limiter.check_and_increment(
+        db, identifier, "python_run"
+    )
+    if not is_allowed:
+        logger.warning(f"Rate limit exceeded for user {user.username} on python_run: {current}/{limit}")
+        raise HTTPException(
+            status_code=429,
+            detail=f"Too many code executions. Limit: {limit} per minute."
+        )
+
     if not isinstance(payload, dict):
         raise HTTPException(status_code=400, detail="Invalid payload.")
     lesson_id = payload.get("lesson_id", "")
@@ -1115,22 +1208,23 @@ def audit_entries(
     action: str,
     since: str,
     limit: int,
+    cursor: str = None,
 ):
-    limit = max(1, min(int(limit or 200), 500))
+    limit = max(1, min(int(limit or 50), 200))
     query = db.query(AuditLog)
 
     if actor_username:
         actor_username = normalize_username(actor_username)
         actor = db.query(User).filter(User.username == actor_username).first()
         if not actor:
-            return {"items": []}
+            return {"items": [], "has_more": False, "next_cursor": None}
         query = query.filter(AuditLog.actor_user_id == actor.id)
 
     if target_username:
         target_username = normalize_username(target_username)
         target = db.query(User).filter(User.username == target_username).first()
         if not target:
-            return {"items": []}
+            return {"items": [], "has_more": False, "next_cursor": None}
         query = query.filter(AuditLog.target_user_id == target.id)
 
     if action:
@@ -1140,7 +1234,32 @@ def audit_entries(
     if since_dt:
         query = query.filter(AuditLog.created_at >= ensure_utc(since_dt))
 
-    entries = query.order_by(AuditLog.created_at.desc()).limit(limit).all()
+    # Cursor-based pagination
+    if cursor:
+        try:
+            # Cursor format: timestamp:id
+            cursor_parts = cursor.split(":")
+            if len(cursor_parts) == 2:
+                cursor_time_str, cursor_id = cursor_parts
+                cursor_time = datetime.fromisoformat(cursor_time_str.replace("Z", "+00:00"))
+                query = query.filter(
+                    (AuditLog.created_at < cursor_time) |
+                    ((AuditLog.created_at == cursor_time) & (AuditLog.id < cursor_id))
+                )
+        except (ValueError, TypeError) as e:
+            logger.warning(f"Invalid cursor format: {cursor}: {e}")
+
+    # Fetch one extra to determine if there are more results
+    entries = query.order_by(AuditLog.created_at.desc(), AuditLog.id.desc()).limit(limit + 1).all()
+    has_more = len(entries) > limit
+    entries = entries[:limit]
+
+    # Generate next cursor if there are more results
+    next_cursor = None
+    if has_more and entries:
+        last_entry = entries[-1]
+        next_cursor = f"{last_entry.created_at.isoformat()}:{last_entry.id}"
+
     user_ids = {entry.actor_user_id for entry in entries if entry.actor_user_id}
     user_ids.update({entry.target_user_id for entry in entries if entry.target_user_id})
     user_map = {user.id: user for user in db.query(User).filter(User.id.in_(user_ids)).all()} if user_ids else {}
@@ -1149,7 +1268,9 @@ def audit_entries(
         "items": [
             audit_log_public(entry, user_map.get(entry.actor_user_id), user_map.get(entry.target_user_id))
             for entry in entries
-        ]
+        ],
+        "has_more": has_more,
+        "next_cursor": next_cursor,
     }
 
 
@@ -1160,11 +1281,12 @@ def teacher_audit(
     target_username: str = "",
     action: str = "",
     since: str = "",
-    limit: int = 200,
+    limit: int = 50,
+    cursor: str = "",
     db: Session = Depends(get_db),
 ):
     require_admin(request)
-    return audit_entries(db, actor_username, target_username, action, since, limit)
+    return audit_entries(db, actor_username, target_username, action, since, limit, cursor or None)
 
 
 @app.get("/api/admin/audit")
@@ -1174,11 +1296,12 @@ def admin_audit(
     target_username: str = "",
     action: str = "",
     since: str = "",
-    limit: int = 200,
+    limit: int = 50,
+    cursor: str = "",
     db: Session = Depends(get_db),
 ):
     require_admin(request)
-    return audit_entries(db, actor_username, target_username, action, since, limit)
+    return audit_entries(db, actor_username, target_username, action, since, limit, cursor or None)
 
 @app.get("/api/teacher/pupil/{username}/lesson/{lesson_id}")
 def pupil_lesson_detail(

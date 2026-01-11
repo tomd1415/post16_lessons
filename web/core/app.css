@@ -357,8 +357,17 @@ textarea{min-height: 110px; resize: vertical}
   box-shadow: var(--shadow);
   display:none;
   max-width: min(680px, calc(100vw - 24px));
+  z-index: 9999;
 }
-.toast.show{display:block}
+.toast.show{display:block; animation: slideUp 0.3s ease-out}
+.toast.error{background: rgba(200,50,50,.85); border-color: rgba(255,100,100,.6)}
+.toast.warning{background: rgba(200,150,50,.85); border-color: rgba(255,200,100,.6)}
+.toast.success{background: rgba(50,180,100,.85); border-color: rgba(100,255,150,.6)}
+
+@keyframes slideUp{
+  from{bottom: -50px; opacity: 0}
+  to{bottom: 18px; opacity: 1}
+}
 
 .role-menu{
   border: 1px solid var(--border);

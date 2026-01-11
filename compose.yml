@@ -17,8 +17,9 @@ services:
     restart: unless-stopped
     environment:
       - PYTHONUNBUFFERED=1
-      - DATABASE_URL=postgresql+psycopg://tlac:tlac@db:5432/tlac
-      - SESSION_TTL_MINUTES=480
+      # Use environment variables from .env file if present
+      - DATABASE_URL=postgresql+psycopg://${POSTGRES_USER:-tlac}:${POSTGRES_PASSWORD:-tlac}@db:5432/${POSTGRES_DB:-tlac}
+      - SESSION_TTL_MINUTES=${SESSION_TTL_MINUTES:-480}
       - LINK_OVERRIDES_PATH=/data/link-overrides.json
       - RUNNER_ENABLED=1
       - RUNNER_IMAGE=post16_lessons-api
@@ -50,13 +51,27 @@ services:
     image: postgres:16
     restart: unless-stopped
     environment:
-      - POSTGRES_USER=tlac
-      - POSTGRES_PASSWORD=tlac
-      - POSTGRES_DB=tlac
+      # Use environment variables from .env file if present
+      # For production, use secrets instead (see README)
+      - POSTGRES_USER=${POSTGRES_USER:-tlac}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-tlac}
+      - POSTGRES_DB=${POSTGRES_DB:-tlac}
     volumes:
       - pg_data:/var/lib/postgresql/data
+    # Uncomment for production with Docker secrets:
+    # secrets:
+    #   - db_password
+    # environment:
+    #   - POSTGRES_PASSWORD_FILE=/run/secrets/db_password
+    #   - POSTGRES_USER=${POSTGRES_USER:-tlac}
+    #   - POSTGRES_DB=${POSTGRES_DB:-tlac}
 
 volumes:
   caddy_data:
   caddy_config:
   pg_data:
+
+# Uncomment for production with Docker secrets:
+# secrets:
+#   db_password:
+#     file: ./secrets/db_password.txt

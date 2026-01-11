@@ -133,3 +133,29 @@ class AuditLog(Base):
     created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
 
     actor = relationship("User", foreign_keys=[actor_user_id], back_populates="audit_logs")
+
+
+class LoginAttempt(Base):
+    __tablename__ = "login_attempts"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    identifier = Column(String(255), nullable=False, index=True)
+    failed_count = Column(Integer, default=1, nullable=False)
+    locked_until = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)
+
+
+class ApiRateLimit(Base):
+    __tablename__ = "api_rate_limits"
+    __table_args__ = (
+        UniqueConstraint("identifier", "endpoint", name="uq_api_rate_limit"),
+    )
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    identifier = Column(String(255), nullable=False, index=True)  # user_id:endpoint or ip:endpoint
+    endpoint = Column(String(100), nullable=False, index=True)
+    request_count = Column(Integer, default=1, nullable=False)
+    window_start = Column(DateTime(timezone=True), default=utcnow, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)

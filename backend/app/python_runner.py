@@ -1,6 +1,7 @@
 import base64
 import io
 import json
+import logging
 import os
 import re
 import stat
@@ -13,6 +14,8 @@ import requests
 from docker.errors import APIError, DockerException, ImageNotFound
 
 from . import config
+
+logger = logging.getLogger(__name__)
 
 SAFE_PATH = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._/-]*$")
 
@@ -208,12 +211,15 @@ def runner_diagnostics() -> dict:
             adapter = client.get_adapter(client.base_url)
             diagnostics["adapter_for_base_url"] = adapter.__class__.__name__
         except Exception as exc:
+            logger.warning(f"Failed to get adapter for base URL: {exc}")
             diagnostics["adapter_error"] = str(exc)
         try:
             diagnostics["server_version"] = client.version()
         except Exception as exc:
+            logger.warning(f"Failed to get Docker server version: {exc}")
             diagnostics["server_version_error"] = str(exc)
     except Exception as exc:
+        logger.error(f"Failed to create Docker client: {exc}")
         diagnostics["client_error"] = str(exc)
 
     return diagnostics
@@ -577,8 +583,8 @@ def run_python(code: str, files: List[dict]) -> dict:
             timed_out = True
             try:
                 client.kill(container_id)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Failed to kill timed-out container {container_id}: {e}")
             exit_code = 137
 
         if isinstance(exec_output, tuple):
@@ -632,16 +638,18 @@ def run_python(code: str, files: List[dict]) -> dict:
                             }
                         )
                 files_out = files_out[: config.RUNNER_MAX_FILES]
-        except Exception:
+        except Exception as e:
+            logger.warning(f"Failed to retrieve output files from container: {e}")
             files_out = []
     except DockerException as exc:
+        logger.error(f"Docker execution failed: {exc}")
         raise RunnerUnavailable(f"Docker execution failed: {exc}") from exc
     finally:
         if container_id:
             try:
                 client.remove_container(container_id, force=True)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Failed to remove container {container_id}: {e}")
 
     duration_ms = int((time.monotonic() - start) * 1000)
     if exit_code in {124, 137}:
