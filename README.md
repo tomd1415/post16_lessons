@@ -54,6 +54,12 @@ Start:
 docker compose up --build
 ```
 
+Optional Debian install helper (run from repo root on a Debian VM):
+```
+sudo scripts/install_debian.sh
+```
+This installs Docker and starts the stack. See `PROXMOXINSTALL.md` for options.
+
 Open:
 - `https://localhost:8443` (TLS uses Caddy internal CA; accept the browser warning)
 - `http://localhost:8080` redirects to HTTPS
@@ -271,6 +277,37 @@ Automated tests cover auth, activity state, teacher view, and manifest scaffolds
 ```
 .venv/bin/python -m pytest backend/tests
 ```
+UI smoke tests (Playwright):
+- Ensure the stack is running (`docker compose up -d`).
+- Install deps (first time): `npm install`
+- Install browsers (first time):
+  - Debian/Ubuntu VM: `npx playwright install --with-deps`
+  - Gentoo: install system deps (see below), then `npx playwright install`
+- Run:
+```
+BASE_URL=https://localhost:8443 \
+TEST_PUPIL_USERNAME=pupil.one TEST_PUPIL_PASSWORD=Secret123! \
+TEST_TEACHER_USERNAME=teacher.one TEST_TEACHER_PASSWORD=Secret123! \
+TEST_ADMIN_USERNAME=admin.one TEST_ADMIN_PASSWORD=Secret123! \
+npm run test:ui
+```
+If credentials are not provided, the matching role tests are skipped.
+
+Gentoo notes for Playwright (headless):
+- Install Node (includes npm): `sudo emerge -av net-libs/nodejs`
+- If your tree is stale, sync first: `sudo emerge --sync`
+- Install runtime deps (typical minimal set; adjust for your profile):
+  ```
+  sudo emerge -av www-client/chromium \
+    x11-libs/gtk+ x11-libs/libXcomposite x11-libs/libXdamage x11-libs/libXrandr \
+    x11-libs/libXfixes x11-libs/libXcursor x11-libs/libXi x11-libs/libxkbcommon \
+    x11-libs/pango x11-libs/cairo x11-libs/gdk-pixbuf x11-libs/libdrm x11-libs/libxcb \
+    media-libs/alsa-lib media-libs/fontconfig media-libs/freetype \
+    dev-libs/nss dev-libs/nspr dev-libs/expat app-accessibility/at-spi2-core dev-libs/glib \
+    sys-libs/libcap net-print/cups app-arch/brotli
+  ```
+- Then install browsers: `npx playwright install`
+
 Manual smoke check:
 - Sign in/out.
 - Teacher vs pupil access control.

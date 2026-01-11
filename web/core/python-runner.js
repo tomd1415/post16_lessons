@@ -20,6 +20,12 @@
     if(!codeEditor || !runBtn) return;
     const editorCard = codeEditor.closest(".card");
     if(!editorCard) return;
+    if(!editorCard.dataset.hintLabel){
+      const heading = editorCard.querySelector("h2, h3");
+      if(heading){
+        editorCard.dataset.hintLabel = heading.textContent.trim();
+      }
+    }
     const container = editorCard.closest(".container");
     if(!container || container.dataset.codeLayout === "1") return;
     container.dataset.codeLayout = "1";
@@ -80,6 +86,15 @@
     "# turtle.forward(80)",
   ].join("\n");
 
+  const HINT_DEFAULT_CODE = [
+    "# Starter skeleton (replace the TODOs)",
+    "# Tip: keep your code small and test after each change.",
+    "",
+    "# TODO: replace this value with your own logic",
+    "result = 0",
+    "print(\"Result:\", result)",
+  ].join("\n");
+
   const state = store.get(stateKey, {
     code: DEFAULT_CODE,
     output: null,
@@ -91,6 +106,59 @@
 
   let runFiles = [];
   initFloatingEditor();
+  initHintButton();
+
+  function hintCodeForStep(stepId){
+    const template = document.querySelector(`template[data-hint-code-template="${stepId}"]`);
+    if(template){
+      const text = template.textContent || "";
+      return text.trim() ? text.replace(/^\n/, "") : HINT_DEFAULT_CODE;
+    }
+    return HINT_DEFAULT_CODE;
+  }
+
+  function hintLabelForStep(editorCard, stepId){
+    if(editorCard && editorCard.dataset.hintLabel){
+      return editorCard.dataset.hintLabel;
+    }
+    return stepId;
+  }
+
+  function recordHintUsed(stepId, label){
+    if(!state.hintsUsed || typeof state.hintsUsed !== "object"){
+      state.hintsUsed = {};
+    }
+    state.hintsUsed[stepId] = {
+      label: label || stepId,
+      used_at: new Date().toISOString()
+    };
+    saveState();
+  }
+
+  function initHintButton(){
+    if(!codeEditor || !runBtn) return;
+    const runRow = runBtn.closest(".row");
+    if(!runRow || runRow.querySelector("[data-hint-code]")) return;
+    const editorCard = codeEditor.closest(".card");
+    const stepId = (editorCard && editorCard.dataset.hintStep) ? editorCard.dataset.hintStep : "code-step-1";
+    const label = hintLabelForStep(editorCard, stepId);
+
+    const hintBtn = document.createElement("button");
+    hintBtn.type = "button";
+    hintBtn.className = "btn";
+    hintBtn.dataset.hintCode = stepId;
+    hintBtn.textContent = "Hint (starter code)";
+    hintBtn.addEventListener("click", () => {
+      const warning = "This will replace your current code with a starter skeleton. Continue?";
+      if(!confirm(warning)) return;
+      const hintCode = hintCodeForStep(stepId);
+      codeEditor.value = hintCode;
+      state.code = hintCode;
+      recordHintUsed(stepId, label);
+      toast("Hint inserted. Your previous code was replaced.");
+    });
+    runRow.appendChild(hintBtn);
+  }
 
   function decodeBase64Text(value){
     try{

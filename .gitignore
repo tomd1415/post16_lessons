@@ -29,6 +29,11 @@ build/
 .env.*
 *.log
 
+# Node / Playwright
+node_modules/
+playwright-report/
+test-results/
+
 # Runtime data
 data/*.json
 reports/

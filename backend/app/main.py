@@ -57,7 +57,8 @@ app = FastAPI(
 
 login_limiter = LoginLimiter()
 runner_semaphore = asyncio.Semaphore(RUNNER_CONCURRENCY)
-MANIFEST_PATH = os.getenv("LESSON_MANIFEST_PATH", "/srv/lessons/manifest.json")
+STATIC_ROOT = os.getenv("STATIC_ROOT", "/srv")
+MANIFEST_PATH = os.getenv("LESSON_MANIFEST_PATH", os.path.join(STATIC_ROOT, "lessons", "manifest.json"))
 _manifest_cache = None
 _manifest_mtime = None
 _link_overrides_cache = None
@@ -1677,4 +1678,4 @@ def import_users(
     return {"created": created, "errors": []}
 
 
-app.mount("/", StaticFiles(directory="/srv", html=True), name="static")
+app.mount("/", StaticFiles(directory=STATIC_ROOT, html=True), name="static")

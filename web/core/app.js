@@ -174,11 +174,37 @@ function renderStateNode(value, seen){
   return `<span class="state-text">${escapeHtml(String(value))}</span>`;
 }
 
+function renderHintSummary(value){
+  if(!value || typeof value !== "object" || Array.isArray(value)) return "";
+  const hints = value.hintsUsed || value.hints_used;
+  if(!hints) return "";
+  const labels = [];
+  if(Array.isArray(hints)){
+    hints.forEach(item => {
+      if(!item) return;
+      if(typeof item === "string") labels.push(item);
+      else if(typeof item === "object") labels.push(item.label || item.step || "Hint");
+    });
+  }else if(typeof hints === "object"){
+    Object.entries(hints).forEach(([key, val]) => {
+      if(!val) return;
+      if(typeof val === "string") labels.push(val);
+      else if(typeof val === "object") labels.push(val.label || val.step || key);
+      else labels.push(key);
+    });
+  }
+  const unique = Array.from(new Set(labels.map(label => label && String(label).trim()).filter(Boolean)));
+  if(!unique.length) return "";
+  const list = unique.map(escapeHtml).join(", ");
+  return `<div class="note warn" style="margin-bottom:10px"><b>Hints used:</b> ${list}</div>`;
+}
+
 function renderStateReadable(value){
   if(value === null || value === undefined || value === ""){
     return "";
   }
-  return `<div class="state-view">${renderStateNode(value, null)}</div>`;
+  const summary = renderHintSummary(value);
+  return `<div class="state-view">${summary}${renderStateNode(value, null)}</div>`;
 }
 
 function roleToMenu(role){

@@ -12,6 +12,7 @@ from sqlalchemy.pool import StaticPool
 def test_engine():
     os.environ["DATABASE_URL"] = "sqlite+pysqlite:///:memory:"
     root = Path(__file__).resolve().parents[2]
+    os.environ["STATIC_ROOT"] = str(root / "web")
     os.environ["LESSON_MANIFEST_PATH"] = str(root / "web" / "lessons" / "manifest.json")
     os.environ["LINK_OVERRIDES_PATH"] = str(root / "data" / "test-link-overrides.json")
     os.environ["RUNNER_ENABLED"] = "0"

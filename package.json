@@ -1,0 +1,12 @@
+{
+  "name": "post16_lessons-ui",
+  "private": true,
+  "devDependencies": {
+    "@playwright/test": "^1.47.2"
+  },
+  "scripts": {
+    "test:ui": "playwright test",
+    "test:ui:headed": "playwright test --headed",
+    "test:ui:report": "playwright show-report"
+  }
+}

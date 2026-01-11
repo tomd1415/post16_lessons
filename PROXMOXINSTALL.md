@@ -17,6 +17,17 @@ sudo apt update && sudo apt upgrade -y
 sudo apt install -y curl git ca-certificates gnupg lsb-release
 ```
 
+## 2b) Optional: automated Debian installer
+From the repo, you can run:
+```bash
+sudo scripts/install_debian.sh
+```
+Optional flags:
+- `RUN_UPGRADE=1` to run `apt upgrade`.
+- `START_STACK=0` to skip `docker compose up -d --build`.
+- `REPO_DIR=/path/to/post16_lessons` if the script is not run from inside the repo.
+- `ADD_USER_TO_DOCKER_GROUP=0` to skip `usermod -aG docker`.
+
 ## 3) Install Docker Engine + Compose plugin
 ```bash
 # Docker repo
