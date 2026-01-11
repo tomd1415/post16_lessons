@@ -35,6 +35,7 @@ from .models import AuditLog, ActivityMark, ActivityRevision, ActivityState, Api
 from .python_runner import RunnerError, RunnerUnavailable, run_python, runner_diagnostics
 from .rate_limit import ApiRateLimiter, LoginLimiter, compute_lock_seconds, ensure_timezone_aware
 from .security import hash_password, verify_password
+from . import metrics
 
 # Configure structured logging
 logging.basicConfig(
@@ -64,6 +65,9 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+
+# Add Prometheus metrics middleware
+app.add_middleware(metrics.PrometheusMiddleware)
 
 login_limiter = LoginLimiter()
 api_rate_limiter = ApiRateLimiter(window_minutes=1)
@@ -544,6 +548,36 @@ def health(db: Session = Depends(get_db)):
         "db_ok": db_ok,
         "time": utcnow().isoformat(),
     }
+
+
+@app.get("/metrics")
+def prometheus_metrics(db: Session = Depends(get_db)):
+    """
+    Prometheus metrics endpoint
+    Returns metrics in Prometheus text format
+    """
+    from prometheus_client import REGISTRY, generate_latest
+
+    # Update dynamic metrics
+    try:
+        # Update active sessions gauge
+        active_sessions = db.query(AuthSession).filter(
+            AuthSession.expires_at > utcnow()
+        ).count()
+        metrics.update_active_sessions(active_sessions)
+
+        # Update database connection pool metrics if available
+        # Note: SQLAlchemy pool stats require pool_pre_ping=True
+        if hasattr(engine.pool, 'size'):
+            metrics.update_db_connections(engine.pool.size())
+    except Exception as e:
+        logger.warning(f"Failed to update dynamic metrics: {e}")
+
+    # Generate Prometheus format output
+    return Response(
+        content=generate_latest(REGISTRY),
+        media_type="text/plain; charset=utf-8"
+    )
 
 
 @app.get("/api/metrics")

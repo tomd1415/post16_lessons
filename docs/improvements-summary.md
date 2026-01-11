@@ -411,6 +411,99 @@ All environment variables now have documented defaults in `.env.example`.
 
 ---
 
+### Week 3: Medium Priority (All Completed ✓)
+
+#### 12. Set Up Automated Backups ✓
+**Files Created:**
+- `scripts/backup.sh` (enhanced)
+- `scripts/setup-backup-cron.sh` (new)
+- `scripts/verify-backup.sh` (new)
+- `docs/backup-and-recovery.md` (new)
+
+**Changes:**
+- Enhanced backup script with retention policies and comprehensive logging
+- Added automatic cleanup of old backups (age-based and count-based retention)
+- Created cron setup script for automated scheduling
+- Added backup verification script to test backup integrity
+- Comprehensive documentation with recovery procedures
+
+**Features:**
+- **Database Backups**: Compressed PostgreSQL dumps via `pg_dump`
+- **Data File Backups**: Archives of user data and reports
+- **Retention Policies**:
+  - Delete backups older than 30 days (configurable)
+  - Keep last 14 backups (configurable)
+- **Automated Scheduling**: Easy cron setup (daily/hourly/weekly/custom)
+- **Integrity Verification**: Test backups are valid and restorable
+- **Comprehensive Logging**: All operations logged to `backups/backup.log`
+- **Metadata Tracking**: JSON metadata for each backup
+
+**Usage:**
+
+Manual backup:
+```bash
+./scripts/backup.sh
+```
+
+Automated daily backups:
+```bash
+./scripts/setup-backup-cron.sh daily
+```
+
+Verify backup:
+```bash
+./scripts/verify-backup.sh backups/backup_20260111_140000
+```
+
+Restore:
+```bash
+./scripts/restore.sh backups/backup_20260111_140000 --force
+```
+
+**Configuration:**
+```bash
+# Environment variables
+export BACKUP_RETENTION_DAYS=60
+export BACKUP_RETENTION_COUNT=30
+
+# Or command line
+./scripts/backup.sh --retention-days 60 --retention-count 30
+```
+
+**Backup Structure:**
+```
+backups/
+├── backup_20260111_140000/
+│   ├── db.sql.gz           # Compressed database dump
+│   ├── data.tar.gz         # Compressed data files
+│   └── backup.meta         # JSON metadata
+├── backup_20260112_020000/
+│   └── ...
+└── backup.log              # All backup operations
+```
+
+**Monitoring:**
+```bash
+# View backup status
+ls -lth backups/
+
+# Check logs
+tail -f backups/backup.log
+
+# Verify integrity
+./scripts/verify-backup.sh backups/backup_20260111_140000
+```
+
+**Cron Examples:**
+- **Daily at 2 AM**: `0 2 * * *`
+- **Hourly**: `0 * * * *`
+- **Weekly (Sunday 2 AM)**: `0 2 * * 0`
+- **Twice daily**: `0 2,14 * * *`
+
+See [docs/backup-and-recovery.md](backup-and-recovery.md) for complete documentation.
+
+---
+
 ## Next Steps
 
 **Immediate (Before Production):**
