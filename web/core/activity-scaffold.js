@@ -25,6 +25,10 @@
 
   const save = () => store.set(stateKey, state);
 
+  if (typeof shuffleActivityChoices === "function") {
+    shuffleActivityChoices(root);
+  }
+
   function initNotes(){
     root.querySelectorAll("[data-field]").forEach(el => {
       const key = el.dataset.field;

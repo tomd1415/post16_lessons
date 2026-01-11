@@ -705,6 +705,10 @@
   saveFilesBtn.addEventListener("click", saveRunFiles);
   resetBtn.addEventListener("click", resetEditor);
 
+  if (typeof shuffleActivityChoices === "function") {
+    shuffleActivityChoices(root);
+  }
+
   initQuizzes();
   initNotes();
   renderOutput(state.output);

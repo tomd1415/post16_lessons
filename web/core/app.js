@@ -646,6 +646,45 @@ function shuffle(arr){
   return a;
 }
 
+function shuffleActivityChoices(root){
+  if(!root || typeof root.querySelectorAll !== "function") return;
+
+  const parents = new Set();
+  root.querySelectorAll("label.choice").forEach(label => {
+    if(label.parentElement) parents.add(label.parentElement);
+  });
+
+  parents.forEach(parent => {
+    if(parent.dataset.choicesShuffled === "1") return;
+    const elementChildren = Array.from(parent.children);
+    const labels = elementChildren.filter(child => child.matches("label.choice"));
+    if(labels.length < 2) return;
+    if(!labels.every(label => label.querySelector("input[type='radio']"))) return;
+    if(elementChildren.length !== labels.length) return;
+    if(!elementChildren.every(child => child.matches("label.choice"))) return;
+    shuffle(labels).forEach(label => parent.appendChild(label));
+    parent.dataset.choicesShuffled = "1";
+  });
+
+  root.querySelectorAll("select[data-field]").forEach(select => {
+    if(select.dataset.choicesShuffled === "1") return;
+    const options = Array.from(select.querySelectorAll("option"));
+    if(options.length < 2) return;
+    const first = options[0];
+    const firstText = first.textContent.trim().toLowerCase();
+    const keepFirst = first.value === "" || first.disabled || firstText === "--" || firstText.startsWith("select") || firstText.startsWith("choose");
+    const rest = keepFirst ? options.slice(1) : options;
+    if(rest.length < 2) return;
+    const currentValue = select.value;
+    const shuffled = shuffle(rest);
+    select.innerHTML = "";
+    if(keepFirst) select.appendChild(first);
+    shuffled.forEach(opt => select.appendChild(opt));
+    select.value = currentValue;
+    select.dataset.choicesShuffled = "1";
+  });
+}
+
 function uid(){
   return Math.random().toString(16).slice(2) + Date.now().toString(16);
 }

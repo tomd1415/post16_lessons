@@ -84,7 +84,10 @@ document.addEventListener("DOMContentLoaded", ()=>{
       let inner = `<h2>Q${qi+1}</h2><p>${escapeHtml(q.q)}</p>`;
 
       if(q.type==="mcq"){
-        inner += q.options.map((opt, oi)=>{
+        const optionOrder = typeof shuffle === "function"
+          ? shuffle(q.options.map((opt, oi)=>({ opt, oi })))
+          : q.options.map((opt, oi)=>({ opt, oi }));
+        inner += optionOrder.map(({ opt, oi })=>{
           const id = `q${qi}`;
           const checked = state.answers[id]===oi;
           return `<label style="display:flex; gap:10px; align-items:flex-start; margin:8px 0">

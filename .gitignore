@@ -41,3 +41,5 @@ backups/
 
 .vscode/
 *.code-workspace*
+
+run_playwright_tests.sh
