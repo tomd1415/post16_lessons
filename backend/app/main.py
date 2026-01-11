@@ -35,7 +35,7 @@ from .models import AuditLog, ActivityMark, ActivityRevision, ActivityState, Api
 from .python_runner import RunnerError, RunnerUnavailable, run_python, runner_diagnostics
 from .rate_limit import ApiRateLimiter, LoginLimiter, compute_lock_seconds, ensure_timezone_aware
 from .security import hash_password, verify_password
-from . import metrics
+from . import metrics as prom_metrics
 
 # Configure structured logging
 logging.basicConfig(
@@ -67,7 +67,7 @@ app = FastAPI(
 )
 
 # Add Prometheus metrics middleware
-app.add_middleware(metrics.PrometheusMiddleware)
+app.add_middleware(prom_metrics.PrometheusMiddleware)
 
 login_limiter = LoginLimiter()
 api_rate_limiter = ApiRateLimiter(window_minutes=1)
@@ -564,12 +564,12 @@ def prometheus_metrics(db: Session = Depends(get_db)):
         active_sessions = db.query(AuthSession).filter(
             AuthSession.expires_at > utcnow()
         ).count()
-        metrics.update_active_sessions(active_sessions)
+        prom_metrics.update_active_sessions(active_sessions)
 
         # Update database connection pool metrics if available
         # Note: SQLAlchemy pool stats require pool_pre_ping=True
         if hasattr(engine.pool, 'size'):
-            metrics.update_db_connections(engine.pool.size())
+            prom_metrics.update_db_connections(engine.pool.size())
     except Exception as e:
         logger.warning(f"Failed to update dynamic metrics: {e}")
 
@@ -622,14 +622,17 @@ def login(request: Request, payload: dict, db: Session = Depends(get_db)):
 
     # Check database-backed rate limiter
     if login_limiter.check(db, ip_key) > 0:
+        prom_metrics.record_login_attempt(success=False, rate_limited=True)
         raise HTTPException(status_code=429, detail="Too many attempts. Try again shortly.")
 
     user = db.query(User).filter(User.username == username).first()
     locked_until_aware = ensure_timezone_aware(user.locked_until) if user else None
     if user and locked_until_aware and locked_until_aware > utcnow():
+        prom_metrics.record_login_attempt(success=False, rate_limited=True)
         raise HTTPException(status_code=429, detail="Too many attempts. Try again shortly.")
 
     if not user or not verify_password(cast(str, user.password_hash), password):
+        prom_metrics.record_login_attempt(success=False, rate_limited=False)
         if user:
             user.failed_login_count += 1
             lock_seconds = compute_lock_seconds(cast(int, user.failed_login_count))
@@ -642,6 +645,7 @@ def login(request: Request, payload: dict, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Invalid username or password.")
 
     if not user.active:
+        prom_metrics.record_login_attempt(success=False, rate_limited=False)
         raise HTTPException(status_code=403, detail="Account disabled.")
 
     user.failed_login_count = 0
@@ -654,6 +658,7 @@ def login(request: Request, payload: dict, db: Session = Depends(get_db)):
     set_session_cookie(response, cast(str, session.id))
     # Clear rate limiting on successful login
     login_limiter.reset(db, ip_key)
+    prom_metrics.record_login_attempt(success=True, rate_limited=False)
     return response
 
 
