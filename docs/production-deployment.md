@@ -1,0 +1,812 @@
+# Production Deployment Guide
+
+Comprehensive guide for deploying TLAC (Thinking Like a Coder) to production environments.
+
+## Table of Contents
+
+1. [Prerequisites](#prerequisites)
+2. [Environment Configuration](#environment-configuration)
+3. [Security Hardening](#security-hardening)
+4. [Database Setup](#database-setup)
+5. [Docker Deployment](#docker-deployment)
+6. [Reverse Proxy Configuration](#reverse-proxy-configuration)
+7. [SSL/TLS Configuration](#ssltls-configuration)
+8. [Monitoring Setup](#monitoring-setup)
+9. [Backup Configuration](#backup-configuration)
+10. [Scaling Considerations](#scaling-considerations)
+11. [Maintenance Procedures](#maintenance-procedures)
+12. [Troubleshooting](#troubleshooting)
+
+---
+
+## Prerequisites
+
+### System Requirements
+
+| Component | Minimum | Recommended |
+|-----------|---------|-------------|
+| CPU | 2 cores | 4+ cores |
+| RAM | 4 GB | 8+ GB |
+| Storage | 20 GB SSD | 50+ GB SSD |
+| OS | Ubuntu 22.04 LTS | Ubuntu 22.04 LTS |
+
+### Required Software
+
+```bash
+# Docker Engine 24.0+
+curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker $USER
+
+# Docker Compose 2.20+
+sudo apt install docker-compose-plugin
+
+# Verify installations
+docker --version
+docker compose version
+```
+
+---
+
+## Environment Configuration
+
+### 1. Create Production Environment File
+
+```bash
+# Copy example and customize
+cp .env.example .env.production
+chmod 600 .env.production
+```
+
+### 2. Required Environment Variables
+
+```bash
+# .env.production
+
+# ============================================
+# DATABASE
+# ============================================
+POSTGRES_USER=tlac_prod
+POSTGRES_PASSWORD=<GENERATE_STRONG_PASSWORD>
+POSTGRES_DB=tlac_production
+DATABASE_URL=postgresql://tlac_prod:<PASSWORD>@db:5432/tlac_production
+
+# Connection pool settings
+DB_POOL_SIZE=10
+DB_MAX_OVERFLOW=20
+DB_POOL_TIMEOUT=30
+DB_POOL_RECYCLE=3600
+
+# ============================================
+# SESSION & SECURITY
+# ============================================
+SESSION_TTL_MINUTES=480
+CSRF_HEADER_NAME=X-CSRF-Token
+SESSION_COOKIE_NAME=tlac_session
+
+# Cookie security (MUST be true in production)
+SESSION_SECURE=true
+SESSION_HTTPONLY=true
+SESSION_SAMESITE=strict
+
+# ============================================
+# PYTHON RUNNER
+# ============================================
+RUNNER_TIMEOUT_SEC=10
+RUNNER_CONCURRENCY=5
+RUNNER_MEMORY_LIMIT=256m
+RUNNER_CPU_LIMIT=0.5
+
+# ============================================
+# RATE LIMITING
+# ============================================
+RATE_LIMIT_LOGIN_ATTEMPTS=5
+RATE_LIMIT_ACTIVITY_SAVES=60
+RATE_LIMIT_PYTHON_RUNS=30
+
+# ============================================
+# ATTENTION THRESHOLDS
+# ============================================
+ATTENTION_LIMIT=50
+ATTENTION_REVISION_THRESHOLD=10
+ATTENTION_STUCK_DAYS=7
+
+# ============================================
+# PATHS
+# ============================================
+STATIC_ROOT=/srv
+LESSON_MANIFEST_PATH=/srv/lessons/manifest.json
+LINK_OVERRIDES_PATH=/srv/data/link_overrides.json
+BACKUP_DIR=/srv/backups
+
+# ============================================
+# MONITORING
+# ============================================
+LOG_LEVEL=INFO
+PROMETHEUS_ENABLED=true
+```
+
+### 3. Generate Secure Passwords
+
+```bash
+# Generate database password
+openssl rand -base64 32
+
+# Generate backup encryption key (if using encrypted backups)
+openssl rand -base64 32
+```
+
+---
+
+## Security Hardening
+
+### 1. Firewall Configuration
+
+```bash
+# Allow only necessary ports
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow ssh
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw enable
+
+# Verify
+sudo ufw status
+```
+
+### 2. Disable Root SSH
+
+```bash
+# /etc/ssh/sshd_config
+PermitRootLogin no
+PasswordAuthentication no
+PubkeyAuthentication yes
+
+sudo systemctl restart sshd
+```
+
+### 3. Docker Security
+
+```bash
+# docker-compose.prod.yml security additions
+
+services:
+  api:
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+
+  db:
+    security_opt:
+      - no-new-privileges:true
+```
+
+### 4. Content Security Policy
+
+The application includes CSP headers via Caddy. Verify in production:
+
+```bash
+curl -I https://your-domain.com | grep -i content-security
+```
+
+### 5. Database Security
+
+```sql
+-- Connect to PostgreSQL and run:
+
+-- Revoke public access
+REVOKE ALL ON DATABASE tlac_production FROM PUBLIC;
+
+-- Create read-only user for reporting (optional)
+CREATE USER tlac_readonly WITH PASSWORD '<PASSWORD>';
+GRANT CONNECT ON DATABASE tlac_production TO tlac_readonly;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO tlac_readonly;
+```
+
+---
+
+## Database Setup
+
+### 1. Initial Setup
+
+```bash
+# Start database first
+docker compose -f docker-compose.prod.yml up -d db
+
+# Wait for database to be ready
+docker compose -f docker-compose.prod.yml logs -f db
+# Look for "database system is ready to accept connections"
+```
+
+### 2. Create Database Schema
+
+```bash
+# Schema is auto-created on first API start
+docker compose -f docker-compose.prod.yml up -d api
+
+# Verify tables exist
+docker compose exec db psql -U tlac_prod -d tlac_production -c "\dt"
+```
+
+### 3. Bootstrap Admin User
+
+```bash
+# Via curl (one-time only)
+curl -X POST https://your-domain.com/api/admin/bootstrap \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "admin",
+    "name": "System Administrator",
+    "password": "<SECURE_PASSWORD>"
+  }'
+```
+
+### 4. Database Backup Configuration
+
+```yaml
+# docker-compose.prod.yml
+services:
+  backup:
+    image: postgres:15-alpine
+    environment:
+      - PGHOST=db
+      - PGUSER=tlac_prod
+      - PGPASSWORD=${POSTGRES_PASSWORD}
+      - PGDATABASE=tlac_production
+    volumes:
+      - ./backups:/backups
+    command: >
+      sh -c "while true; do
+        pg_dump -Fc > /backups/db_$(date +%Y%m%d_%H%M%S).dump
+        find /backups -name '*.dump' -mtime +7 -delete
+        sleep 86400
+      done"
+```
+
+---
+
+## Docker Deployment
+
+### 1. Production Docker Compose
+
+Create `docker-compose.prod.yml`:
+
+```yaml
+version: '3.8'
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/Caddyfile.prod:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+    networks:
+      - frontend
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    restart: always
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - SESSION_TTL_MINUTES=${SESSION_TTL_MINUTES}
+      - RUNNER_TIMEOUT_SEC=${RUNNER_TIMEOUT_SEC}
+      - RUNNER_CONCURRENCY=${RUNNER_CONCURRENCY}
+    volumes:
+      - ./web:/srv:ro
+      - ./lessons:/srv/lessons:ro
+      - ./data:/srv/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - frontend
+      - backend
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+networks:
+  frontend:
+  backend:
+    internal: true
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:
+```
+
+### 2. Build and Deploy
+
+```bash
+# Build images
+docker compose -f docker-compose.prod.yml build
+
+# Start services
+docker compose -f docker-compose.prod.yml up -d
+
+# Check status
+docker compose -f docker-compose.prod.yml ps
+
+# View logs
+docker compose -f docker-compose.prod.yml logs -f
+```
+
+### 3. Zero-Downtime Updates
+
+```bash
+# Pull latest code
+git pull origin main
+
+# Rebuild and restart with zero downtime
+docker compose -f docker-compose.prod.yml build api
+docker compose -f docker-compose.prod.yml up -d --no-deps api
+```
+
+---
+
+## Reverse Proxy Configuration
+
+### Caddy Production Configuration
+
+```caddyfile
+# docker/Caddyfile.prod
+
+{
+    email admin@your-school.edu
+    acme_ca https://acme-v02.api.letsencrypt.org/directory
+}
+
+your-domain.com {
+    # Security headers
+    header {
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "geolocation=(), microphone=(), camera=()"
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none';"
+        -Server
+    }
+
+    # API proxy
+    handle /api/* {
+        reverse_proxy api:8000 {
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Real-IP {remote_host}
+            health_uri /api/health
+            health_interval 30s
+        }
+    }
+
+    # Static files
+    handle {
+        root * /srv
+        file_server {
+            precompressed gzip
+        }
+        try_files {path} /index.html
+    }
+
+    # Compression
+    encode gzip
+
+    # Logging
+    log {
+        output file /var/log/caddy/access.log {
+            roll_size 100mb
+            roll_keep 10
+        }
+        format json
+    }
+}
+
+# Redirect www to non-www
+www.your-domain.com {
+    redir https://your-domain.com{uri} permanent
+}
+```
+
+---
+
+## SSL/TLS Configuration
+
+### Automatic (Let's Encrypt via Caddy)
+
+Caddy automatically provisions and renews Let's Encrypt certificates. Ensure:
+
+1. Domain DNS points to server IP
+2. Ports 80 and 443 are open
+3. Email is configured in Caddyfile
+
+### Manual Certificate
+
+If using existing certificates:
+
+```caddyfile
+your-domain.com {
+    tls /etc/ssl/certs/your-cert.pem /etc/ssl/private/your-key.pem
+    # ... rest of config
+}
+```
+
+---
+
+## Monitoring Setup
+
+### 1. Enable Prometheus Scraping
+
+```yaml
+# prometheus.yml
+scrape_configs:
+  - job_name: 'tlac'
+    static_configs:
+      - targets: ['api:8000']
+    metrics_path: '/api/metrics'
+    scheme: 'http'
+```
+
+### 2. Recommended Alerts
+
+```yaml
+# alerting_rules.yml
+groups:
+  - name: tlac
+    rules:
+      - alert: HighErrorRate
+        expr: sum(rate(tlac_http_requests_total{status=~"5.."}[5m])) / sum(rate(tlac_http_requests_total[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate detected"
+
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(tlac_http_request_duration_seconds_bucket[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High API response time"
+
+      - alert: DatabaseConnectionsHigh
+        expr: tlac_db_connections_active > 15
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Database connection pool usage high"
+
+      - alert: PythonRunnerErrors
+        expr: rate(tlac_python_runs_total{status="error"}[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Python runner experiencing errors"
+```
+
+### 3. Health Check Endpoint
+
+Configure load balancer/uptime monitor to check:
+
+```
+GET https://your-domain.com/api/health
+Expected: {"status": "ok", "db_ok": true, ...}
+```
+
+---
+
+## Backup Configuration
+
+### 1. Automated Database Backups
+
+See [Backup and Recovery Guide](backup-and-recovery.md) for detailed instructions.
+
+```bash
+# Quick setup
+mkdir -p /srv/backups
+chmod 700 /srv/backups
+
+# Add to crontab
+crontab -e
+# 0 3 * * * /path/to/backup-script.sh
+```
+
+### 2. Backup Verification
+
+```bash
+# Test restore to verify backups work
+pg_restore --list /srv/backups/latest.dump
+```
+
+### 3. Off-site Backup
+
+```bash
+# Sync to remote storage
+aws s3 sync /srv/backups s3://your-bucket/tlac-backups/
+# or
+rclone sync /srv/backups remote:tlac-backups/
+```
+
+---
+
+## Scaling Considerations
+
+### Horizontal Scaling
+
+For high-traffic deployments:
+
+```yaml
+# docker-compose.prod.yml
+services:
+  api:
+    deploy:
+      replicas: 3
+```
+
+With load balancing in Caddy:
+
+```caddyfile
+reverse_proxy api:8000 {
+    lb_policy round_robin
+    health_uri /api/health
+}
+```
+
+### Database Scaling
+
+For larger deployments:
+
+1. **Read Replicas**: Configure PostgreSQL streaming replication
+2. **Connection Pooling**: Use PgBouncer for connection pooling
+3. **External Database**: Consider managed PostgreSQL (AWS RDS, Cloud SQL)
+
+### Resource Limits
+
+Adjust based on load testing:
+
+```yaml
+# High-traffic configuration
+api:
+  deploy:
+    resources:
+      limits:
+        cpus: '4'
+        memory: 4G
+      reservations:
+        cpus: '1'
+        memory: 1G
+
+db:
+  deploy:
+    resources:
+      limits:
+        cpus: '2'
+        memory: 4G
+```
+
+---
+
+## Maintenance Procedures
+
+### Scheduled Maintenance
+
+```bash
+# 1. Enable maintenance mode (optional)
+# Add maintenance page to Caddy config
+
+# 2. Create backup
+./scripts/backup.sh
+
+# 3. Pull updates
+git pull origin main
+
+# 4. Rebuild and restart
+docker compose -f docker-compose.prod.yml build
+docker compose -f docker-compose.prod.yml up -d
+
+# 5. Verify health
+curl https://your-domain.com/api/health
+
+# 6. Monitor logs
+docker compose -f docker-compose.prod.yml logs -f --tail=100
+```
+
+### Database Maintenance
+
+```bash
+# Connect to database
+docker compose exec db psql -U tlac_prod -d tlac_production
+
+# Vacuum and analyze
+VACUUM ANALYZE;
+
+# Check table sizes
+SELECT relname, pg_size_pretty(pg_total_relation_size(relid))
+FROM pg_catalog.pg_statio_user_tables
+ORDER BY pg_total_relation_size(relid) DESC;
+```
+
+### Log Rotation
+
+```bash
+# /etc/logrotate.d/tlac
+/var/log/tlac/*.log {
+    daily
+    rotate 14
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 root root
+}
+```
+
+---
+
+## Troubleshooting
+
+### Common Issues
+
+#### 1. Container Won't Start
+
+```bash
+# Check logs
+docker compose -f docker-compose.prod.yml logs api
+
+# Check resource limits
+docker stats
+
+# Verify environment
+docker compose -f docker-compose.prod.yml config
+```
+
+#### 2. Database Connection Errors
+
+```bash
+# Test database connectivity
+docker compose exec api python -c "
+from app.db import engine
+with engine.connect() as conn:
+    print(conn.execute('SELECT 1').scalar())
+"
+
+# Check connection pool
+docker compose exec db psql -U tlac_prod -d tlac_production -c "SELECT count(*) FROM pg_stat_activity;"
+```
+
+#### 3. High Memory Usage
+
+```bash
+# Check container memory
+docker stats --no-stream
+
+# Restart with memory limits
+docker compose -f docker-compose.prod.yml restart api
+```
+
+#### 4. SSL Certificate Issues
+
+```bash
+# Check Caddy logs
+docker compose -f docker-compose.prod.yml logs caddy
+
+# Force certificate renewal
+docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile
+```
+
+#### 5. Python Runner Failures
+
+```bash
+# Check runner diagnostics
+curl -k https://your-domain.com/api/python/diagnostics
+
+# Verify Docker socket permissions
+ls -la /var/run/docker.sock
+
+# Check runner container
+docker ps -a | grep python-runner
+```
+
+### Health Check Commands
+
+```bash
+# Full system check
+echo "=== System Health ==="
+curl -s https://your-domain.com/api/health | jq .
+
+echo "=== Container Status ==="
+docker compose -f docker-compose.prod.yml ps
+
+echo "=== Resource Usage ==="
+docker stats --no-stream
+
+echo "=== Database Connections ==="
+docker compose exec db psql -U tlac_prod -d tlac_production -c "SELECT count(*) as connections FROM pg_stat_activity;"
+
+echo "=== Recent Errors ==="
+docker compose -f docker-compose.prod.yml logs --tail=50 api | grep -i error
+```
+
+---
+
+## Checklist
+
+### Pre-Deployment
+
+- [ ] Server meets minimum requirements
+- [ ] Docker and Docker Compose installed
+- [ ] Firewall configured
+- [ ] SSH hardened
+- [ ] Domain DNS configured
+- [ ] SSL certificates ready (or Let's Encrypt configured)
+- [ ] Environment variables set
+- [ ] Strong passwords generated
+
+### Post-Deployment
+
+- [ ] Health endpoint responding
+- [ ] Admin user created
+- [ ] SSL certificate valid
+- [ ] Backups configured and tested
+- [ ] Monitoring alerts configured
+- [ ] Log rotation configured
+- [ ] Test user login works
+- [ ] Python runner functional
+- [ ] Performance baseline established
+
+### Regular Maintenance
+
+- [ ] Weekly: Review logs for errors
+- [ ] Weekly: Check backup integrity
+- [ ] Monthly: Apply security updates
+- [ ] Monthly: Review metrics and performance
+- [ ] Quarterly: Test disaster recovery
+- [ ] Annually: Review security configuration
+
+---
+
+**Last Updated**: 2026-01-11
+**Version**: 1.0.0
