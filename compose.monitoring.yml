@@ -18,8 +18,6 @@ services:
       - prometheus_data:/prometheus
     ports:
       - "9090:9090"
-    networks:
-      - tlac-network
     depends_on:
       - api
 
@@ -38,8 +36,6 @@ services:
       - ./docker/grafana/dashboards:/var/lib/grafana/dashboards:ro
     ports:
       - "3000:3000"
-    networks:
-      - tlac-network
     depends_on:
       - prometheus
 
@@ -50,5 +46,5 @@ volumes:
     driver: local
 
 networks:
-  tlac-network:
-    external: true
+  default:
+    name: tlac-network

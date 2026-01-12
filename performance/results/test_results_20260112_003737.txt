@@ -1,0 +1,261 @@
+TLAC Performance Test Results
+Generated: Mon Jan 12 12:37:37 AM GMT 2026
+=========================================
+
+
+=== API BENCHMARK ===
+
+======================================================================
+TLAC API Performance Benchmark
+======================================================================
+Iterations per endpoint: 100
+Target: https://localhost:8443
+======================================================================
+
+Authenticating...
+✓ Authentication successful
+
+Running benchmarks...
+
+Testing: Health Check
+  GET /api/health
+  Avg: 4.98ms | Median: 4.89ms | P95: 5.83ms | P99: 6.63ms
+  ✓ Excellent
+
+Testing: Lesson Manifest
+  GET /lessons/manifest.json
+  Avg: 4.83ms | Median: 4.81ms | P95: 5.64ms | P99: 5.81ms
+  ✓ Excellent
+
+Testing: Check Auth Status
+  GET /api/auth/me
+  Avg: 4.17ms | Median: 3.93ms | P95: 6.06ms | P99: 7.46ms
+  ✓ Excellent
+
+Testing: Get Activity State
+  GET /api/activity/state?lesson_id=lesson-4&activity_id=01-intro
+  Avg: 6.91ms | Median: 6.58ms | P95: 8.76ms | P99: 13.25ms
+  ✓ Excellent
+
+Testing: Save Activity State
+  POST /api/activity/state
+  ✗ Failed - no successful requests
+
+Testing: Python Code Execution
+  POST /api/python/run
+  ✗ Failed - no successful requests
+
+Testing: View Pupil Progress
+  GET /api/teacher/pupils/duguid.t
+  ✗ Failed - no successful requests
+
+======================================================================
+SUMMARY
+======================================================================
+Endpoint                       Avg (ms)     Median (ms)  P95 (ms)    
+----------------------------------------------------------------------
+Health Check                   4.98         4.89         5.83        
+Lesson Manifest                4.83         4.81         5.64        
+Check Auth Status              4.17         3.93         6.06        
+Get Activity State             6.91         6.58         8.76        
+======================================================================
+
+Performance Targets:
+  ✓ Excellent: < 100ms average
+  ✓ Good:      < 300ms average
+  ⚠️  Fair:      < 500ms average
+  ✗ Slow:      >= 500ms average
+
+✓ All endpoints performing within acceptable limits
+
+
+
+=== RATE LIMITER VALIDATION ===
+
+======================================================================
+RATE LIMITER VALIDATION TESTS
+======================================================================
+These tests validate that rate limiting is working correctly
+to protect the system from abuse and overload.
+
+
+======================================================================
+Testing Login Rate Limiter
+======================================================================
+Attempting multiple failed logins with same IP/username...
+
+Attempt 1: Status 401 - Invalid username or password. (21ms)
+Attempt 2: Status 401 - Invalid username or password. (32ms)
+Attempt 3: Status 401 - Invalid username or password. (8ms)
+Attempt 4: Status 429 - Too many attempts. Try again shortly. (7ms)
+Attempt 5: Status 429 - Too many attempts. Try again shortly. (15ms)
+Attempt 6: Status 429 - Too many attempts. Try again shortly. (15ms)
+Attempt 7: Status 429 - Too many attempts. Try again shortly. (5ms)
+Attempt 8: Status 429 - Too many attempts. Try again shortly. (14ms)
+Attempt 9: Status 429 - Too many attempts. Try again shortly. (16ms)
+Attempt 10: Status 429 - Too many attempts. Try again shortly. (14ms)
+
+----------------------------------------------------------------------
+Analysis:
+  Failed login attempts (401): 3
+  Rate limited attempts (429): 7
+  First rate limit triggered at attempt: 4
+
+✓ Rate limiting is working correctly!
+======================================================================
+
+
+======================================================================
+Testing API Rate Limiter
+======================================================================
+Making rapid requests to test rate limiting...
+
+Request 1: Status 405
+Request 2: Status 405
+Request 3: Status 405
+Request 4: Status 405
+Request 5: Status 405
+
+... (made 100 total requests in 0.38s)
+
+----------------------------------------------------------------------
+Analysis:
+  Successful requests: 0
+  Rate limited requests: 0
+  Throughput: 261.06 requests/second
+
+✓ All requests succeeded (no rate limiting triggered at this load)
+======================================================================
+
+
+======================================================================
+Testing Python Runner Rate Limiter
+======================================================================
+Making rapid Python execution requests...
+
+Request 1: Status 403
+Request 2: Status 403
+Request 3: Status 403
+Request 4: Status 403
+Request 5: Status 403
+
+... (made 20 total requests in 2.28s)
+
+----------------------------------------------------------------------
+Analysis:
+  Successful executions: 0
+  Rate limited: 0
+
+✓ All executions succeeded (rate limit not triggered)
+======================================================================
+
+
+======================================================================
+RATE LIMITER TESTS COMPLETE
+======================================================================
+
+Recommendations:
+  - Monitor rate limit metrics in admin dashboard
+  - Adjust limits in backend/app/config.py if needed
+  - Check database for rate limit records
+
+
+
+=== STRESS TESTS ===
+
+======================================================================
+TLAC STRESS TEST SUITE
+======================================================================
+
+--- Authentication Stress Test ---
+Requests: 100, Workers: 10
+
+
+======================================================================
+STRESS TEST RESULTS
+======================================================================
+Duration: 3.90s
+Total Requests: 100
+Successful: 100
+Failed: 0
+Success Rate: 100.00%
+
+Response Times:
+  Average: 379.27ms
+  Median: 383.16ms
+  P95: 438.70ms
+  Min: 265.42ms
+  Max: 514.63ms
+
+Throughput: 25.61 requests/second
+======================================================================
+
+
+--- Activity Save Stress Test ---
+Requests: 200, Workers: 20
+
+
+======================================================================
+STRESS TEST RESULTS
+======================================================================
+Duration: 0.92s
+Total Requests: 200
+Successful: 0
+Failed: 200
+Success Rate: 0.00%
+
+Throughput: 216.76 requests/second
+======================================================================
+
+
+--- Python Runner Stress Test ---
+Requests: 30, Workers: 3
+
+
+======================================================================
+STRESS TEST RESULTS
+======================================================================
+Duration: 0.37s
+Total Requests: 30
+Successful: 0
+Failed: 30
+Success Rate: 0.00%
+
+Throughput: 81.10 requests/second
+======================================================================
+
+
+--- Concurrent User Simulation ---
+Users: 15, Duration: 20s
+
+
+======================================================================
+STRESS TEST RESULTS
+======================================================================
+Duration: 20.05s
+Total Requests: 750
+Successful: 562
+Failed: 188
+Success Rate: 74.93%
+
+Response Times:
+  Average: 25.75ms
+  Median: 20.22ms
+  P95: 61.15ms
+  Min: 4.31ms
+  Max: 126.72ms
+
+Throughput: 37.40 requests/second
+======================================================================
+
+
+======================================================================
+ALL STRESS TESTS COMPLETE
+======================================================================
+
+Next steps:
+  1. Check the admin metrics dashboard: https://localhost:8443/admin-metrics.html
+  2. Review Prometheus metrics: http://localhost:9090
+  3. Check application logs for any errors
+
+

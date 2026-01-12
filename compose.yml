@@ -71,6 +71,10 @@ volumes:
   caddy_config:
   pg_data:
 
+networks:
+  default:
+    name: tlac-network
+
 # Uncomment for production with Docker secrets:
 # secrets:
 #   db_password:
