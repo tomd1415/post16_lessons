@@ -2,12 +2,14 @@
   admin off
 }
 
-http://localhost:8080 {
-  redir https://localhost:8443{uri}
+http://:8080 {
+  redir https://{host}:8443{uri}
 }
 
-https://localhost:8443 {
-  tls internal
+https://:8443 {
+  tls internal {
+    on_demand
+  }
 
   # Security headers
   header {

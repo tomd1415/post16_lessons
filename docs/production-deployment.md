@@ -471,6 +471,152 @@ your-domain.com {
 }
 ```
 
+### IP Address Only (No Domain Name)
+
+For internal networks where you only have an IP address (e.g., school LANs), use `mkcert` to create trusted certificates.
+
+#### 1. Install mkcert
+
+**Debian/Ubuntu:**
+```bash
+sudo apt install libnss3-tools
+curl -JLO "https://dl.filippo.io/mkcert/latest?for=linux/amd64"
+chmod +x mkcert-v*-linux-amd64
+sudo mv mkcert-v*-linux-amd64 /usr/local/bin/mkcert
+```
+
+**Gentoo:**
+```bash
+emerge -av app-crypt/mkcert
+```
+
+#### 2. Create Local CA and Certificates
+
+```bash
+# Install the local CA (creates rootCA.pem in ~/.local/share/mkcert/)
+mkcert -install
+
+# Generate certificate for your server IP (replace with your actual IP)
+mkcert -cert-file tlac-cert.pem -key-file tlac-key.pem 192.168.1.100 localhost 127.0.0.1
+
+# Verify the certificate was created
+ls -la tlac-*.pem
+```
+
+#### 3. Deploy Certificates to Docker
+
+```bash
+# Create certs directory
+mkdir -p docker/certs
+
+# Copy certificates
+cp tlac-cert.pem tlac-key.pem docker/certs/
+
+# Set appropriate permissions
+chmod 644 docker/certs/tlac-cert.pem
+chmod 600 docker/certs/tlac-key.pem
+```
+
+#### 4. Configure Caddyfile for IP Address
+
+Create `docker/Caddyfile.ip`:
+
+```caddyfile
+{
+    admin off
+}
+
+http://:8080 {
+    redir https://{host}:8443{uri}
+}
+
+https://:8443 {
+    tls /etc/caddy/certs/tlac-cert.pem /etc/caddy/certs/tlac-key.pem
+
+    # Security headers
+    header {
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "geolocation=(), microphone=(), camera=()"
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none';"
+    }
+
+    reverse_proxy api:8000 {
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+}
+```
+
+#### 5. Update Docker Compose
+
+Add the certificate volume mount to your `compose.yml`:
+
+```yaml
+services:
+  proxy:
+    image: caddy:2-alpine
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+    volumes:
+      - ./docker/Caddyfile.ip:/etc/caddy/Caddyfile:ro
+      - ./docker/certs:/etc/caddy/certs:ro  # Add this line
+    # ... rest of config
+```
+
+#### 6. Distribute CA Certificate to Client Machines
+
+To avoid browser warnings, install the CA certificate on each client machine.
+
+**Find your CA certificate:**
+```bash
+# The CA is stored here (on the machine where you ran mkcert -install)
+ls ~/.local/share/mkcert/
+# Look for: rootCA.pem
+```
+
+**Install on Windows clients:**
+1. Copy `rootCA.pem` to the Windows machine
+2. Double-click the file → Install Certificate
+3. Select "Local Machine" → Next
+4. Select "Place all certificates in the following store" → Browse
+5. Select "Trusted Root Certification Authorities" → OK → Next → Finish
+
+**Install on macOS clients:**
+1. Copy `rootCA.pem` to the Mac
+2. Double-click to open in Keychain Access
+3. Add to "System" keychain
+4. Find the certificate, double-click, expand "Trust"
+5. Set "When using this certificate" to "Always Trust"
+
+**Install on Linux clients:**
+```bash
+# Debian/Ubuntu
+sudo cp rootCA.pem /usr/local/share/ca-certificates/mkcert-ca.crt
+sudo update-ca-certificates
+
+# For Firefox (uses its own certificate store)
+# Go to Settings → Privacy & Security → Certificates → View Certificates
+# Import rootCA.pem under "Authorities" tab
+```
+
+**Install on Chromebooks (if managed):**
+- Upload the CA certificate via Google Admin Console under Device Management → Networks → Certificates
+
+#### 7. Verify Setup
+
+After restarting Docker and installing the CA on a client:
+
+```bash
+# From a client machine with CA installed
+curl https://192.168.1.100:8443/api/health
+# Should return {"status": "ok", ...} without certificate warnings
+```
+
 ---
 
 ## Monitoring Setup
