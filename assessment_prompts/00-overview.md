@@ -9,7 +9,8 @@ Teachers upload lesson plans (.docx) and resources (.pptx) for a unit, provide a
 ## How These Documents Work Together
 
 ```
-00-overview.md          <- You are here. Start here.
+CHANGELOG.md                <- IMPORTANT: Read this first! Tracks all modifications
+00-overview.md              <- You are here. Start here for context.
 01-system-architecture.md   <- Technical stack, project structure, deployment
 02-question-types.md        <- All question type specifications with examples
 03-ai-generation.md         <- How the AI generates assessments from lesson plans
@@ -24,10 +25,13 @@ Teachers upload lesson plans (.docx) and resources (.pptx) for a unit, provide a
 
 ## For the AI Building This System
 
+**IMPORTANT:** Always read `CHANGELOG.md` first! It tracks all customisations, design decisions, and modifications made to these documents.
+
 If you're an AI assistant helping to build this system, use these documents as follows:
 
 | When the user asks about... | Read this document |
 |---|---|
+| What has changed, design decisions, customisations | `CHANGELOG.md` |
 | Project setup, tech stack, folder structure | `01-system-architecture.md` |
 | What question types to support | `02-question-types.md` |
 | How to generate questions from lesson plans | `03-ai-generation.md` |
@@ -57,6 +61,31 @@ If you're an AI assistant helping to build this system, use these documents as f
 3. **Inclusive Design**: Questions scaffold from accessible to challenging; no pupil should feel they "failed"
 4. **Comprehensive Tracking**: Record every interaction for teacher analytics and trend analysis
 5. **Privacy First**: GDPR compliant, minimal data collection, secure by default
+
+### CRITICAL: Pupil Accessibility Needs
+
+**All pupils at this school have communication difficulties**, primarily:
+- **Autism Spectrum Condition (ASC)**
+- **ADHD**
+- **Related communication and processing differences**
+
+This fundamentally shapes how assessments must be designed:
+
+| Need | Design Response |
+|------|-----------------|
+| Clear, literal language | Avoid idioms, sarcasm, metaphors, ambiguous phrasing |
+| Reduced cognitive load | One question per screen, minimal visual clutter, no distractions |
+| Predictable structure | Consistent layout across all questions, clear expectations upfront |
+| Processing time | Generous time limits (or untimed), no visible countdown pressure |
+| Sensory considerations | Calm colours, no flashing/animations, quiet interface |
+| Explicit instructions | Tell them exactly what to do - never assume understanding |
+| Concrete examples | Use specific, real-world examples they can visualise |
+| Positive reinforcement | Celebrate effort and progress, not just correctness |
+| Anxiety reduction | Save progress constantly, allow breaks, no sudden surprises |
+| Executive function support | Clear start/stop points, visual progress indicators |
+| Transition support | Warn before assessment ends, clear "what happens next" |
+
+**This applies to ALL documents in this folder** - every component must consider these needs.
 
 ### Core User Journeys
 
@@ -118,3 +147,11 @@ The AI must parse these documents to understand:
 ## Questions?
 
 If anything is unclear, check the relevant document first. If still unclear, ask the user for clarification - they have access to example lesson plans and can provide additional context.
+
+## Maintaining These Documents
+
+When making changes to any document in this folder:
+1. **Read `CHANGELOG.md` first** - understand existing customisations
+2. **Make your changes** to the relevant document(s)
+3. **Update `CHANGELOG.md`** - document what you changed and why
+4. **Check for conflicts** - ensure changes don't break accessibility requirements

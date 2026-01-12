@@ -456,7 +456,162 @@ When pupil clicks "Show scaffold" on a Python question:
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## Accessibility Features
+## Autism/ADHD Accessibility (CRITICAL)
+
+All pupils at this school have communication difficulties, primarily autism, ADHD, and similar conditions. The interface MUST be designed with these needs as the primary consideration, not as an afterthought.
+
+### Visual Design Requirements
+
+| Aspect | Requirement | Rationale |
+|--------|-------------|-----------|
+| Colour palette | Muted, calm colours (soft blues, greens, greys) | Reduce sensory overload |
+| Contrast | Meet WCAG AA but avoid harsh black-on-white | Reduce visual stress |
+| Animations | None, or respect `prefers-reduced-motion` | Avoid distraction/overstimulation |
+| Layout | Consistent across all screens | Predictability reduces anxiety |
+| Whitespace | Generous spacing between elements | Reduce cognitive load |
+| Font | Sans-serif, minimum 16px, 1.5 line-height | Readability |
+| Icons | Always paired with text labels | Don't rely on symbol interpretation |
+
+### Interface Behaviour
+
+**Progress & Time:**
+- Show question progress clearly: "Question 3 of 10" (not just dots)
+- Do NOT show countdown timers by default (teacher can enable if needed)
+- If time shown, display as "About 20 minutes remaining" not "19:47"
+- Save progress after EVERY interaction (not just question submission)
+- Allow pupils to see they can take breaks: "Your progress is saved"
+
+**Transitions:**
+- Warn before significant changes: "This is the last question"
+- Clear "what happens next" messaging: "After you submit, you'll see your results"
+- No sudden page changes or popups
+- Use gentle transitions (fade, not slide/bounce)
+
+**Feedback timing:**
+- Immediate feedback mode: Show result straight after each question
+- Teacher can choose delayed feedback if preferred
+- Never use red for incorrect - use amber/orange
+- Correct feedback: Green tick with explanation
+- Incorrect feedback: Orange info icon with helpful explanation
+
+### Question Presentation
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Question 3 of 10                    Your progress is saved │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Look at this Python code:                                  │
+│                                                             │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │  number = 5                                           │  │
+│  │  print(number * 2)                                    │  │
+│  └───────────────────────────────────────────────────────┘  │
+│                                                             │
+│  What will this code display?                               │
+│                                                             │
+│  Select ONE answer:                                         │
+│                                                             │
+│  ○  5                                                       │
+│  ○  10                                                      │
+│  ○  52                                                      │
+│  ○  number * 2                                              │
+│                                                             │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │  💡 Need help? Click for a hint                       │  │
+│  └───────────────────────────────────────────────────────┘  │
+│                                                             │
+│                                           [Submit Answer]   │
+│                                                             │
+│  You can take a break at any time. Your work is saved.      │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+Key features in this layout:
+- Clear question number and progress indication
+- Reassurance that progress is saved
+- Code in clear, separate box
+- Explicit instruction "Select ONE answer"
+- Hint available but not intrusive
+- Reassurance about breaks at bottom
+
+### Anxiety Reduction Features
+
+1. **Start screen preparation:**
+   - Show exactly what to expect (number of questions, estimated time)
+   - Explain that hints are available
+   - Reassure that it's okay to find things tricky
+   - Explain what happens when finished
+
+2. **During assessment:**
+   - Constant "progress saved" reassurance
+   - No time pressure indicators
+   - Hint button always visible but not pushy
+   - Clear, consistent button placement
+
+3. **Completion:**
+   - Celebrate finishing (not just the score)
+   - Focus on what they did well
+   - Frame areas to improve positively
+   - Clear "what next" instructions
+
+### Error Prevention
+
+- Large click targets (minimum 48x48px)
+- Confirm before final submission: "Ready to submit your assessment?"
+- No accidental navigation away (confirm if leaving)
+- Auto-save means no lost work
+- Clear undo for drag-and-drop questions
+
+### Sensory Considerations
+
+```css
+/* Example CSS for calm interface */
+:root {
+  --bg-primary: #f8f9fa;        /* Soft off-white */
+  --bg-secondary: #e9ecef;       /* Light grey */
+  --text-primary: #343a40;       /* Dark grey, not black */
+  --accent-calm: #6c9bc3;        /* Soft blue */
+  --success: #5a9a68;            /* Muted green */
+  --attention: #d4a94a;          /* Soft amber, not red */
+  --border-radius: 8px;          /* Soft corners */
+}
+
+/* No harsh shadows */
+.card {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+/* Respect user preferences */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@media (prefers-contrast: high) {
+  :root {
+    --text-primary: #000;
+    --bg-primary: #fff;
+  }
+}
+```
+
+### Communication Clarity Checklist
+
+For every screen, verify:
+- [ ] All instructions use literal, clear language
+- [ ] No idioms, metaphors, or figures of speech
+- [ ] One action per instruction
+- [ ] Buttons describe what they do ("Submit Answer" not "Go")
+- [ ] Any icons have text labels
+- [ ] Nothing requires inference or "reading between the lines"
+- [ ] No ambiguous pronouns
+- [ ] Error messages explain exactly what to do
+
+## Standard Accessibility Features
 
 ### Keyboard Navigation
 - Tab through all interactive elements

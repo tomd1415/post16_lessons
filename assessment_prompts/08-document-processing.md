@@ -4,7 +4,45 @@ How to extract content from teacher-uploaded lesson materials.
 
 ## Overview
 
-The system supports the NCCE (National Centre for Computing Education) Teach Computing curriculum format, which includes:
+The system supports the NCCE (National Centre for Computing Education) Teach Computing curriculum format.
+
+### Curriculum-Level Documents (in KS3 folder root)
+
+| File | Contents |
+|------|----------|
+| `KS3 TCC Curriculum Map_v1.1.xlsx` | Full curriculum mapping: National Curriculum statements → Units → Lessons → Learning Objectives, Taxonomy strands |
+| `NCCE - Teacher Guide KS3 - 1.1.pdf` | Pedagogy guidance, assessment approaches, progression, adaptation advice |
+
+### Teach Computing Taxonomy (10 Strands)
+
+The curriculum uses these taxonomy strands to categorise learning objectives:
+
+| Code | Strand | Description |
+|------|--------|-------------|
+| NW | Networks | Understand how networks retrieve/share information and associated risks |
+| CM | Creating Media | Select and create media including text, images, sounds, video |
+| DI | Data and Information | Understand how data is stored, organised, and represents real-world scenarios |
+| DD | Design and Development | Understand planning, creating, and evaluating computing artefacts |
+| CS | Computing Systems | Understand what a computer is and how its parts function together |
+| IT | Impact of Technology | Understand how individuals/society interact with computer systems |
+| AL | Algorithms | Comprehend, design, create, and evaluate algorithms |
+| PG | Programming | Create software to allow computers to solve problems |
+| ET | Effective Use of Tools | Use software tools to support computing work |
+| SS | Safety and Security | Understand risks when using technology and how to protect systems |
+
+These strands help the AI categorise questions and ensure coverage across the curriculum.
+
+### Assessment Approaches (from Teacher Guide)
+
+The NCCE recommends two summative assessment types:
+1. **Multiple Choice Quiz (MCQ)** - Quick knowledge checks
+2. **Rubric-based assessment** - For project/practical work
+
+The system should generate MCQ-style assessments aligned with this approach.
+
+## Unit Structure
+
+The system supports the NCCE Teach Computing curriculum format, which includes:
 
 ### Unit Structure (typical folder contents)
 ```
@@ -48,6 +86,71 @@ python-docx>=1.1.0
 python-pptx>=0.6.23
 Pillow>=10.0.0  # For image handling
 PyMuPDF>=1.23.0  # For PDF processing (learning graphs)
+openpyxl>=3.1.0  # For Excel curriculum map processing
+```
+
+## Curriculum Map Processing (Optional)
+
+The curriculum map Excel file can be parsed to:
+- Get the full list of units and lessons for each year group
+- Map learning objectives to taxonomy strands
+- Ensure generated assessments align with national curriculum requirements
+
+```python
+# backend/app/services/curriculum_map.py
+
+import openpyxl
+from dataclasses import dataclass
+
+@dataclass
+class CurriculumObjective:
+    year_group: int
+    unit_name: str
+    lesson_number: int
+    learning_objective: str
+    taxonomy_strands: list[str]  # e.g., ['NW', 'CS']
+    nc_statement: str  # National Curriculum statement reference
+
+
+class CurriculumMapParser:
+    """Parse the NCCE curriculum map Excel file."""
+
+    TAXONOMY_CODES = ['NW', 'CM', 'DI', 'DD', 'CS', 'IT', 'AL', 'PG', 'ET', 'SS']
+
+    def parse(self, xlsx_path: str) -> list[CurriculumObjective]:
+        """Extract curriculum objectives from the map."""
+        workbook = openpyxl.load_workbook(xlsx_path, data_only=True)
+        # Main data is typically on the second sheet
+        sheet = workbook.worksheets[1] if len(workbook.worksheets) > 1 else workbook.active
+
+        objectives = []
+        for row in sheet.iter_rows(min_row=2, values_only=True):
+            # Parse row based on column structure
+            # Columns typically: Year, Order, Unit, Lesson, LO, Taxonomy tags, NC ref
+            if row[0] and row[2]:  # Has year and unit
+                objectives.append(CurriculumObjective(
+                    year_group=int(row[0]) if isinstance(row[0], (int, float)) else 7,
+                    unit_name=str(row[2]),
+                    lesson_number=int(row[3]) if row[3] else 0,
+                    learning_objective=str(row[4]) if row[4] else '',
+                    taxonomy_strands=self._extract_strands(row),
+                    nc_statement=str(row[-1]) if row[-1] else ''
+                ))
+
+        return objectives
+
+    def _extract_strands(self, row) -> list[str]:
+        """Extract taxonomy strand codes from row."""
+        strands = []
+        row_text = ' '.join(str(cell) for cell in row if cell)
+        for code in self.TAXONOMY_CODES:
+            if code in row_text:
+                strands.append(code)
+        return strands
+
+    def get_objectives_for_unit(self, objectives: list, unit_name: str) -> list[CurriculumObjective]:
+        """Filter objectives for a specific unit."""
+        return [o for o in objectives if unit_name.lower() in o.unit_name.lower()]
 ```
 
 ## Unit Processing (Handling Zip Files)

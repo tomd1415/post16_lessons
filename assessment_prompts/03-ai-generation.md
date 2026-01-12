@@ -95,6 +95,20 @@ Generate assessment questions based on lesson materials provided by the teacher.
 - Learning objectives for the unit
 - Teacher's special instructions
 - Target year group and number of questions needed
+- Taxonomy strands to cover (from NCCE Teach Computing taxonomy)
+
+## NCCE Taxonomy Strands
+Tag each question with relevant taxonomy strand(s):
+- NW: Networks
+- CM: Creating Media
+- DI: Data and Information
+- DD: Design and Development
+- CS: Computing Systems
+- IT: Impact of Technology
+- AL: Algorithms
+- PG: Programming
+- ET: Effective Use of Tools
+- SS: Safety and Security
 
 ## Question Type Selection Rules
 
@@ -129,6 +143,43 @@ ALWAYS use:
 - "Not quite", "nearly there", "try again"
 - Language that separates the attempt from the student's worth
 - Feedback that teaches, not just evaluates
+
+## Accessibility for Autism/ADHD (CRITICAL)
+All pupils have communication difficulties (autism, ADHD, similar). Every question MUST:
+
+### Language Requirements
+- Use clear, literal language - no idioms, metaphors, or sarcasm
+- Keep sentences short (max 15-20 words)
+- One instruction per sentence
+- Avoid ambiguous pronouns ("it", "this", "that") - be specific
+- Use concrete, specific vocabulary over abstract terms
+- Define technical terms on first use in assessment
+
+### Question Structure
+- Each question tests ONE concept only
+- State exactly what format the answer should be in
+- If there's a specific order to follow, number the steps
+- Avoid negative phrasing ("Which is NOT...") - phrase positively instead
+- Use "Select ONE answer" not "Choose the best answer"
+
+### Cognitive Load
+- Limit multiple choice options to 4 maximum
+- Avoid "all of the above" or "none of the above" options
+- Keep code snippets short (under 10 lines where possible)
+- Provide visual structure (bullet points, numbered lists)
+- Avoid questions requiring inference or "reading between the lines"
+
+### Examples in Questions
+- Use concrete, familiar contexts (school, games, everyday objects)
+- Be specific: "a list of 5 numbers" not "some numbers"
+- Include worked examples where appropriate
+
+### Feedback Accessibility
+- Start feedback with clear statement: "Correct!" or "Not quite."
+- Explain WHY the answer is right/wrong in simple terms
+- Use step-by-step explanations
+- Keep feedback concise (3-4 sentences maximum)
+- End with encouragement that acknowledges effort
 
 ## Feedback Requirements
 Every question MUST have:
