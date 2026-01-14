@@ -115,7 +115,7 @@ Permissions-Policy: geolocation=(), microphone=(), camera=()
 **Changes:**
 - Configured standardized logging format: `%(asctime)s [%(levelname)s] %(name)s: %(message)s`
 - Added logger instances to all modules
-- Logged key operations: manifest loading, Docker operations, failed logins, rate limit violations
+- Logged key operations: manifest loading, Docker operations, failed logins (rate limit violations only when rate limiting is wired)
 - Logs now include context (usernames, file paths, error details)
 
 **Log Levels:**
@@ -123,43 +123,34 @@ Permissions-Policy: geolocation=(), microphone=(), camera=()
 - WARNING: Recoverable issues (invalid cursor, failed container cleanup)
 - ERROR: Serious problems (database failures, Docker errors)
 
-#### 7. Implemented API Rate Limiting ✓
+#### 7. Implemented API Rate Limiter Primitives ✓
 **Files Modified:**
 - `backend/app/models.py` (added `ApiRateLimit` model)
 - `backend/app/rate_limit.py` (added `ApiRateLimiter` class)
-- `backend/app/main.py` (applied to endpoints)
 
 **Changes:**
 - Added `ApiRateLimit` database table for tracking API requests
 - Implemented sliding window rate limiting (1-minute windows)
-- Applied to critical endpoints:
+- Defined default per-endpoint limits:
   - `activity_save`: 60 requests/minute
   - `python_run`: 20 executions/minute
   - `mark_activity`: 30 marks/minute
   - `default`: 120 requests/minute
-- Rate limits tracked per user+endpoint combination
+- Rate limits are tracked per user+endpoint combination when wired into endpoints
 
 **Database Migration Required:**
 ```python
 # ApiRateLimit table will be auto-created on next startup
 ```
 
-#### 8. Fixed Client IP Logging for Audit ✓
-**Files Modified:**
-- `backend/app/main.py` (added `get_client_ip()` function)
-- `docker/Caddyfile` (configured header forwarding)
+#### 8. Client IP Logging (Proxy Headers Required)
+**Current State:**
+- `docker/Caddyfile` forwards `X-Real-IP` and `X-Forwarded-For`
+- The app stores `request.client.host` in audit logs and sessions
 
-**Changes:**
-- Added `get_client_ip()` helper that parses X-Forwarded-For and X-Real-IP headers
-- Updated all audit logging to use real client IP
-- Updated session creation to store real client IP
-- Updated login rate limiter to use real client IP
-- Configured Caddy to forward client IP headers
-
-**Header Priority:**
-1. X-Forwarded-For (first IP in chain)
-2. X-Real-IP
-3. Direct connection IP
+**To capture real client IPs behind Caddy:**
+- Enable `--proxy-headers` for uvicorn, or
+- Add a helper to parse forwarded headers and use it for audit/session IPs
 
 ---
 
@@ -306,23 +297,19 @@ docker compose exec api python -c "from app.db import engine; from app.models im
 # View logs
 docker compose logs -f api
 
-# Look for structured log entries:
-# 2025-01-11 12:00:00 [INFO] app.main: Loaded manifest from /srv/lessons/manifest.json
-# 2025-01-11 12:01:00 [WARNING] app.main: Rate limit exceeded for user john.doe on activity_save: 61/60
+# Look for warnings/errors from app.python_runner if Docker issues occur.
 ```
 
-### 2. Test Rate Limiting
+### 2. Test Login Lockout
 ```bash
-# Rapidly save activity state (will hit rate limit after 60 requests/minute)
-for i in {1..100}; do
-  curl -X POST https://localhost:8443/api/activity/state/lesson-1/a1 \
-    -H "Cookie: tlac_session=..." \
-    -H "X-CSRF-Token: ..." \
+# Trigger lockout after 3 failed attempts
+for i in {1..5}; do
+  curl -X POST https://localhost:8443/api/auth/login \
     -H "Content-Type: application/json" \
-    -d '{"state": {"test": true}}'
+    -d '{"username":"test.user","password":"wrong"}'
 done
 
-# Should see 429 errors after limit
+# Should see 429 errors after lockout
 ```
 
 ### 3. Test Pagination
@@ -394,10 +381,10 @@ All environment variables now have documented defaults in `.env.example`.
 1. ✅ **XSS Protection**: CSP headers prevent inline script execution
 2. ✅ **Clickjacking Protection**: X-Frame-Options: DENY
 3. ✅ **MIME Sniffing Protection**: X-Content-Type-Options: nosniff
-4. ✅ **Rate Limiting**: Prevents API abuse and DoS
-5. ✅ **Audit Trail**: Accurate client IP logging for forensics
+4. ✅ **Rate Limiting**: Login backoff reduces brute-force risk (API limits require wiring)
+5. ✅ **Audit Trail**: Audit log records request IPs (enable proxy headers to capture real client IPs)
 6. ✅ **Secrets Management**: Database credentials externalized
-7. ✅ **Persistent Rate Limiting**: Survives restarts, prevents bypass
+7. ✅ **Persistent Rate Limiting**: Backoff state survives restarts (API limits only when wired)
 8. ✅ **Connection Pooling**: Prevents connection exhaustion attacks
 
 ---
@@ -550,7 +537,7 @@ docker compose -f compose.yml -f compose.monitoring.yml up -d
 - HTTP request metrics with color-coded success rates
 - Authentication metrics and login success rates
 - Python execution statistics
-- Activity saves and rate limit violations
+- Activity saves and rate limit violations (if enabled)
 - System health (DB connections, errors)
 - Auto-refreshes every 30 seconds
 - Mobile-responsive card layout
@@ -560,9 +547,10 @@ docker compose -f compose.yml -f compose.monitoring.yml up -d
 - Middleware automatically tracks all HTTP requests
 - Python code execution tracking with status classification (success/error/timeout)
 - Activity save tracking per lesson with duration metrics
-- Rate limit violation tracking for all endpoints
-- Metrics endpoint at `/api/metrics` for Prometheus scraping
-- Admin-only summary endpoint at `/api/admin/metrics` for dashboard
+- Rate limit violation metric available when API rate limiting is wired
+- Admin-only JSON summary endpoint at `/api/metrics`
+- Admin-only dashboard endpoint at `/api/admin/metrics`
+- Prometheus `/metrics` endpoint not exposed by default
 - Pre-configured Grafana dashboard with 6 panels
 - Alerting rules examples in monitoring guide
 - Comprehensive troubleshooting documentation
@@ -622,10 +610,10 @@ Implemented comprehensive performance testing suite to validate system behavior 
    - Detailed success rate and response time analysis
 
 4. **Rate Limiter Validation** (`test_rate_limiter.py`)
-   - Validates login rate limiting (5 attempts before lockout)
-   - Tests API rate limiting under heavy load
-   - Validates Python runner rate limiting
-   - Confirms HTTP 429 responses
+   - Validates login backoff (lockout after 3 failures with escalating delays)
+   - Tests API rate limiting under heavy load (only if `ApiRateLimiter` is wired)
+   - Validates Python runner rate limiting (only if enabled)
+   - Confirms HTTP 429 responses for login lockouts
 
 **Performance Targets:**
 
@@ -693,7 +681,7 @@ Created comprehensive API documentation covering all 28 endpoints:
 **Endpoint Categories:**
 1. **Health & Monitoring** (3 endpoints)
    - `GET /api/health` - Health check
-   - `GET /api/metrics` - Prometheus metrics
+   - `GET /api/metrics` - Admin JSON metrics summary
    - `GET /api/admin/metrics` - Admin metrics summary
 
 2. **Authentication** (3 endpoints)

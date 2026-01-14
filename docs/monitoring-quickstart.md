@@ -4,10 +4,11 @@ Get monitoring up and running in 5 minutes.
 
 ## 1. Install Dependencies
 
+If you run the API outside Docker, install backend requirements (Prometheus client is already included):
+
 ```bash
-# Install prometheus-client in backend
 cd backend
-../.venv/bin/pip install prometheus-client==0.20.0
+../.venv/bin/pip install -r requirements.txt
 ```
 
 ## 2. Start Monitoring Stack
@@ -35,10 +36,11 @@ This starts:
 
 ## 4. View Metrics
 
-Raw metrics endpoint:
-```bash
-curl http://localhost:8000/metrics
-```
+Admin metrics (requires an admin session):
+- UI: `https://localhost:8443/admin-metrics.html`
+- JSON: `https://localhost:8443/api/admin/metrics`
+
+Note: The app does not expose a Prometheus `/metrics` endpoint by default, so Prometheus/Grafana will remain empty until you add one (see [monitoring-guide.md](monitoring-guide.md)).
 
 ## 5. Test It Works
 
@@ -46,14 +48,11 @@ Generate some traffic:
 ```bash
 # Make a few requests
 for i in {1..10}; do
-  curl -s http://localhost:8443/ > /dev/null
+  curl -k -s https://localhost:8443/ > /dev/null
   echo "Request $i complete"
 done
 
-# Wait 15 seconds for Prometheus to scrape
-sleep 15
-
-# Check Grafana dashboard - you should see the requests!
+# If you've enabled a Prometheus endpoint, wait 15 seconds and check Grafana.
 ```
 
 ## What's Next?
@@ -66,24 +65,23 @@ sleep 15
 ## Troubleshooting
 
 **Grafana shows "No Data":**
+Prometheus needs a `/metrics` endpoint. The app only exposes admin JSON by default.
+
+If you've added `/metrics`, verify Prometheus can reach it:
 ```bash
-# Check if Prometheus can reach API
 docker compose exec prometheus wget -O- http://api:8000/metrics
 
 # Check Prometheus targets
 open http://localhost:9090/targets
 ```
 
-**Metrics endpoint returns 404:**
-```bash
-# Restart API container
-docker compose restart api
-
-# Check logs
-docker compose logs api | grep -i metric
-```
+**Metrics endpoint returns 403 or 404:**
+- `/api/metrics` and `/api/admin/metrics` require an admin session.
+- `/metrics` is not exposed by default (see [monitoring-guide.md](monitoring-guide.md)).
 
 ## Default Metrics Available
+
+(Prometheus counters are available once `/metrics` is exposed.)
 
 - **HTTP**: Request rate, latency, status codes
 - **Auth**: Login attempts, active sessions

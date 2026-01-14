@@ -57,6 +57,11 @@ cp .env.example .env.production
 chmod 600 .env.production
 ```
 
+Use the file with Docker Compose:
+```bash
+docker compose --env-file .env.production -f compose.yml -f compose.prod.yml up -d
+```
+
 ### 2. Required Environment Variables
 
 ```bash
@@ -68,46 +73,45 @@ chmod 600 .env.production
 POSTGRES_USER=tlac_prod
 POSTGRES_PASSWORD=<GENERATE_STRONG_PASSWORD>
 POSTGRES_DB=tlac_production
-DATABASE_URL=postgresql://tlac_prod:<PASSWORD>@db:5432/tlac_production
-
-# Connection pool settings
-DB_POOL_SIZE=10
-DB_MAX_OVERFLOW=20
-DB_POOL_TIMEOUT=30
-DB_POOL_RECYCLE=3600
+# Only needed when running the API outside compose:
+DATABASE_URL=postgresql+psycopg://tlac_prod:<PASSWORD>@db:5432/tlac_production
 
 # ============================================
-# SESSION & SECURITY
+# SESSION
 # ============================================
 SESSION_TTL_MINUTES=480
-CSRF_HEADER_NAME=X-CSRF-Token
 SESSION_COOKIE_NAME=tlac_session
-
-# Cookie security (MUST be true in production)
-SESSION_SECURE=true
-SESSION_HTTPONLY=true
-SESSION_SAMESITE=strict
 
 # ============================================
 # PYTHON RUNNER
 # ============================================
-RUNNER_TIMEOUT_SEC=10
-RUNNER_CONCURRENCY=5
-RUNNER_MEMORY_LIMIT=256m
-RUNNER_CPU_LIMIT=0.5
+RUNNER_ENABLED=1
+RUNNER_IMAGE=post16_lessons-api
+RUNNER_DOCKER_HOST=unix:///var/run/docker.sock
+RUNNER_DOCKER_API_VERSION=1.50
+RUNNER_TIMEOUT_SEC=3
+RUNNER_MEMORY_MB=128
+RUNNER_CPUS=0.5
+RUNNER_PIDS_LIMIT=64
+RUNNER_TMPFS_MB=32
+RUNNER_MAX_OUTPUT=20000
+RUNNER_MAX_CODE_SIZE=20000
+RUNNER_MAX_FILES=8
+RUNNER_MAX_FILE_BYTES=50000
+RUNNER_MAX_ARCHIVE_BYTES=250000
+RUNNER_CONCURRENCY=2
+RUNNER_AUTO_PULL=0
 
 # ============================================
-# RATE LIMITING
+# DATA RETENTION
 # ============================================
-RATE_LIMIT_LOGIN_ATTEMPTS=5
-RATE_LIMIT_ACTIVITY_SAVES=60
-RATE_LIMIT_PYTHON_RUNS=30
+RETENTION_YEARS=2
 
 # ============================================
 # ATTENTION THRESHOLDS
 # ============================================
-ATTENTION_LIMIT=50
-ATTENTION_REVISION_THRESHOLD=10
+ATTENTION_LIMIT=200
+ATTENTION_REVISION_THRESHOLD=5
 ATTENTION_STUCK_DAYS=7
 
 # ============================================
@@ -115,14 +119,7 @@ ATTENTION_STUCK_DAYS=7
 # ============================================
 STATIC_ROOT=/srv
 LESSON_MANIFEST_PATH=/srv/lessons/manifest.json
-LINK_OVERRIDES_PATH=/srv/data/link_overrides.json
-BACKUP_DIR=/srv/backups
-
-# ============================================
-# MONITORING
-# ============================================
-LOG_LEVEL=INFO
-PROMETHEUS_ENABLED=true
+LINK_OVERRIDES_PATH=/data/link-overrides.json
 ```
 
 ### 3. Generate Secure Passwords
@@ -168,7 +165,7 @@ sudo systemctl restart sshd
 ### 3. Docker Security
 
 ```bash
-# docker-compose.prod.yml security additions
+# compose.prod.yml security additions
 
 services:
   api:
@@ -215,10 +212,10 @@ GRANT SELECT ON ALL TABLES IN SCHEMA public TO tlac_readonly;
 
 ```bash
 # Start database first
-docker compose -f docker-compose.prod.yml up -d db
+docker compose -f compose.yml -f compose.prod.yml up -d db
 
 # Wait for database to be ready
-docker compose -f docker-compose.prod.yml logs -f db
+docker compose -f compose.yml -f compose.prod.yml logs -f db
 # Look for "database system is ready to accept connections"
 ```
 
@@ -226,10 +223,10 @@ docker compose -f docker-compose.prod.yml logs -f db
 
 ```bash
 # Schema is auto-created on first API start
-docker compose -f docker-compose.prod.yml up -d api
+docker compose -f compose.yml -f compose.prod.yml up -d api
 
 # Verify tables exist
-docker compose exec db psql -U tlac_prod -d tlac_production -c "\dt"
+docker compose -f compose.yml -f compose.prod.yml exec db psql -U tlac_prod -d tlac_production -c "\dt"
 ```
 
 ### 3. Bootstrap Admin User
@@ -248,10 +245,10 @@ curl -X POST https://your-domain.com/api/admin/bootstrap \
 ### 4. Database Backup Configuration
 
 ```yaml
-# docker-compose.prod.yml
+# compose.prod.yml
 services:
   backup:
-    image: postgres:15-alpine
+    image: postgres:16
     environment:
       - PGHOST=db
       - PGUSER=tlac_prod
@@ -271,106 +268,46 @@ services:
 
 ## Docker Deployment
 
+Commands below assume `compose.yml` + `compose.prod.yml`. If you keep production settings in `.env.production`, add `--env-file .env.production` to each command.
+
 ### 1. Production Docker Compose
 
-Create `docker-compose.prod.yml`:
+Use `compose.yml` as the base and add a `compose.prod.yml` override for production-specific changes (ports, TLS, secrets).
+
+Example `compose.prod.yml`:
 
 ```yaml
-version: '3.8'
-
 services:
-  caddy:
-    image: caddy:2-alpine
-    restart: always
+  proxy:
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - ./docker/Caddyfile.prod:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      - api
-    networks:
-      - frontend
-
   api:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.api
-    restart: always
     environment:
-      - DATABASE_URL=${DATABASE_URL}
-      - SESSION_TTL_MINUTES=${SESSION_TTL_MINUTES}
-      - RUNNER_TIMEOUT_SEC=${RUNNER_TIMEOUT_SEC}
-      - RUNNER_CONCURRENCY=${RUNNER_CONCURRENCY}
-    volumes:
-      - ./web:/srv:ro
-      - ./lessons:/srv/lessons:ro
-      - ./data:/srv/data
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      - frontend
-      - backend
-    deploy:
-      resources:
-        limits:
-          cpus: '2'
-          memory: 2G
-        reservations:
-          cpus: '0.5'
-          memory: 512M
-
+      - RUNNER_AUTO_PULL=0
+      - RETENTION_YEARS=2
   db:
-    image: postgres:15-alpine
-    restart: always
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - backend
-    deploy:
-      resources:
-        limits:
-          cpus: '1'
-          memory: 1G
-
-networks:
-  frontend:
-  backend:
-    internal: true
-
-volumes:
-  postgres_data:
-  caddy_data:
-  caddy_config:
+    # Optionally use Docker secrets for POSTGRES_PASSWORD
 ```
+
+Copy `docker/Caddyfile` to `docker/Caddyfile.prod` and update the site address/TLS (see below).
 
 ### 2. Build and Deploy
 
 ```bash
 # Build images
-docker compose -f docker-compose.prod.yml build
+docker compose -f compose.yml -f compose.prod.yml build
 
 # Start services
-docker compose -f docker-compose.prod.yml up -d
+docker compose -f compose.yml -f compose.prod.yml up -d
 
 # Check status
-docker compose -f docker-compose.prod.yml ps
+docker compose -f compose.yml -f compose.prod.yml ps
 
 # View logs
-docker compose -f docker-compose.prod.yml logs -f
+docker compose -f compose.yml -f compose.prod.yml logs -f
 ```
 
 ### 3. Zero-Downtime Updates
@@ -380,8 +317,8 @@ docker compose -f docker-compose.prod.yml logs -f
 git pull origin main
 
 # Rebuild and restart with zero downtime
-docker compose -f docker-compose.prod.yml build api
-docker compose -f docker-compose.prod.yml up -d --no-deps api
+docker compose -f compose.yml -f compose.prod.yml build api
+docker compose -f compose.yml -f compose.prod.yml up -d --no-deps api
 ```
 
 ---
@@ -390,59 +327,33 @@ docker compose -f docker-compose.prod.yml up -d --no-deps api
 
 ### Caddy Production Configuration
 
+Static assets are served by the API container, so Caddy just reverse-proxies.
+
 ```caddyfile
 # docker/Caddyfile.prod
 
 {
+    admin off
     email admin@your-school.edu
-    acme_ca https://acme-v02.api.letsencrypt.org/directory
 }
 
 your-domain.com {
-    # Security headers
     header {
-        X-Content-Type-Options "nosniff"
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
         X-Frame-Options "DENY"
+        X-Content-Type-Options "nosniff"
         X-XSS-Protection "1; mode=block"
         Referrer-Policy "strict-origin-when-cross-origin"
         Permissions-Policy "geolocation=(), microphone=(), camera=()"
-        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none';"
-        -Server
     }
 
-    # API proxy
-    handle /api/* {
-        reverse_proxy api:8000 {
-            header_up X-Forwarded-For {remote_host}
-            header_up X-Real-IP {remote_host}
-            health_uri /api/health
-            health_interval 30s
-        }
-    }
-
-    # Static files
-    handle {
-        root * /srv
-        file_server {
-            precompressed gzip
-        }
-        try_files {path} /index.html
-    }
-
-    # Compression
-    encode gzip
-
-    # Logging
-    log {
-        output file /var/log/caddy/access.log {
-            roll_size 100mb
-            roll_keep 10
-        }
-        format json
+    reverse_proxy api:8000 {
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
     }
 }
 
-# Redirect www to non-www
 www.your-domain.com {
     redir https://your-domain.com{uri} permanent
 }
@@ -535,12 +446,12 @@ https://:8443 {
 
     # Security headers
     header {
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
         X-Content-Type-Options "nosniff"
         X-Frame-Options "DENY"
         X-XSS-Protection "1; mode=block"
         Referrer-Policy "strict-origin-when-cross-origin"
         Permissions-Policy "geolocation=(), microphone=(), camera=()"
-        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none';"
     }
 
     reverse_proxy api:8000 {
@@ -623,13 +534,15 @@ curl https://192.168.1.100:8443/api/health
 
 ### 1. Enable Prometheus Scraping
 
+Prometheus scraping requires a `/metrics` endpoint (not exposed by default). After adding it, configure Prometheus like this:
+
 ```yaml
 # prometheus.yml
 scrape_configs:
   - job_name: 'tlac'
     static_configs:
       - targets: ['api:8000']
-    metrics_path: '/api/metrics'
+    metrics_path: '/metrics'
     scheme: 'http'
 ```
 
@@ -725,7 +638,7 @@ rclone sync /srv/backups remote:tlac-backups/
 For high-traffic deployments:
 
 ```yaml
-# docker-compose.prod.yml
+# compose.prod.yml
 services:
   api:
     deploy:
@@ -790,21 +703,21 @@ db:
 git pull origin main
 
 # 4. Rebuild and restart
-docker compose -f docker-compose.prod.yml build
-docker compose -f docker-compose.prod.yml up -d
+docker compose -f compose.yml -f compose.prod.yml build
+docker compose -f compose.yml -f compose.prod.yml up -d
 
 # 5. Verify health
 curl https://your-domain.com/api/health
 
 # 6. Monitor logs
-docker compose -f docker-compose.prod.yml logs -f --tail=100
+docker compose -f compose.yml -f compose.prod.yml logs -f --tail=100
 ```
 
 ### Database Maintenance
 
 ```bash
 # Connect to database
-docker compose exec db psql -U tlac_prod -d tlac_production
+docker compose -f compose.yml -f compose.prod.yml exec db psql -U tlac_prod -d tlac_production
 
 # Vacuum and analyze
 VACUUM ANALYZE;
@@ -840,27 +753,28 @@ ORDER BY pg_total_relation_size(relid) DESC;
 
 ```bash
 # Check logs
-docker compose -f docker-compose.prod.yml logs api
+docker compose -f compose.yml -f compose.prod.yml logs api
 
 # Check resource limits
 docker stats
 
 # Verify environment
-docker compose -f docker-compose.prod.yml config
+docker compose -f compose.yml -f compose.prod.yml config
 ```
 
 #### 2. Database Connection Errors
 
 ```bash
 # Test database connectivity
-docker compose exec api python -c "
+docker compose -f compose.yml -f compose.prod.yml exec api python -c "
 from app.db import engine
+from sqlalchemy import text
 with engine.connect() as conn:
-    print(conn.execute('SELECT 1').scalar())
+    print(conn.execute(text('SELECT 1')).scalar())
 "
 
 # Check connection pool
-docker compose exec db psql -U tlac_prod -d tlac_production -c "SELECT count(*) FROM pg_stat_activity;"
+docker compose -f compose.yml -f compose.prod.yml exec db psql -U tlac_prod -d tlac_production -c "SELECT count(*) FROM pg_stat_activity;"
 ```
 
 #### 3. High Memory Usage
@@ -870,17 +784,17 @@ docker compose exec db psql -U tlac_prod -d tlac_production -c "SELECT count(*) 
 docker stats --no-stream
 
 # Restart with memory limits
-docker compose -f docker-compose.prod.yml restart api
+docker compose -f compose.yml -f compose.prod.yml restart api
 ```
 
 #### 4. SSL Certificate Issues
 
 ```bash
 # Check Caddy logs
-docker compose -f docker-compose.prod.yml logs caddy
+docker compose -f compose.yml -f compose.prod.yml logs proxy
 
 # Force certificate renewal
-docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile
+docker compose -f compose.yml -f compose.prod.yml exec proxy caddy reload --config /etc/caddy/Caddyfile
 ```
 
 #### 5. Python Runner Failures
@@ -904,16 +818,16 @@ echo "=== System Health ==="
 curl -s https://your-domain.com/api/health | jq .
 
 echo "=== Container Status ==="
-docker compose -f docker-compose.prod.yml ps
+docker compose -f compose.yml -f compose.prod.yml ps
 
 echo "=== Resource Usage ==="
 docker stats --no-stream
 
 echo "=== Database Connections ==="
-docker compose exec db psql -U tlac_prod -d tlac_production -c "SELECT count(*) as connections FROM pg_stat_activity;"
+docker compose -f compose.yml -f compose.prod.yml exec db psql -U tlac_prod -d tlac_production -c "SELECT count(*) as connections FROM pg_stat_activity;"
 
 echo "=== Recent Errors ==="
-docker compose -f docker-compose.prod.yml logs --tail=50 api | grep -i error
+docker compose -f compose.yml -f compose.prod.yml logs --tail=50 api | grep -i error
 ```
 
 ---
@@ -954,5 +868,5 @@ docker compose -f docker-compose.prod.yml logs --tail=50 api | grep -i error
 
 ---
 
-**Last Updated**: 2026-01-11
+**Last Updated**: 2026-01-14
 **Version**: 1.0.0

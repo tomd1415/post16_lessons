@@ -11,7 +11,7 @@ Complete reference documentation for the TLAC (Thinking Like a Coder) API.
 
 ## Authentication
 
-All endpoints except `/api/health`, `/api/metrics`, and `/api/auth/login` require authentication.
+All endpoints except `/api/health`, `/api/auth/login`, and the one-time `/api/admin/bootstrap` require authentication. `/api/metrics` and `/api/admin/metrics` require an admin session.
 
 ### Session Cookies
 
@@ -50,17 +50,25 @@ Health check endpoint for monitoring and load balancers.
 
 ### GET /api/metrics
 
-Prometheus metrics endpoint for scraping.
+Admin-only JSON summary of core counts.
 
-**Authentication**: Not required
+**Authentication**: Admin only
 
-**Response**: Prometheus text format
-
-```
-# HELP tlac_http_requests_total Total HTTP requests
-# TYPE tlac_http_requests_total counter
-tlac_http_requests_total{method="GET",endpoint="/api/health",status="200"} 42.0
-...
+**Response**:
+```json
+{
+  "users_active": {
+    "pupil": 140,
+    "teacher": 8,
+    "admin": 2
+  },
+  "sessions": 25,
+  "activity_states": 1200,
+  "activity_revisions": 3400,
+  "activity_marks": 560,
+  "audit_logs": 45,
+  "time": "2026-01-11T12:00:00+00:00"
+}
 ```
 
 ---
@@ -182,7 +190,7 @@ Authenticate user and create session.
 | 403 | `"Account disabled."` |
 | 429 | `"Too many attempts. Try again shortly."` |
 
-**Rate Limiting**: 5 failed attempts per IP/username combination triggers lockout.
+**Rate Limiting**: Lockout starts after 3 failed attempts with backoff (30s at 3-4, 120s at 5-6, 300s at 7-8, 600s at 9+). Applies per user and per IP/username combination.
 
 ---
 
@@ -1015,16 +1023,12 @@ All errors return JSON with a `detail` field:
 
 ## Rate Limits
 
-| Endpoint | Limit | Window |
-|----------|-------|--------|
-| Login attempts | 5 failures | Per IP+username |
-| Activity saves | 60 | Per minute per user |
-| Python executions | 30 | Per minute per user |
+Login lockout starts after 3 failed attempts with escalating backoff (30s, 120s, 300s, 600s). There are no per-endpoint API rate limits enforced by default.
 
 When rate limited, response is HTTP 429 with:
 ```json
 {
-  "detail": "Too many requests. Limit: X per minute."
+  "detail": "Too many attempts. Try again shortly."
 }
 ```
 
@@ -1050,5 +1054,5 @@ Examples: `a01`, `a15`
 
 ---
 
-**Last Updated**: 2026-01-11
-**API Version**: 1.1.0
+**Last Updated**: 2026-01-14
+**API Version**: 0.1.0

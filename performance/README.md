@@ -39,6 +39,8 @@ locust -f performance/locustfile.py --host=https://localhost:8443
 # Then open http://localhost:8089
 ```
 
+Note: The scripts assume current API routes and CSRF flow. If you see 400/403 responses, update them to use `/api/activity/state/{lesson_id}/{activity_id}` and fetch a CSRF token from `/api/auth/me` after login.
+
 ## Test Files
 
 | File | Purpose | Duration |
@@ -158,8 +160,8 @@ docker compose logs -f api
 - Review application logs for bottlenecks
 
 **Rate limiting triggers too often**:
-- Adjust rate limits in `backend/app/config.py`
-- Check rate limiter configuration
+- Adjust login backoff in `backend/app/rate_limit.py`
+- If you wire `ApiRateLimiter`, adjust `API_RATE_LIMITS` in `backend/app/rate_limit.py`
 
 ## Support
 

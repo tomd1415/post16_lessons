@@ -36,6 +36,8 @@ docker compose ps
 curl -k https://localhost:8443/api/health
 ```
 
+Note: The performance scripts assume current API routes and CSRF flow. If you see 400/403 responses, update them to use `/api/activity/state/{lesson_id}/{activity_id}` and fetch a CSRF token from `/api/auth/me` after login.
+
 ## Test Types
 
 ### 1. API Benchmarking
@@ -175,22 +177,22 @@ python performance/test_rate_limiter.py
 
 1. **Login Rate Limit**
    - Attempts 10 failed logins
-   - Should trigger HTTP 429 after 5 attempts
+   - Lockout starts after 3 failures (30s), then backs off (120s, 300s, 600s)
    - Validates brute force protection
 
 2. **API Rate Limit**
    - Makes 100 rapid activity save requests
-   - May trigger rate limiting under heavy load
-   - Validates general API protection
+   - Note: API rate limiting is not enforced by default
+   - Validates custom rate limiting if you wire `ApiRateLimiter`
 
 3. **Python Runner Rate Limit**
    - Makes 20 rapid code execution requests
-   - Validates resource protection
+   - Note: runner rate limiting is not enforced by default
 
 **Expected Behavior**:
-- Failed login rate limit: 5 attempts before lockout
-- API rate limits: Configurable per endpoint
-- Clear HTTP 429 responses with appropriate headers
+- Login lockout starts after 3 failed attempts with escalating backoff
+- API and runner rate limits only apply if `ApiRateLimiter` is integrated
+- Clear HTTP 429 responses for login lockouts
 
 ## Performance Monitoring
 
@@ -291,9 +293,8 @@ docker stats
 - Rate limit triggered too quickly
 
 **Solutions**:
-- Adjust rate limits in `backend/app/config.py`
-- Implement per-user vs per-IP limits
-- Add rate limit bypass for trusted IPs
+- Adjust login backoff in `backend/app/rate_limit.py`
+- If you wire `ApiRateLimiter`, adjust `API_RATE_LIMITS` in `backend/app/rate_limit.py`
 
 ### Issue: Python Runner Timeouts
 
@@ -442,10 +443,10 @@ For performance issues:
 
 1. Check this guide for common issues
 2. Review application logs: `docker compose logs api`
-3. Check Prometheus metrics: `http://localhost:9090`
+3. Check Prometheus metrics (after exposing `/metrics`): `http://localhost:9090`
 4. Review admin dashboard: `https://localhost:8443/admin-metrics.html`
 
 ---
 
-**Last Updated:** 2026-01-11
+**Last Updated:** 2026-01-14
 **Version:** 1.0.0

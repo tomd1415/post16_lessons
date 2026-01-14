@@ -44,7 +44,7 @@ System data:
 
 ## Audit and monitoring
 - Audit log records teacher/admin actions (user creation, marking, notes, link overrides).
-- Health and metrics endpoints support monitoring (`/api/health`, `/api/metrics`).
+- Health endpoint is public (`/api/health`). Admin-only JSON metrics are available at `/api/metrics` and `/api/admin/metrics`.
 
 ## Accessibility
 - UI aims to meet UK public sector accessibility expectations and WCAG 2.2 AA where practical.

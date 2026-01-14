@@ -4,7 +4,7 @@ Comprehensive guide for monitoring the TLAC (Thinking Like a Coder) application 
 
 ## Overview
 
-The TLAC application exposes Prometheus metrics for monitoring application health, performance, and usage. This guide covers:
+The TLAC application collects Prometheus metrics in-process and exposes admin JSON metrics at `/api/metrics` and `/api/admin/metrics`. A Prometheus `/metrics` endpoint is not exposed by default; to scrape with Prometheus, add a `/metrics` route and update `docker/prometheus.yml`. This guide covers:
 
 - Metrics available
 - Setting up Prometheus and Grafana
@@ -35,12 +35,23 @@ docker compose -f compose.monitoring.yml up -d prometheus grafana
 
 ### 3. View Metrics
 
-Raw Prometheus metrics endpoint:
-```bash
-curl http://localhost:8000/api/metrics
-```
+Admin metrics (requires an admin session):
+- UI: `https://localhost:8443/admin-metrics.html`
+- JSON: `https://localhost:8443/api/admin/metrics`
+
+Prometheus scraping is not available until you expose `/metrics` (see "Expose Prometheus Endpoint" below).
+
+## Expose Prometheus Endpoint (Optional)
+
+To enable Prometheus/Grafana scraping:
+
+1. Add a `/metrics` endpoint in `backend/app/main.py` that returns `prometheus_client.generate_latest()` with `CONTENT_TYPE_LATEST`.
+2. Update `docker/prometheus.yml` to use `metrics_path: /metrics`.
+3. Restart the API and Prometheus containers.
 
 ## Available Metrics
+
+These Prometheus counters are available once `/metrics` is exposed.
 
 ### HTTP Metrics
 
@@ -119,6 +130,8 @@ histogram_quantile(0.5, rate(tlac_python_run_duration_seconds_bucket[5m]))
 |--------|------|-------------|--------|
 | `tlac_rate_limit_exceeded_total` | Counter | Rate limit violations | `endpoint`, `limit_type` |
 | `tlac_rate_limit_usage` | Histogram | Rate limit usage % | `endpoint` |
+
+Note: API rate limiting is not enforced by default, so these may remain at 0 unless you wire `ApiRateLimiter`.
 
 **Example Queries:**
 ```promql
@@ -317,23 +330,18 @@ groups:
 
 ### Environment Variables
 
-Configure monitoring via `.env`:
+Configure Grafana via `.env` (used by `compose.monitoring.yml`):
 
 ```bash
-# Grafana
 GRAFANA_ADMIN_USER=admin
 GRAFANA_ADMIN_PASSWORD=changeme123
-
-# Prometheus retention
-PROMETHEUS_RETENTION_TIME=30d
-
-# Metrics scrape interval (in prometheus.yml)
-PROMETHEUS_SCRAPE_INTERVAL=15s
 ```
+
+Prometheus retention and scrape intervals are configured in `docker/prometheus.yml` or via the Prometheus command flags in `compose.monitoring.yml`.
 
 ### Prometheus Configuration
 
-Edit `docker/prometheus.yml`:
+Edit `docker/prometheus.yml` (after exposing `/metrics`):
 
 ```yaml
 global:
@@ -342,6 +350,7 @@ global:
 
 scrape_configs:
   - job_name: 'tlac-api'
+    metrics_path: /metrics
     scrape_interval: 10s    # Override for this job
     static_configs:
       - targets: ['api:8000']
@@ -393,9 +402,13 @@ docker/grafana/provisioning/datasources/
 
 ### Metrics Not Appearing
 
-**Check endpoint is accessible:**
+**Check admin metrics are accessible:**
+- UI: `https://localhost:8443/admin-metrics.html`
+- JSON: `https://localhost:8443/api/admin/metrics` (admin session required)
+
+**If you've exposed `/metrics`:**
 ```bash
-curl http://localhost:8000/api/metrics
+docker compose exec prometheus wget -O- http://api:8000/metrics
 ```
 
 **Check Prometheus targets:**
@@ -512,21 +525,28 @@ networks:
 
 ### Custom Metrics
 
-Add custom metrics in your code:
+Add custom metrics in `backend/app/metrics.py`, then call them from your endpoints:
 
 ```python
+# backend/app/metrics.py
+from prometheus_client import Counter
+
+custom_operations_total = Counter(
+    "tlac_custom_operations_total",
+    "Custom operations",
+    ["operation"]
+)
+
+def record_custom_operation(operation: str):
+    custom_operations_total.labels(operation=operation).inc()
+```
+
+```python
+# backend/app/main.py (or another module)
 from app import metrics
 
 # In your endpoint
-start_time = time.time()
-try:
-    # Your code here
-    result = process_data()
-    duration = time.time() - start_time
-    metrics.record_custom_operation("process_data", duration)
-except Exception as e:
-    metrics.record_custom_error("process_data", str(e))
-    raise
+metrics.record_custom_operation("process_data")
 ```
 
 ### Federation
@@ -537,12 +557,16 @@ Scrape multiple TLAC instances:
 # prometheus.yml
 scrape_configs:
   - job_name: 'tlac-prod-1'
+    metrics_path: /metrics
+    scheme: https
     static_configs:
-      - targets: ['prod1.example.com:8000']
+      - targets: ['prod1.example.com:443']
 
   - job_name: 'tlac-prod-2'
+    metrics_path: /metrics
+    scheme: https
     static_configs:
-      - targets: ['prod2.example.com:8000']
+      - targets: ['prod2.example.com:443']
 ```
 
 ### Long-term Storage
@@ -564,11 +588,11 @@ For issues with monitoring:
 1. Check [Troubleshooting](#troubleshooting) section
 2. Review Prometheus logs: `docker compose logs prometheus`
 3. Review Grafana logs: `docker compose logs grafana`
-4. Check metric endpoint: `curl http://localhost:8000/api/metrics`
+4. Check admin metrics: `https://localhost:8443/admin-metrics.html` (admin session required)
 5. Consult Prometheus documentation: https://prometheus.io/docs/
 6. Consult Grafana documentation: https://grafana.com/docs/
 
 ---
 
-**Last Updated:** 2026-01-11
+**Last Updated:** 2026-01-14
 **Version:** 1.0.0
