@@ -614,7 +614,10 @@ def admin_metrics(request: Request, db: Session = Depends(get_db)):
     rate_limit_violations = sum_metric("tlac_rate_limit_exceeded_total")
 
     # System metrics
-    db_connections = get_metric_value("tlac_db_connections_active")
+    try:
+        db_connections = engine.pool.checkedout()
+    except Exception:
+        db_connections = 0
     total_errors = sum_metric("tlac_errors_total")
 
     return {
