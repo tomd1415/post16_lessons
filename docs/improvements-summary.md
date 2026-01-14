@@ -504,7 +504,7 @@ See [docs/backup-and-recovery.md](backup-and-recovery.md) for complete documenta
 
 **Files Modified:**
 - `backend/requirements.txt` - Added `prometheus-client==0.20.0`
-- `backend/app/main.py` - Added metrics middleware, `/api/metrics`, `/api/admin/metrics` endpoints, and Python execution tracking
+- `backend/app/main.py` - Added metrics middleware, `/metrics`, `/api/metrics`, `/api/admin/metrics` endpoints, and Python execution tracking
 - `web/admin.html`, `web/admin-audit.html` - Added navigation links
 - `docker/Caddyfile` - Updated CSP policy for inline scripts
 
@@ -550,7 +550,7 @@ docker compose -f compose.yml -f compose.monitoring.yml up -d
 - Rate limit violation metric available when API rate limiting is wired
 - Admin-only JSON summary endpoint at `/api/metrics`
 - Admin-only dashboard endpoint at `/api/admin/metrics`
-- Prometheus `/metrics` endpoint not exposed by default
+- Prometheus `/metrics` endpoint exposed for scraping
 - Pre-configured Grafana dashboard with 6 panels
 - Alerting rules examples in monitoring guide
 - Comprehensive troubleshooting documentation

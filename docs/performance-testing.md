@@ -443,7 +443,7 @@ For performance issues:
 
 1. Check this guide for common issues
 2. Review application logs: `docker compose logs api`
-3. Check Prometheus metrics (after exposing `/metrics`): `http://localhost:9090`
+3. Check Prometheus metrics: `http://localhost:9090`
 4. Review admin dashboard: `https://localhost:8443/admin-metrics.html`
 
 ---

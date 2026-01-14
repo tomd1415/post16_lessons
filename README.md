@@ -210,7 +210,8 @@ Audit log (admin-only):
 
 Monitoring hooks:
 - Health check: `https://localhost:8443/api/health`
-- Metrics (admin-only): `https://localhost:8443/api/metrics`
+- Admin metrics JSON: `https://localhost:8443/api/metrics`
+- Prometheus scrape: `https://localhost:8443/metrics`
 
 ## Link registry tooling (Phase 5)
 Handbook links live in the manifest `linksRegistry.items`. Teachers can set replacement URLs or local copies in:

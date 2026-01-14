@@ -4,14 +4,14 @@ Complete reference documentation for the TLAC (Thinking Like a Coder) API.
 
 ## Overview
 
-- **Base URL**: `https://localhost:8443/api`
+- **Base URL**: `https://localhost:8443/api` (Prometheus metrics are at `https://localhost:8443/metrics`)
 - **Authentication**: Session-based with cookies
 - **CSRF Protection**: Required for POST/PUT/DELETE requests via `X-CSRF-Token` header
 - **Content-Type**: `application/json` (unless otherwise specified)
 
 ## Authentication
 
-All endpoints except `/api/health`, `/api/auth/login`, and the one-time `/api/admin/bootstrap` require authentication. `/api/metrics` and `/api/admin/metrics` require an admin session.
+All API endpoints except `/api/health`, `/api/auth/login`, and the one-time `/api/admin/bootstrap` require authentication. `/api/metrics` and `/api/admin/metrics` require an admin session.
 
 ### Session Cookies
 
@@ -24,6 +24,23 @@ For mutating requests (POST, PUT, DELETE), include the CSRF token in the `X-CSRF
 ---
 
 ## Health & Monitoring
+
+### GET /metrics
+
+Prometheus metrics endpoint for scraping.
+
+**Authentication**: Not required
+
+**Response**: Prometheus text format
+
+```
+# HELP tlac_http_requests_total Total HTTP requests
+# TYPE tlac_http_requests_total counter
+tlac_http_requests_total{method="GET",endpoint="/api/health",status="200"} 42.0
+...
+```
+
+---
 
 ### GET /api/health
 

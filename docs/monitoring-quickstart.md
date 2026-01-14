@@ -40,7 +40,10 @@ Admin metrics (requires an admin session):
 - UI: `https://localhost:8443/admin-metrics.html`
 - JSON: `https://localhost:8443/api/admin/metrics`
 
-Note: The app does not expose a Prometheus `/metrics` endpoint by default, so Prometheus/Grafana will remain empty until you add one (see [monitoring-guide.md](monitoring-guide.md)).
+Prometheus metrics:
+```bash
+curl -k https://localhost:8443/metrics
+```
 
 ## 5. Test It Works
 
@@ -52,7 +55,7 @@ for i in {1..10}; do
   echo "Request $i complete"
 done
 
-# If you've enabled a Prometheus endpoint, wait 15 seconds and check Grafana.
+# Wait 15 seconds and check Grafana.
 ```
 
 ## What's Next?
@@ -65,9 +68,7 @@ done
 ## Troubleshooting
 
 **Grafana shows "No Data":**
-Prometheus needs a `/metrics` endpoint. The app only exposes admin JSON by default.
-
-If you've added `/metrics`, verify Prometheus can reach it:
+Verify Prometheus can reach `/metrics`:
 ```bash
 docker compose exec prometheus wget -O- http://api:8000/metrics
 
@@ -77,11 +78,9 @@ open http://localhost:9090/targets
 
 **Metrics endpoint returns 403 or 404:**
 - `/api/metrics` and `/api/admin/metrics` require an admin session.
-- `/metrics` is not exposed by default (see [monitoring-guide.md](monitoring-guide.md)).
+- If `/metrics` returns 404, rebuild/restart the API container.
 
 ## Default Metrics Available
-
-(Prometheus counters are available once `/metrics` is exposed.)
 
 - **HTTP**: Request rate, latency, status codes
 - **Auth**: Login attempts, active sessions

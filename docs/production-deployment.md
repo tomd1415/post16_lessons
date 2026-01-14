@@ -534,7 +534,7 @@ curl https://192.168.1.100:8443/api/health
 
 ### 1. Enable Prometheus Scraping
 
-Prometheus scraping requires a `/metrics` endpoint (not exposed by default). After adding it, configure Prometheus like this:
+Prometheus scrapes `/metrics`. Configure it like this:
 
 ```yaml
 # prometheus.yml

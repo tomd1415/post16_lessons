@@ -4,7 +4,7 @@ Comprehensive guide for monitoring the TLAC (Thinking Like a Coder) application 
 
 ## Overview
 
-The TLAC application collects Prometheus metrics in-process and exposes admin JSON metrics at `/api/metrics` and `/api/admin/metrics`. A Prometheus `/metrics` endpoint is not exposed by default; to scrape with Prometheus, add a `/metrics` route and update `docker/prometheus.yml`. This guide covers:
+The TLAC application collects Prometheus metrics in-process and exposes admin JSON metrics at `/api/metrics` and `/api/admin/metrics`, plus a Prometheus `/metrics` endpoint for scraping. This guide covers:
 
 - Metrics available
 - Setting up Prometheus and Grafana
@@ -39,19 +39,16 @@ Admin metrics (requires an admin session):
 - UI: `https://localhost:8443/admin-metrics.html`
 - JSON: `https://localhost:8443/api/admin/metrics`
 
-Prometheus scraping is not available until you expose `/metrics` (see "Expose Prometheus Endpoint" below).
+Prometheus metrics endpoint:
+- `https://localhost:8443/metrics` (TLS uses Caddy's internal CA)
 
-## Expose Prometheus Endpoint (Optional)
+## Prometheus Endpoint
 
-To enable Prometheus/Grafana scraping:
-
-1. Add a `/metrics` endpoint in `backend/app/main.py` that returns `prometheus_client.generate_latest()` with `CONTENT_TYPE_LATEST`.
-2. Update `docker/prometheus.yml` to use `metrics_path: /metrics`.
-3. Restart the API and Prometheus containers.
+`/metrics` is enabled by default. If you want to restrict it, add auth in the handler or limit access to the monitoring network.
 
 ## Available Metrics
 
-These Prometheus counters are available once `/metrics` is exposed.
+These Prometheus counters are available at `/metrics`.
 
 ### HTTP Metrics
 
@@ -341,7 +338,7 @@ Prometheus retention and scrape intervals are configured in `docker/prometheus.y
 
 ### Prometheus Configuration
 
-Edit `docker/prometheus.yml` (after exposing `/metrics`):
+Edit `docker/prometheus.yml`:
 
 ```yaml
 global:
@@ -406,7 +403,7 @@ docker/grafana/provisioning/datasources/
 - UI: `https://localhost:8443/admin-metrics.html`
 - JSON: `https://localhost:8443/api/admin/metrics` (admin session required)
 
-**If you've exposed `/metrics`:**
+**Prometheus scrape test:**
 ```bash
 docker compose exec prometheus wget -O- http://api:8000/metrics
 ```

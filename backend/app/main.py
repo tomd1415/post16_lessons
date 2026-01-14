@@ -17,6 +17,7 @@ from urllib.parse import quote
 from fastapi import Depends, FastAPI, File, HTTPException, Request, Response, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
@@ -514,6 +515,11 @@ def health(db: Session = Depends(get_db)):
         "db_ok": db_ok,
         "time": utcnow().isoformat(),
     }
+
+
+@app.get("/metrics")
+def prometheus_metrics() -> Response:
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 
 @app.get("/api/metrics")
