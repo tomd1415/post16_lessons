@@ -72,9 +72,9 @@
         <table class="table">
           <thead><tr><th>Event trigger</th><th>Handler name</th><th>Action</th></tr></thead>
           <tbody>
-            <tr><td><input type="text" data-field="trigger1" placeholder="e.g., 'click'" /></td><td><input type="text" data-field="handler1" placeholder="on_click" /></td><td><input type="text" data-field="action1" placeholder="what happens" /></td></tr>
-            <tr><td><input type="text" data-field="trigger2" placeholder="e.g., 'quit'" /></td><td><input type="text" data-field="handler2" placeholder="on_quit" /></td><td><input type="text" data-field="action2" /></td></tr>
-            <tr><td><input type="text" data-field="trigger3" placeholder="e.g., 'tick'" /></td><td><input type="text" data-field="handler3" placeholder="on_tick" /></td><td><input type="text" data-field="action3" /></td></tr>
+            <tr><td><input type="text" data-field="trigger1" placeholder="e.g., 'click'" /></td><td><input type="text" data-field="handler1" placeholder="function name" /></td><td><input type="text" data-field="action1" placeholder="what happens" /></td></tr>
+            <tr><td><input type="text" data-field="trigger2" placeholder="e.g., 'quit'" /></td><td><input type="text" data-field="handler2" placeholder="function name" /></td><td><input type="text" data-field="action2" /></td></tr>
+            <tr><td><input type="text" data-field="trigger3" placeholder="e.g., 'tick'" /></td><td><input type="text" data-field="handler3" placeholder="function name" /></td><td><input type="text" data-field="action3" /></td></tr>
           </tbody>
         </table>
       </div>
@@ -86,9 +86,9 @@
       <table class="table">
         <thead><tr><th>Loop step</th><th>Your plan</th></tr></thead>
         <tbody>
-          <tr><td>Initialise state</td><td><input type="text" data-field="init_state" placeholder="e.g., running=True" /></td></tr>
-          <tr><td>Get next event</td><td><input type="text" data-field="get_event" placeholder="e.g., event_queue.pop(0)" /></td></tr>
-          <tr><td>Dispatch</td><td><input type="text" data-field="dispatch" placeholder="which handler?" /></td></tr>
+          <tr><td>Initialise state</td><td><input type="text" data-field="init_state" placeholder="state variable" /></td></tr>
+          <tr><td>Get next event</td><td><input type="text" data-field="get_event" placeholder="code" /></td></tr>
+          <tr><td>Dispatch</td><td><input type="text" data-field="dispatch" placeholder="code" /></td></tr>
           <tr><td>Exit condition</td><td><input type="text" data-field="exit_cond" placeholder="when to stop" /></td></tr>
         </tbody>
       </table>

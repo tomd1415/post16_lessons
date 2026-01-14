@@ -72,9 +72,9 @@
         <table class="table">
           <thead><tr><th>Prompt</th><th>Your answer</th></tr></thead>
           <tbody>
-            <tr><td>Variable purpose</td><td><input type="text" data-field="var_purpose" placeholder="store and reuse..." /></td></tr>
-            <tr><td>When to cast types</td><td><input type="text" data-field="when_cast" placeholder="e.g., before maths" /></td></tr>
-            <tr><td>How to display output</td><td><input type="text" data-field="output" placeholder="which function" /></td></tr>
+            <tr><td>Variable purpose</td><td><input type="text" data-field="var_purpose" placeholder="your explanation" /></td></tr>
+            <tr><td>When to cast types</td><td><input type="text" data-field="when_cast" placeholder="when" /></td></tr>
+            <tr><td>How to display output</td><td><input type="text" data-field="output" placeholder="function name" /></td></tr>
           </tbody>
         </table>
       </div>
@@ -88,9 +88,9 @@
       <table class="table">
         <thead><tr><th>Prompt text</th><th>Variable name</th><th>Type (string/int/float/bool)</th></tr></thead>
         <tbody>
-          <tr><td><input type="text" data-field="p1" placeholder="e.g., Enter your age" /></td><td><input type="text" data-field="v1" placeholder="age" /></td><td><input type="text" data-field="t1" placeholder="int" /></td></tr>
-          <tr><td><input type="text" data-field="p2" placeholder="Enter your score" /></td><td><input type="text" data-field="v2" placeholder="score" /></td><td><input type="text" data-field="t2" placeholder="float" /></td></tr>
-          <tr><td><input type="text" data-field="p3" placeholder="Likes Python?" /></td><td><input type="text" data-field="v3" placeholder="likes_python" /></td><td><input type="text" data-field="t3" placeholder="bool" /></td></tr>
+          <tr><td><input type="text" data-field="p1" placeholder="prompt text" /></td><td><input type="text" data-field="v1" placeholder="variable" /></td><td><input type="text" data-field="t1" placeholder="type" /></td></tr>
+          <tr><td><input type="text" data-field="p2" placeholder="prompt text" /></td><td><input type="text" data-field="v2" placeholder="variable" /></td><td><input type="text" data-field="t2" placeholder="type" /></td></tr>
+          <tr><td><input type="text" data-field="p3" placeholder="prompt text" /></td><td><input type="text" data-field="v3" placeholder="variable" /></td><td><input type="text" data-field="t3" placeholder="type" /></td></tr>
         </tbody>
       </table>
 
@@ -99,9 +99,9 @@
       <table class="table">
         <thead><tr><th>Variable</th><th>Conversion step</th><th>Expected type</th><th>Check (type())</th></tr></thead>
         <tbody>
-          <tr><td><input type="text" data-field="c1var" placeholder="age" /></td><td><input type="text" data-field="c1conv" placeholder="int(input(...))" /></td><td><input type="text" data-field="c1type" placeholder="int" /></td><td><input type="text" data-field="c1check" placeholder="type(age)" /></td></tr>
-          <tr><td><input type="text" data-field="c2var" placeholder="score" /></td><td><input type="text" data-field="c2conv" placeholder="float(input(...))" /></td><td><input type="text" data-field="c2type" placeholder="float" /></td><td><input type="text" data-field="c2check" placeholder="type(score)" /></td></tr>
-          <tr><td><input type="text" data-field="c3var" placeholder="likes_python" /></td><td><input type="text" data-field="c3conv" placeholder="input(...).lower() == 'y'" /></td><td><input type="text" data-field="c3type" placeholder="bool" /></td><td><input type="text" data-field="c3check" placeholder="type(likes_python)" /></td></tr>
+          <tr><td><input type="text" data-field="c1var" placeholder="variable" /></td><td><input type="text" data-field="c1conv" placeholder="conversion code" /></td><td><input type="text" data-field="c1type" placeholder="type" /></td><td><input type="text" data-field="c1check" placeholder="type check" /></td></tr>
+          <tr><td><input type="text" data-field="c2var" placeholder="variable" /></td><td><input type="text" data-field="c2conv" placeholder="conversion code" /></td><td><input type="text" data-field="c2type" placeholder="type" /></td><td><input type="text" data-field="c2check" placeholder="type check" /></td></tr>
+          <tr><td><input type="text" data-field="c3var" placeholder="variable" /></td><td><input type="text" data-field="c3conv" placeholder="conversion code" /></td><td><input type="text" data-field="c3type" placeholder="type" /></td><td><input type="text" data-field="c3check" placeholder="type check" /></td></tr>
         </tbody>
       </table>
 
