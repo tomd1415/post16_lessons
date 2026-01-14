@@ -8,6 +8,7 @@ import re
 import secrets
 import statistics
 import time
+import uuid
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -18,6 +19,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.attributes import flag_modified
 
 from .config import (
     ATTENTION_LIMIT,
@@ -30,7 +32,7 @@ from .config import (
     SESSION_TTL_MINUTES,
 )
 from .db import SessionLocal, engine, get_db
-from .models import AuditLog, ActivityMark, ActivityRevision, ActivityState, Base, Session as AuthSession, User
+from .models import ActivityFeedback, AuditLog, ActivityMark, ActivityRevision, ActivityState, Base, Session as AuthSession, User
 from .python_runner import RunnerError, RunnerUnavailable, run_python, runner_diagnostics
 from .rate_limit import LoginLimiter, compute_lock_seconds, ensure_timezone_aware
 from .security import hash_password, verify_password
@@ -131,6 +133,24 @@ def activity_mark_public(mark: ActivityMark) -> dict:
         "activity_id": mark.activity_id,
         "status": mark.status,
         "updated_at": mark.updated_at.isoformat() if mark.updated_at else None,
+        "answer_marks": mark.answer_marks,
+        "score": mark.score,
+        "max_score": mark.max_score,
+        "attempt_count": mark.attempt_count,
+        "first_save_at": mark.first_save_at.isoformat() if mark.first_save_at else None,
+        "last_save_at": mark.last_save_at.isoformat() if mark.last_save_at else None,
+    }
+
+
+def activity_feedback_public(feedback: ActivityFeedback, teacher: User | None = None) -> dict:
+    return {
+        "id": str(feedback.id),
+        "lesson_id": feedback.lesson_id,
+        "activity_id": feedback.activity_id,
+        "feedback_text": feedback.feedback_text,
+        "teacher_name": teacher.name if teacher else None,
+        "created_at": feedback.created_at.isoformat() if feedback.created_at else None,
+        "updated_at": feedback.updated_at.isoformat() if feedback.updated_at else None,
     }
 
 
@@ -829,6 +849,37 @@ def save_activity_state(
         created_at=now,
     )
     db.add(revision)
+
+    # Hybrid auto-marking: create/update ActivityMark on save
+    mark = (
+        db.query(ActivityMark)
+        .filter(
+            ActivityMark.user_id == user.id,
+            ActivityMark.lesson_id == lesson_id,
+            ActivityMark.activity_id == activity_id,
+        )
+        .first()
+    )
+    if not mark:
+        # Create new mark with in_progress status on first save
+        mark = ActivityMark(
+            user_id=user.id,
+            lesson_id=lesson_id,
+            activity_id=activity_id,
+            status="in_progress",
+            attempt_count=1,
+            first_save_at=now,
+            last_save_at=now,
+        )
+        db.add(mark)
+    else:
+        # Update existing mark (don't change status if teacher marked it)
+        mark.attempt_count = (mark.attempt_count or 0) + 1
+        if not mark.first_save_at:
+            mark.first_save_at = now
+        mark.last_save_at = now
+        mark.updated_at = now
+
     db.commit()
     duration = time.time() - start_time
     record_activity_save(lesson_id=lesson_id, duration=duration)
@@ -960,7 +1011,7 @@ def teacher_overview(
     if pupils:
         marks = (
             db.query(ActivityMark)
-            .filter(ActivityMark.user_id.in_(pupil_map.keys()), ActivityMark.status == "complete")
+            .filter(ActivityMark.user_id.in_(pupil_map.keys()), ActivityMark.status.in_(["complete", "in_progress"]))
             .all()
         )
         for mark in marks:
@@ -1470,6 +1521,301 @@ def update_pupil_notes(
     )
     db.commit()
     return {"ok": True, "teacher_notes": pupil.teacher_notes or ""}
+
+
+@app.get("/api/teacher/pupil/{username}/activity/{lesson_id}/{activity_id}")
+def get_pupil_activity_detail(
+    request: Request,
+    username: str,
+    lesson_id: str,
+    activity_id: str,
+    db: Session = Depends(get_db),
+):
+    """Get detailed view of a pupil's activity including state, revisions, marks, and feedback."""
+    require_teacher(request)
+    if not valid_lesson_id(lesson_id) or not valid_activity_id(activity_id):
+        raise HTTPException(status_code=400, detail="Invalid lesson or activity id.")
+
+    pupil = db.query(User).filter(User.username == normalize_username(username)).first()
+    if not pupil:
+        raise HTTPException(status_code=404, detail="Pupil not found.")
+
+    # Get activity state
+    state = (
+        db.query(ActivityState)
+        .filter(
+            ActivityState.user_id == pupil.id,
+            ActivityState.lesson_id == lesson_id,
+            ActivityState.activity_id == activity_id,
+        )
+        .first()
+    )
+
+    # Get revisions (most recent first, limit to 50)
+    revisions = (
+        db.query(ActivityRevision)
+        .filter(
+            ActivityRevision.user_id == pupil.id,
+            ActivityRevision.lesson_id == lesson_id,
+            ActivityRevision.activity_id == activity_id,
+        )
+        .order_by(ActivityRevision.created_at.desc())
+        .limit(50)
+        .all()
+    )
+
+    # Get activity mark
+    mark = (
+        db.query(ActivityMark)
+        .filter(
+            ActivityMark.user_id == pupil.id,
+            ActivityMark.lesson_id == lesson_id,
+            ActivityMark.activity_id == activity_id,
+        )
+        .first()
+    )
+
+    # Get feedback with teacher info
+    feedback_items = (
+        db.query(ActivityFeedback)
+        .filter(
+            ActivityFeedback.user_id == pupil.id,
+            ActivityFeedback.lesson_id == lesson_id,
+            ActivityFeedback.activity_id == activity_id,
+        )
+        .order_by(ActivityFeedback.created_at.desc())
+        .all()
+    )
+    feedback_with_teachers = []
+    for fb in feedback_items:
+        teacher = db.query(User).filter(User.id == fb.teacher_id).first()
+        feedback_with_teachers.append(activity_feedback_public(fb, teacher))
+
+    # Get activity metadata from manifest
+    manifest = load_manifest() or {}
+    lessons = manifest.get("lessons", [])
+    activity_meta = None
+    for lesson in lessons:
+        if lesson.get("id") == lesson_id:
+            for activity in lesson.get("activities", []):
+                if activity.get("id") == activity_id:
+                    activity_meta = {
+                        "title": activity.get("title"),
+                        "objectives": activity.get("objectiveIds", []),
+                    }
+                    break
+            break
+
+    return {
+        "pupil": user_public(pupil),
+        "state": activity_state_public(state) if state else None,
+        "revisions": [activity_revision_public(rev) for rev in revisions],
+        "mark": activity_mark_public(mark) if mark else None,
+        "feedback": feedback_with_teachers,
+        "activity_meta": activity_meta,
+    }
+
+
+@app.post("/api/teacher/answer-mark")
+def set_answer_mark(request: Request, payload: dict, db: Session = Depends(get_db)):
+    """Mark individual answers as correct/incorrect for a pupil's activity."""
+    csrf_guard(request)
+    actor = require_teacher(request)
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="Invalid payload.")
+
+    username = normalize_username(payload.get("username", ""))
+    lesson_id = payload.get("lesson_id", "")
+    activity_id = payload.get("activity_id", "")
+    question_id = payload.get("question_id", "")
+    correct = payload.get("correct")
+
+    if not username or not valid_lesson_id(lesson_id) or not valid_activity_id(activity_id):
+        raise HTTPException(status_code=400, detail="Invalid parameters.")
+    if not question_id or not isinstance(question_id, str):
+        raise HTTPException(status_code=400, detail="Invalid question_id.")
+    if not isinstance(correct, bool):
+        raise HTTPException(status_code=400, detail="correct must be a boolean.")
+
+    pupil = db.query(User).filter(User.username == username).first()
+    if not pupil:
+        raise HTTPException(status_code=404, detail="Pupil not found.")
+
+    now = utcnow()
+    mark = (
+        db.query(ActivityMark)
+        .filter(
+            ActivityMark.user_id == pupil.id,
+            ActivityMark.lesson_id == lesson_id,
+            ActivityMark.activity_id == activity_id,
+        )
+        .first()
+    )
+
+    if not mark:
+        mark = ActivityMark(
+            user_id=pupil.id,
+            lesson_id=lesson_id,
+            activity_id=activity_id,
+            status="in_progress",
+            answer_marks={},
+        )
+        db.add(mark)
+
+    # Update answer marks
+    answer_marks = mark.answer_marks or {}
+    if question_id not in answer_marks:
+        answer_marks[question_id] = {"correct": None, "attempts": 0}
+    answer_marks[question_id]["correct"] = correct
+    mark.answer_marks = answer_marks
+    flag_modified(mark, "answer_marks")
+    mark.updated_at = now
+
+    # Calculate score
+    total_marked = len([q for q in answer_marks.values() if q.get("correct") is not None])
+    correct_count = len([q for q in answer_marks.values() if q.get("correct") is True])
+    mark.score = correct_count
+    mark.max_score = total_marked
+
+    log_audit(
+        db,
+        action="mark_answer",
+        actor=actor,
+        target_user=pupil,
+        lesson_id=lesson_id,
+        activity_id=activity_id,
+        metadata={"question_id": question_id, "correct": correct},
+        request=request,
+    )
+    db.commit()
+    return {"ok": True, "mark": activity_mark_public(mark)}
+
+
+@app.post("/api/teacher/feedback")
+def set_activity_feedback(request: Request, payload: dict, db: Session = Depends(get_db)):
+    """Create or update feedback for a pupil's activity."""
+    csrf_guard(request)
+    actor = require_teacher(request)
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="Invalid payload.")
+
+    username = normalize_username(payload.get("username", ""))
+    lesson_id = payload.get("lesson_id", "")
+    activity_id = payload.get("activity_id", "")
+    feedback_text = (payload.get("feedback_text", "") or "").strip()
+
+    if not username or not valid_lesson_id(lesson_id):
+        raise HTTPException(status_code=400, detail="Invalid parameters.")
+    if activity_id and not valid_activity_id(activity_id):
+        raise HTTPException(status_code=400, detail="Invalid activity_id.")
+    if not feedback_text:
+        raise HTTPException(status_code=400, detail="feedback_text is required.")
+
+    pupil = db.query(User).filter(User.username == username).first()
+    if not pupil:
+        raise HTTPException(status_code=404, detail="Pupil not found.")
+
+    now = utcnow()
+    feedback = (
+        db.query(ActivityFeedback)
+        .filter(
+            ActivityFeedback.user_id == pupil.id,
+            ActivityFeedback.lesson_id == lesson_id,
+            ActivityFeedback.activity_id == activity_id if activity_id else ActivityFeedback.activity_id.is_(None),
+        )
+        .first()
+    )
+
+    if feedback:
+        feedback.feedback_text = feedback_text
+        feedback.teacher_id = actor.id
+        feedback.updated_at = now
+    else:
+        feedback = ActivityFeedback(
+            user_id=pupil.id,
+            lesson_id=lesson_id,
+            activity_id=activity_id or None,
+            feedback_text=feedback_text,
+            teacher_id=actor.id,
+        )
+        db.add(feedback)
+
+    log_audit(
+        db,
+        action="add_feedback",
+        actor=actor,
+        target_user=pupil,
+        lesson_id=lesson_id,
+        activity_id=activity_id,
+        metadata={"has_feedback": True},
+        request=request,
+    )
+    db.commit()
+    return {"ok": True, "feedback": activity_feedback_public(feedback, actor)}
+
+
+@app.delete("/api/teacher/feedback/{feedback_id}")
+def delete_activity_feedback(
+    request: Request, feedback_id: str, db: Session = Depends(get_db)
+):
+    """Delete feedback for a pupil's activity."""
+    csrf_guard(request)
+    actor = require_teacher(request)
+
+    try:
+        feedback_uuid = uuid.UUID(feedback_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid feedback_id.")
+
+    feedback = db.query(ActivityFeedback).filter(ActivityFeedback.id == feedback_uuid).first()
+    if not feedback:
+        raise HTTPException(status_code=404, detail="Feedback not found.")
+
+    pupil = db.query(User).filter(User.id == feedback.user_id).first()
+    log_audit(
+        db,
+        action="delete_feedback",
+        actor=actor,
+        target_user=pupil,
+        lesson_id=feedback.lesson_id,
+        activity_id=feedback.activity_id,
+        metadata={},
+        request=request,
+    )
+    db.delete(feedback)
+    db.commit()
+    return {"ok": True}
+
+
+@app.get("/api/pupil/feedback/{lesson_id}")
+def get_pupil_feedback(
+    request: Request,
+    lesson_id: str,
+    db: Session = Depends(get_db),
+):
+    """Get all feedback for the current pupil for a lesson."""
+    user = request.state.user
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated.")
+    if not valid_lesson_id(lesson_id):
+        raise HTTPException(status_code=400, detail="Invalid lesson id.")
+
+    feedback_items = (
+        db.query(ActivityFeedback)
+        .filter(
+            ActivityFeedback.user_id == user.id,
+            ActivityFeedback.lesson_id == lesson_id,
+        )
+        .order_by(ActivityFeedback.activity_id.asc(), ActivityFeedback.created_at.desc())
+        .all()
+    )
+
+    result = []
+    for fb in feedback_items:
+        teacher = db.query(User).filter(User.id == fb.teacher_id).first()
+        result.append(activity_feedback_public(fb, teacher))
+
+    return {"items": result}
 
 
 @app.get("/api/teacher/export/lesson/{lesson_id}")

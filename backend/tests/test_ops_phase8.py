@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
-from backend.app.models import ActivityMark, ActivityRevision, ActivityState, AuditLog, Session as AuthSession, User
+from backend.app.models import ActivityFeedback, ActivityMark, ActivityRevision, ActivityState, AuditLog, Session as AuthSession, User
 from backend.tests.utils import login, seed_user
 
 
@@ -123,6 +123,7 @@ def test_retention_purge_deletes_old_pupil(app, db_session):
     now = datetime.now(timezone.utc)
     old_time = now - timedelta(days=365 * 3)
 
+    teacher = seed_user(db_session, "teacher.one", role="teacher", cohort_year=None, password="Secret123!")
     user = seed_user(db_session, "pupil.old", role="pupil", cohort_year="2022", password="Secret123!")
     user.created_at = old_time
     user.last_login_at = old_time
@@ -156,6 +157,15 @@ def test_retention_purge_deletes_old_pupil(app, db_session):
         created_at=old_time,
         updated_at=old_time,
     )
+    feedback = ActivityFeedback(
+        user_id=user.id,
+        lesson_id="lesson-1",
+        activity_id="a01",
+        feedback_text="Good work!",
+        teacher_id=teacher.id,
+        created_at=old_time,
+        updated_at=old_time,
+    )
     session = AuthSession(
         id="sess-old",
         user_id=user.id,
@@ -169,7 +179,7 @@ def test_retention_purge_deletes_old_pupil(app, db_session):
         action="mark_activity",
         created_at=old_time,
     )
-    db_session.add_all([revision, mark, session, audit])
+    db_session.add_all([revision, mark, feedback, session, audit])
     db_session.commit()
 
     cutoff = retention.retention_cutoff(years=2, now=now)
@@ -179,9 +189,10 @@ def test_retention_purge_deletes_old_pupil(app, db_session):
 
     counts = retention.purge_users(db_session, target_ids)
     assert counts["users"] == 1
-    assert db_session.query(User).count() == 0
+    assert db_session.query(User).count() == 1  # Teacher remains
     assert db_session.query(ActivityState).count() == 0
     assert db_session.query(ActivityRevision).count() == 0
     assert db_session.query(ActivityMark).count() == 0
+    assert db_session.query(ActivityFeedback).count() == 0
     assert db_session.query(AuthSession).count() == 0
     assert db_session.query(AuditLog).count() == 0

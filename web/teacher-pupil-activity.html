@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Thinking like a Coder - Pupil Activity View</title>
+  <link rel="stylesheet" href="./core/app.css" />
+  <style>
+    .answer-item {
+      margin-bottom: 12px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: #fafafa;
+    }
+    .answer-item.correct { border-color: #2a2; background: #f0fff0; }
+    .answer-item.incorrect { border-color: #c22; background: #fff0f0; }
+    .answer-key { font-weight: bold; margin-bottom: 4px; }
+    .answer-value { margin-left: 10px; }
+    .mark-btns { margin-top: 6px; }
+    .mark-btns button { margin-right: 6px; }
+    .revision-item { padding: 8px; border-bottom: 1px solid #eee; }
+    .revision-item:last-child { border-bottom: none; }
+    .revision-meta { font-size: 0.85em; color: #666; margin-bottom: 4px; }
+    .feedback-item { padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px; background: #fffef0; }
+    .feedback-meta { font-size: 0.85em; color: #666; margin-bottom: 4px; }
+    .feedback-text { margin-top: 4px; }
+    .status-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.85em; }
+    .status-badge.complete { background: #2a2; color: white; }
+    .status-badge.in_progress { background: #f90; color: white; }
+    .status-badge.incomplete { background: #999; color: white; }
+    .pupil-info { margin-bottom: 20px; }
+    .score-display { font-size: 1.2em; font-weight: bold; margin: 10px 0; }
+    .code-block {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 12px;
+      border-radius: 4px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body data-requires-role="teacher">
+  <div class="topbar no-print">
+    <div class="container">
+      <div class="brand">
+        <b>Thinking like a Coder - Pupil Activity View</b>
+        <span>View and mark pupil work</span>
+      </div>
+      <div class="row">
+        <a class="pill" href="./teacher.html"><strong>TEACHER</strong> <span>Teacher hub</span></a>
+        <a class="pill" href="./teacher-view.html"><strong>VIEW</strong> <span>Teacher view</span></a>
+        <a class="pill" href="./index.html"><strong>STUDENT</strong> <span>Student hub</span></a>
+        <span id="userBadge" class="badge" style="display:none"></span>
+        <button class="btn" id="logoutBtn" type="button">Logout</button>
+        <button class="btn" id="teacherToggle" type="button">Teacher mode: OFF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div id="loadingMsg" class="note">Loading activity data...</div>
+    <div id="errorMsg" class="note warn" style="display:none"></div>
+
+    <div id="mainContent" style="display:none">
+      <div class="pupil-info">
+        <h1 id="pageTitle">Pupil Activity</h1>
+        <p><strong>Pupil:</strong> <span id="pupilName"></span> (<span id="pupilUsername"></span>)</p>
+        <p><strong>Cohort:</strong> <span id="pupilCohort"></span></p>
+      </div>
+
+      <div class="grid cols2" style="margin-top:12px">
+        <div class="card">
+          <h2>Activity Status</h2>
+          <p><strong>Activity:</strong> <span id="activityTitle"></span></p>
+          <p><strong>Status:</strong> <span id="activityStatus" class="status-badge"></span></p>
+          <p id="scoreDisplay" class="score-display" style="display:none">Score: <span id="scoreValue"></span></p>
+          <p><strong>Attempt count:</strong> <span id="attemptCount">0</span></p>
+          <p><strong>First save:</strong> <span id="firstSave">-</span></p>
+          <p><strong>Last save:</strong> <span id="lastSave">-</span></p>
+          <div style="margin-top:12px">
+            <button class="btn" id="markCompleteBtn" type="button">Mark Complete</button>
+            <button class="btn" id="markIncompleteBtn" type="button">Mark Incomplete</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Add Feedback</h2>
+          <label for="feedbackInput"><b>Teacher feedback for this activity</b></label>
+          <textarea id="feedbackInput" placeholder="Enter feedback visible to the pupil..."></textarea>
+          <div style="margin-top:10px">
+            <button class="btn primary" id="saveFeedbackBtn" type="button">Save Feedback</button>
+          </div>
+          <div id="existingFeedback" style="margin-top:15px"></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <h2>Pupil's Answers</h2>
+        <div class="note">
+          <b>Mark individual answers:</b> Click correct/incorrect to mark each answer. Green = correct, red = incorrect.
+        </div>
+        <div id="answersContainer" style="margin-top:12px">
+          <p class="muted">No saved state yet.</p>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <h2>Revision History</h2>
+        <details>
+          <summary>View <span id="revisionCount">0</span> revisions</summary>
+          <div id="revisionsContainer" style="margin-top:10px">
+            <p class="muted">No revisions.</p>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <script src="./core/error-handler.js"></script>
+  <script src="./core/app.js"></script>
+  <script src="./core/auth.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const username = params.get("username") || "";
+    const lessonId = params.get("lesson_id") || "";
+    const activityId = params.get("activity_id") || "";
+
+    const loadingMsg = document.getElementById("loadingMsg");
+    const errorMsg = document.getElementById("errorMsg");
+    const mainContent = document.getElementById("mainContent");
+    const pageTitle = document.getElementById("pageTitle");
+    const pupilName = document.getElementById("pupilName");
+    const pupilUsername = document.getElementById("pupilUsername");
+    const pupilCohort = document.getElementById("pupilCohort");
+    const activityTitle = document.getElementById("activityTitle");
+    const activityStatus = document.getElementById("activityStatus");
+    const scoreDisplay = document.getElementById("scoreDisplay");
+    const scoreValue = document.getElementById("scoreValue");
+    const attemptCount = document.getElementById("attemptCount");
+    const firstSave = document.getElementById("firstSave");
+    const lastSave = document.getElementById("lastSave");
+    const answersContainer = document.getElementById("answersContainer");
+    const revisionsContainer = document.getElementById("revisionsContainer");
+    const revisionCount = document.getElementById("revisionCount");
+    const feedbackInput = document.getElementById("feedbackInput");
+    const existingFeedback = document.getElementById("existingFeedback");
+    const markCompleteBtn = document.getElementById("markCompleteBtn");
+    const markIncompleteBtn = document.getElementById("markIncompleteBtn");
+    const saveFeedbackBtn = document.getElementById("saveFeedbackBtn");
+
+    let activityData = null;
+    let currentMark = null;
+
+    function showError(msg) {
+      loadingMsg.style.display = "none";
+      errorMsg.textContent = msg;
+      errorMsg.style.display = "";
+    }
+
+    function formatDateTime(iso) {
+      if (!iso) return "-";
+      try {
+        const d = new Date(iso);
+        return d.toLocaleString();
+      } catch {
+        return iso;
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function renderAnswerValue(value) {
+      if (value === null || value === undefined || value === "") {
+        return '<span class="muted">No answer</span>';
+      }
+      if (typeof value === "boolean") {
+        return value ? "Yes" : "No";
+      }
+      if (typeof value === "object") {
+        return `<pre style="margin:0;white-space:pre-wrap">${escapeHtml(JSON.stringify(value, null, 2))}</pre>`;
+      }
+      // Check if it looks like code
+      const s = String(value);
+      if (s.includes("\n") || s.includes("def ") || s.includes("print(") || s.includes("import ")) {
+        return `<div class="code-block">${escapeHtml(s)}</div>`;
+      }
+      return escapeHtml(s);
+    }
+
+    function renderAnswers(state, answerMarks) {
+      if (!state || typeof state !== "object") {
+        answersContainer.innerHTML = '<p class="muted">No saved state yet.</p>';
+        return;
+      }
+
+      const marks = answerMarks || {};
+      const entries = Object.entries(state);
+
+      if (!entries.length) {
+        answersContainer.innerHTML = '<p class="muted">No answers saved.</p>';
+        return;
+      }
+
+      answersContainer.innerHTML = entries.map(([key, value]) => {
+        const markInfo = marks[key] || {};
+        const isCorrect = markInfo.correct === true;
+        const isIncorrect = markInfo.correct === false;
+        const cssClass = isCorrect ? "correct" : (isIncorrect ? "incorrect" : "");
+        const attempts = markInfo.attempts || 0;
+
+        return `
+          <div class="answer-item ${cssClass}" data-question-id="${escapeHtml(key)}">
+            <div class="answer-key">${escapeHtml(key)}</div>
+            <div class="answer-value">${renderAnswerValue(value)}</div>
+            ${attempts > 0 ? `<div class="muted" style="margin-top:4px">Attempts: ${attempts}</div>` : ""}
+            <div class="mark-btns">
+              <button class="btn ${isCorrect ? 'good' : ''}" data-mark-correct="${escapeHtml(key)}" type="button">
+                Correct
+              </button>
+              <button class="btn ${isIncorrect ? 'bad' : ''}" data-mark-incorrect="${escapeHtml(key)}" type="button">
+                Incorrect
+              </button>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderRevisions(revisions) {
+      if (!revisions || !revisions.length) {
+        revisionCount.textContent = "0";
+        revisionsContainer.innerHTML = '<p class="muted">No revisions.</p>';
+        return;
+      }
+
+      revisionCount.textContent = String(revisions.length);
+      revisionsContainer.innerHTML = revisions.map((rev, idx) => `
+        <div class="revision-item">
+          <div class="revision-meta">
+            <strong>#${revisions.length - idx}</strong> - ${formatDateTime(rev.created_at)}
+            ${rev.client_saved_at ? `(client: ${formatDateTime(rev.client_saved_at)})` : ""}
+          </div>
+          <details>
+            <summary>View state</summary>
+            <div style="margin-top:8px">${renderStateReadable(rev.state)}</div>
+          </details>
+        </div>
+      `).join("");
+    }
+
+    function renderFeedback(feedbackList) {
+      if (!feedbackList || !feedbackList.length) {
+        existingFeedback.innerHTML = '<p class="muted">No feedback yet.</p>';
+        return;
+      }
+
+      existingFeedback.innerHTML = `<h4>Existing Feedback</h4>` + feedbackList.map(fb => `
+        <div class="feedback-item" data-feedback-id="${fb.id}">
+          <div class="feedback-meta">
+            <strong>${escapeHtml(fb.teacher_name || "Teacher")}</strong> - ${formatDateTime(fb.created_at)}
+          </div>
+          <div class="feedback-text">${escapeHtml(fb.feedback_text)}</div>
+          <button class="btn" data-delete-feedback="${fb.id}" type="button" style="margin-top:6px">Delete</button>
+        </div>
+      `).join("");
+    }
+
+    function updateStatusDisplay(mark) {
+      const status = mark?.status || "incomplete";
+      activityStatus.textContent = status;
+      activityStatus.className = `status-badge ${status}`;
+
+      attemptCount.textContent = String(mark?.attempt_count || 0);
+      firstSave.textContent = formatDateTime(mark?.first_save_at);
+      lastSave.textContent = formatDateTime(mark?.last_save_at);
+
+      if (mark?.score !== null && mark?.score !== undefined && mark?.max_score) {
+        scoreDisplay.style.display = "";
+        scoreValue.textContent = `${mark.score} / ${mark.max_score}`;
+      } else {
+        scoreDisplay.style.display = "none";
+      }
+    }
+
+    async function loadActivityData() {
+      if (!username || !lessonId || !activityId) {
+        showError("Missing required parameters. URL should include username, lesson_id, and activity_id.");
+        return;
+      }
+
+      try {
+        const res = await fetch(
+          `/api/teacher/pupil/${encodeURIComponent(username)}/activity/${encodeURIComponent(lessonId)}/${encodeURIComponent(activityId)}`,
+          { credentials: "same-origin" }
+        );
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          showError(errData.detail || `Failed to load activity data (${res.status})`);
+          return;
+        }
+
+        activityData = await res.json();
+        currentMark = activityData.mark;
+        renderActivityData();
+
+        loadingMsg.style.display = "none";
+        mainContent.style.display = "";
+      } catch (err) {
+        showError("Failed to load activity data: " + err.message);
+      }
+    }
+
+    function renderActivityData() {
+      const pupil = activityData.pupil || {};
+      const state = activityData.state?.state || null;
+      const mark = activityData.mark;
+      const revisions = activityData.revisions || [];
+      const feedback = activityData.feedback || [];
+      const meta = activityData.activity_meta || {};
+
+      // Set page info
+      const title = meta.title || activityId;
+      pageTitle.textContent = `${lessonId} / ${activityId}: ${title}`;
+      document.title = `${activityId} - ${pupil.name || username}`;
+
+      // Pupil info
+      pupilName.textContent = pupil.name || "-";
+      pupilUsername.textContent = pupil.username || username;
+      pupilCohort.textContent = pupil.cohort_year || "-";
+
+      // Activity info
+      activityTitle.textContent = title;
+      updateStatusDisplay(mark);
+
+      // Answers
+      renderAnswers(state, mark?.answer_marks);
+
+      // Revisions
+      renderRevisions(revisions);
+
+      // Feedback
+      renderFeedback(feedback);
+    }
+
+    async function markAnswer(questionId, correct) {
+      const auth = await window.tlacAuthReady;
+      if (!auth) {
+        toast("Not signed in.");
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/teacher/answer-mark", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": auth.csrf_token
+          },
+          credentials: "same-origin",
+          body: JSON.stringify({
+            username,
+            lesson_id: lessonId,
+            activity_id: activityId,
+            question_id: questionId,
+            correct
+          })
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          toast(err.detail || "Failed to mark answer.");
+          return;
+        }
+
+        const data = await res.json();
+        currentMark = data.mark;
+
+        // Re-render with new marks
+        const state = activityData.state?.state || null;
+        renderAnswers(state, currentMark?.answer_marks);
+        updateStatusDisplay(currentMark);
+        toast("Answer marked.");
+      } catch (err) {
+        toast("Error marking answer: " + err.message);
+      }
+    }
+
+    async function setOverallMark(status) {
+      const auth = await window.tlacAuthReady;
+      if (!auth) {
+        toast("Not signed in.");
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/teacher/mark", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": auth.csrf_token
+          },
+          credentials: "same-origin",
+          body: JSON.stringify({
+            username,
+            lesson_id: lessonId,
+            activity_id: activityId,
+            status
+          })
+        });
+
+        if (!res.ok) {
+          toast("Failed to update status.");
+          return;
+        }
+
+        toast(`Marked as ${status}.`);
+        await loadActivityData();
+      } catch (err) {
+        toast("Error: " + err.message);
+      }
+    }
+
+    async function saveFeedback() {
+      const auth = await window.tlacAuthReady;
+      if (!auth) {
+        toast("Not signed in.");
+        return;
+      }
+
+      const text = feedbackInput.value.trim();
+      if (!text) {
+        toast("Enter feedback text.");
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/teacher/feedback", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": auth.csrf_token
+          },
+          credentials: "same-origin",
+          body: JSON.stringify({
+            username,
+            lesson_id: lessonId,
+            activity_id: activityId,
+            feedback_text: text
+          })
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          toast(err.detail || "Failed to save feedback.");
+          return;
+        }
+
+        feedbackInput.value = "";
+        toast("Feedback saved.");
+        await loadActivityData();
+      } catch (err) {
+        toast("Error: " + err.message);
+      }
+    }
+
+    async function deleteFeedback(feedbackId) {
+      const auth = await window.tlacAuthReady;
+      if (!auth) {
+        toast("Not signed in.");
+        return;
+      }
+
+      if (!confirm("Delete this feedback?")) return;
+
+      try {
+        const res = await fetch(`/api/teacher/feedback/${encodeURIComponent(feedbackId)}`, {
+          method: "DELETE",
+          headers: {
+            "X-CSRF-Token": auth.csrf_token
+          },
+          credentials: "same-origin"
+        });
+
+        if (!res.ok) {
+          toast("Failed to delete feedback.");
+          return;
+        }
+
+        toast("Feedback deleted.");
+        await loadActivityData();
+      } catch (err) {
+        toast("Error: " + err.message);
+      }
+    }
+
+    // Event delegation for answer marking
+    answersContainer.addEventListener("click", (e) => {
+      const correctBtn = e.target.closest("button[data-mark-correct]");
+      if (correctBtn) {
+        markAnswer(correctBtn.dataset.markCorrect, true);
+        return;
+      }
+      const incorrectBtn = e.target.closest("button[data-mark-incorrect]");
+      if (incorrectBtn) {
+        markAnswer(incorrectBtn.dataset.markIncorrect, false);
+        return;
+      }
+    });
+
+    // Event delegation for feedback deletion
+    existingFeedback.addEventListener("click", (e) => {
+      const deleteBtn = e.target.closest("button[data-delete-feedback]");
+      if (deleteBtn) {
+        deleteFeedback(deleteBtn.dataset.deleteFeedback);
+      }
+    });
+
+    markCompleteBtn.addEventListener("click", () => setOverallMark("complete"));
+    markIncompleteBtn.addEventListener("click", () => setOverallMark("incomplete"));
+    saveFeedbackBtn.addEventListener("click", saveFeedback);
+
+    // Initialize
+    loadActivityData();
+  </script>
+</body>
+</html>

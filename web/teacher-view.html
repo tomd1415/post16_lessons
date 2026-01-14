@@ -192,6 +192,11 @@
           <td>
             <span class="tag">${status}</span>
             <div style="margin-top:6px">
+              <button class="btn primary" data-action="detail" data-activity="${activity.id}">
+                View &amp; Mark
+              </button>
+            </div>
+            <div style="margin-top:6px">
               <button class="btn" data-action="toggle" data-activity="${activity.id}">
                 Mark ${status === "complete" ? "incomplete" : "complete"}
               </button>
@@ -379,11 +384,30 @@
       window.location.href = `/teacher-history.html?${params.toString()}`;
     }
 
+    function openActivityDetail(activityId){
+      const username = pupilSelect.value;
+      const lessonId = lessonSelect.value;
+      if(!username || !lessonId){
+        toast("Select a pupil and lesson first.");
+        return;
+      }
+      const params = new URLSearchParams({
+        username,
+        lesson_id: lessonId,
+        activity_id: activityId
+      });
+      window.location.href = `/teacher-pupil-activity.html?${params.toString()}`;
+    }
+
     activityTableBody.addEventListener("click", (e)=>{
       const btn = e.target.closest("button[data-action]");
       if(!btn) return;
       const action = btn.dataset.action;
       const activityId = btn.dataset.activity;
+      if(action === "detail"){
+        openActivityDetail(activityId);
+        return;
+      }
       if(action === "toggle"){
         const current = btn.textContent.includes("incomplete") ? "complete" : "incomplete";
         toggleMark(activityId, current);

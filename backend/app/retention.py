@@ -6,7 +6,7 @@ from sqlalchemy import func, or_
 
 from .config import RETENTION_YEARS
 from .db import SessionLocal
-from .models import ActivityMark, ActivityRevision, ActivityState, AuditLog, Session as AuthSession, User
+from .models import ActivityFeedback, ActivityMark, ActivityRevision, ActivityState, AuditLog, Session as AuthSession, User
 
 
 def ensure_utc(value):
@@ -72,6 +72,7 @@ def retention_counts(db, user_ids):
             "activity_states": 0,
             "activity_revisions": 0,
             "activity_marks": 0,
+            "activity_feedback": 0,
             "audit_logs": 0,
         }
     return {
@@ -80,6 +81,7 @@ def retention_counts(db, user_ids):
         "activity_states": db.query(ActivityState).filter(ActivityState.user_id.in_(user_ids)).count(),
         "activity_revisions": db.query(ActivityRevision).filter(ActivityRevision.user_id.in_(user_ids)).count(),
         "activity_marks": db.query(ActivityMark).filter(ActivityMark.user_id.in_(user_ids)).count(),
+        "activity_feedback": db.query(ActivityFeedback).filter(ActivityFeedback.user_id.in_(user_ids)).count(),
         "audit_logs": db.query(AuditLog)
         .filter(or_(AuditLog.actor_user_id.in_(user_ids), AuditLog.target_user_id.in_(user_ids)))
         .count(),
@@ -98,6 +100,9 @@ def purge_users(db, user_ids):
         .delete(synchronize_session=False),
         "activity_marks": db.query(ActivityMark)
         .filter(ActivityMark.user_id.in_(user_ids))
+        .delete(synchronize_session=False),
+        "activity_feedback": db.query(ActivityFeedback)
+        .filter(ActivityFeedback.user_id.in_(user_ids))
         .delete(synchronize_session=False),
         "sessions": db.query(AuthSession)
         .filter(AuthSession.user_id.in_(user_ids))

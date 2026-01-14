@@ -33,6 +33,7 @@ const ROLE_MENUS = {
       { label: "Teacher stats", href: "/teacher-stats.html" },
       { label: "Revision history", href: "/teacher-history.html" },
       { label: "Link registry", href: "/teacher-links.html" },
+      { label: "Pupil activity", href: "/teacher-pupil-activity.html" },
       { label: "Student hub", href: "/index.html" }
     ]
   },
@@ -276,6 +277,14 @@ const BREADCRUMB_RULES = [
     trail: (role) => [
       { label: "Teacher hub", href: "/teacher.html" },
       { label: "Link registry" }
+    ]
+  },
+  {
+    test: path => path.startsWith("/teacher-pupil-activity"),
+    trail: (role) => [
+      { label: "Teacher hub", href: "/teacher.html" },
+      { label: "Teacher view", href: "/teacher-view.html" },
+      { label: "Pupil activity" }
     ]
   },
   {

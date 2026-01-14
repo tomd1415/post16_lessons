@@ -44,6 +44,12 @@ class User(Base):
     sessions = relationship("Session", back_populates="user", cascade="all, delete-orphan")
     activity_states = relationship("ActivityState", back_populates="user", cascade="all, delete-orphan")
     activity_marks = relationship("ActivityMark", back_populates="user", cascade="all, delete-orphan")
+    activity_feedback = relationship(
+        "ActivityFeedback",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        foreign_keys="ActivityFeedback.user_id",
+    )
     audit_logs = relationship(
         "AuditLog",
         back_populates="actor",
@@ -114,8 +120,34 @@ class ActivityMark(Base):
     status = Column(String(20), nullable=False)
     created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
     updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)
+    # New fields for enhanced marking
+    answer_marks = Column(JsonType, nullable=True)  # {"q1": {"correct": true, "attempts": 2}, ...}
+    score = Column(Integer, nullable=True)
+    max_score = Column(Integer, nullable=True)
+    attempt_count = Column(Integer, default=0, nullable=False)
+    first_save_at = Column(DateTime(timezone=True), nullable=True)
+    last_save_at = Column(DateTime(timezone=True), nullable=True)
 
     user = relationship("User", back_populates="activity_marks")
+
+
+class ActivityFeedback(Base):
+    __tablename__ = "activity_feedback"
+    __table_args__ = (
+        UniqueConstraint("user_id", "lesson_id", "activity_id", name="uq_activity_feedback"),
+    )
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    lesson_id = Column(String(64), nullable=False)
+    activity_id = Column(String(64), nullable=True)  # Null for lesson-level feedback
+    feedback_text = Column(Text, nullable=False)
+    teacher_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)
+
+    user = relationship("User", foreign_keys=[user_id], back_populates="activity_feedback")
+    teacher = relationship("User", foreign_keys=[teacher_id])
 
 
 class AuditLog(Base):
