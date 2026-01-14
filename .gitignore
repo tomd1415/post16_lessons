@@ -43,3 +43,4 @@ backups/
 *.code-workspace*
 
 run_playwright_tests.sh
+export_vars_for_test.sh

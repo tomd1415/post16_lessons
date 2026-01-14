@@ -139,7 +139,7 @@
         <h2>Pupil's Answers</h2>
         <div class="note">
           <b>Mark individual answers:</b> Click correct/incorrect to mark each answer. Green = correct, red = incorrect.
-          Auto-check results (if available) appear under each answer.
+          Code submissions can be marked as well. Auto-check results (if available) appear under each answer.
         </div>
         <div id="answerSummary" class="answer-summary"></div>
         <div id="answersContainer" style="margin-top:12px">
@@ -331,12 +331,18 @@
       `;
     }
 
+    function formatAnswerLabel(key) {
+      if (key === "code") return "Code submission";
+      return key;
+    }
+
     function renderAnswerItems(entries, marks, autoChecks) {
       if (!entries.length) {
         return '<p class="muted">No answers saved.</p>';
       }
       renderAnswerSummary(entries, marks, autoChecks);
       return entries.map(([key, value]) => {
+        const label = formatAnswerLabel(key);
         const markInfo = marks?.[key] || {};
         const teacherCorrect = markInfo.correct === true;
         const teacherIncorrect = markInfo.correct === false;
@@ -352,7 +358,7 @@
 
         return `
           <div class="answer-item ${cssClass}" data-question-id="${escapeHtml(key)}">
-            <div class="answer-key">${escapeHtml(key)}</div>
+            <div class="answer-key">${escapeHtml(label)}</div>
             <div class="answer-value">${renderAnswerValue(value)}</div>
             <div class="answer-status ${statusClass}">
               <span class="answer-status-icon">${statusIcon}</span>
@@ -407,16 +413,6 @@
       `;
     }
 
-    function renderCodeSection(code) {
-      if (!code) return "";
-      return `
-        <div class="answer-section">
-          <h3>Code</h3>
-          <div class="code-block">${escapeHtml(code)}</div>
-        </div>
-      `;
-    }
-
     function renderOutputSection(output) {
       if (!output) return "";
       const meta = [];
@@ -436,17 +432,57 @@
       `;
     }
 
+    function decodeBase64Text(value) {
+      if (!value) return "";
+      try {
+        const binary = atob(value);
+        const bytes = Uint8Array.from(binary, ch => ch.charCodeAt(0));
+        return new TextDecoder("utf-8").decode(bytes);
+      } catch {
+        return "";
+      }
+    }
+
     function renderFilesSection(files) {
       if (!Array.isArray(files) || !files.length) return "";
       const items = files.map(file => {
-        const path = file.path || "file";
-        const mime = file.mime ? ` (${file.mime})` : "";
-        return `<li>${escapeHtml(path)}${escapeHtml(mime)}</li>`;
+        const path = file?.path || "file";
+        const mime = file?.mime || "";
+        const size = Number.isFinite(file?.size) ? `${file.size} bytes` : "";
+        const metaParts = [];
+        if (size) metaParts.push(size);
+        if (mime) metaParts.push(mime);
+        const meta = metaParts.length ? `<small class="muted">${escapeHtml(metaParts.join(" · "))}</small>` : "";
+        const contentBase64 = typeof file?.content_base64 === "string" ? file.content_base64 : "";
+        let preview = '<div class="muted">No preview available.</div>';
+        if (contentBase64) {
+          if (mime.startsWith("image/")) {
+            preview = `<img class="file-preview" alt="${escapeHtml(path)}" src="data:${escapeHtml(mime)};base64,${contentBase64}">`;
+          } else {
+            const decoded = decodeBase64Text(contentBase64);
+            if (decoded) {
+              preview = `<pre class="code-output">${escapeHtml(decoded)}</pre>`;
+            } else if (file?.size > 0) {
+              preview = '<div class="muted">Binary file (not displayed).</div>';
+            } else {
+              preview = '<div class="muted">Empty file.</div>';
+            }
+          }
+        }
+        return `
+          <div class="file-card">
+            <div><b>${escapeHtml(path)}</b> ${meta}</div>
+            <details>
+              <summary>View file</summary>
+              ${preview}
+            </details>
+          </div>
+        `;
       }).join("");
       return `
         <div class="answer-section">
           <h3>Saved files</h3>
-          <ul class="state-list">${items}</ul>
+          <div class="file-list">${items}</div>
         </div>
       `;
     }
@@ -476,6 +512,17 @@
       const answerEntries = stateObj.answers && typeof stateObj.answers === "object" && !Array.isArray(stateObj.answers)
         ? Object.entries(stateObj.answers)
         : Object.entries(stateObj).filter(([key]) => !knownKeys.has(key));
+      const combinedEntries = answerEntries.slice();
+      if (stateObj.code && !combinedEntries.some(([key]) => key === "code")) {
+        combinedEntries.push(["code", stateObj.code]);
+      }
+      if (!combinedEntries.length && stateObj.checked && typeof stateObj.checked === "object") {
+        Object.keys(stateObj.checked).forEach(key => {
+          if (combinedEntries.some(([entryKey]) => entryKey === key)) return;
+          const value = stateObj.answers && typeof stateObj.answers === "object" ? stateObj.answers[key] : "";
+          combinedEntries.push([key, value]);
+        });
+      }
       const notesEntries = stateObj.notes && typeof stateObj.notes === "object" ? Object.entries(stateObj.notes) : [];
       const checklistEntries = stateObj.checklist && typeof stateObj.checklist === "object" ? Object.entries(stateObj.checklist) : [];
       const sections = [];
@@ -483,7 +530,7 @@
       sections.push(`
         <div class="answer-section">
           <h3>Answers</h3>
-          ${renderAnswerItems(answerEntries, marks, autoChecks)}
+          ${renderAnswerItems(combinedEntries, marks, autoChecks)}
         </div>
       `);
 
@@ -493,10 +540,6 @@
 
       if (checklistEntries.length) {
         sections.push(renderChecklistSection(checklistEntries));
-      }
-
-      if (stateObj.code) {
-        sections.push(renderCodeSection(stateObj.code));
       }
 
       if (stateObj.output) {

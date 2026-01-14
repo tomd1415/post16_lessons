@@ -105,6 +105,7 @@ Rules:
 - Teacher hub: `https://localhost:8443/teacher.html`
 - Teacher view: `https://localhost:8443/teacher-view.html`
 - Teacher revision history: `https://localhost:8443/teacher-history.html`
+- Teacher pupil activity view: `https://localhost:8443/teacher-pupil-activity.html` (mark answers, review auto-checks and saved files)
 - Link registry: `https://localhost:8443/teacher-links.html`
 - Admin hub: `https://localhost:8443/admin.html`
 - Admin audit log: `https://localhost:8443/admin-audit.html`

@@ -39,7 +39,19 @@ def test_get_pupil_activity_detail_returns_data(client, db_session):
         user_id=pupil.id,
         lesson_id="lesson-1",
         activity_id="a01",
-        state={"answer": "test answer"},
+        state={
+            "answers": {"q1": "test answer"},
+            "checked": {"q1": True},
+            "code": "print('hi')",
+            "files": [
+                {
+                    "path": "output.txt",
+                    "size": 2,
+                    "mime": "text/plain",
+                    "content_base64": "aGk=",
+                }
+            ],
+        },
     )
     db_session.add(state)
     db_session.commit()
@@ -50,7 +62,10 @@ def test_get_pupil_activity_detail_returns_data(client, db_session):
     data = res.json()
 
     assert data["pupil"]["username"] == "pupil.one"
-    assert data["state"]["state"]["answer"] == "test answer"
+    assert data["state"]["state"]["answers"]["q1"] == "test answer"
+    assert data["state"]["state"]["checked"]["q1"] is True
+    assert data["state"]["state"]["code"] == "print('hi')"
+    assert data["state"]["state"]["files"][0]["path"] == "output.txt"
 
 
 def test_answer_mark_requires_teacher(client, db_session):
