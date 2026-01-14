@@ -2,7 +2,6 @@ import asyncio
 import csv
 import io
 import json
-import logging
 import os
 import re
 import secrets
@@ -11,7 +10,6 @@ import time
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import cast
 from urllib.parse import quote
 
 from fastapi import Depends, FastAPI, File, HTTPException, Request, Response, UploadFile
@@ -31,22 +29,13 @@ from .config import (
     SESSION_TTL_MINUTES,
 )
 from .db import SessionLocal, engine, get_db
-from .models import AuditLog, ActivityMark, ActivityRevision, ActivityState, ApiRateLimit, Base, LoginAttempt, Session as AuthSession, User
+from .models import AuditLog, ActivityMark, ActivityRevision, ActivityState, Base, Session as AuthSession, User
 from .python_runner import RunnerError, RunnerUnavailable, run_python, runner_diagnostics
-from .rate_limit import ApiRateLimiter, LoginLimiter, compute_lock_seconds, ensure_timezone_aware
+from .rate_limit import LoginLimiter, compute_lock_seconds
 from .security import hash_password, verify_password
-from . import metrics as prom_metrics
-
-# Configure structured logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
-)
-logger = logging.getLogger(__name__)
 
 @asynccontextmanager
-async def lifespan(_app: FastAPI):
+async def lifespan(_: FastAPI):
     last_err = None
     for _ in range(10):
         try:
@@ -67,10 +56,8 @@ app = FastAPI(
 )
 
 login_limiter = LoginLimiter()
-api_rate_limiter = ApiRateLimiter(window_minutes=1)
 runner_semaphore = asyncio.Semaphore(RUNNER_CONCURRENCY)
-STATIC_ROOT = os.getenv("STATIC_ROOT", "/srv")
-MANIFEST_PATH = os.getenv("LESSON_MANIFEST_PATH", os.path.join(STATIC_ROOT, "lessons", "manifest.json"))
+MANIFEST_PATH = os.getenv("LESSON_MANIFEST_PATH", "/srv/lessons/manifest.json")
 _manifest_cache = None
 _manifest_mtime = None
 _link_overrides_cache = None
@@ -79,32 +66,6 @@ _link_overrides_mtime = None
 
 def utcnow():
     return datetime.now(timezone.utc)
-
-
-def get_client_ip(request: Request) -> str:
-    """
-    Get the real client IP address, handling X-Forwarded-For headers from proxies.
-    Returns the leftmost IP in X-Forwarded-For chain (the original client).
-    """
-    # Check X-Forwarded-For header (set by reverse proxies like Caddy)
-    forwarded_for = request.headers.get("X-Forwarded-For")
-    if forwarded_for:
-        # X-Forwarded-For can be a comma-separated list: client, proxy1, proxy2
-        # The first IP is the original client
-        client_ip = forwarded_for.split(",")[0].strip()
-        if client_ip:
-            return client_ip
-
-    # Check X-Real-IP header (alternative header used by some proxies)
-    real_ip = request.headers.get("X-Real-IP")
-    if real_ip:
-        return real_ip.strip()
-
-    # Fallback to direct connection IP
-    if request.client and request.client.host:
-        return request.client.host
-
-    return "unknown"
 
 
 def normalize_username(username: str) -> str:
@@ -188,14 +149,12 @@ def parse_client_time(value):
     if isinstance(value, (int, float)):
         try:
             return datetime.fromtimestamp(float(value) / 1000, tz=timezone.utc)
-        except (ValueError, OSError, OverflowError) as e:
-            logger.warning(f"Failed to parse timestamp {value}: {e}")
+        except Exception:
             return None
     if isinstance(value, str):
         try:
             return datetime.fromisoformat(value.replace("Z", "+00:00"))
-        except (ValueError, TypeError) as e:
-            logger.warning(f"Failed to parse ISO datetime {value}: {e}")
+        except Exception:
             return None
     return None
 
@@ -243,7 +202,7 @@ def log_audit(
         lesson_id=lesson_id,
         activity_id=activity_id,
         metadata_json=metadata or {},
-        ip_address=get_client_ip(request) if request else None,
+        ip_address=request.client.host if request and request.client else None,
         user_agent=request.headers.get("user-agent") if request else None,
     )
     db.add(entry)
@@ -253,31 +212,17 @@ def load_manifest():
     global _manifest_cache, _manifest_mtime
     try:
         mtime = os.path.getmtime(MANIFEST_PATH)
-    except FileNotFoundError:
-        logger.warning(f"Manifest file not found: {MANIFEST_PATH}")
-        return {}
-    except OSError as e:
-        logger.error(f"Failed to stat manifest file {MANIFEST_PATH}: {e}")
-        return {}
-
+    except OSError:
+        return None
     if _manifest_cache is not None and _manifest_mtime == mtime:
         return _manifest_cache
-
     try:
         with open(MANIFEST_PATH, "r", encoding="utf-8") as handle:
             _manifest_cache = json.load(handle)
             _manifest_mtime = mtime
-            logger.info(f"Loaded manifest from {MANIFEST_PATH}")
             return _manifest_cache
-    except FileNotFoundError:
-        logger.warning(f"Manifest file not found: {MANIFEST_PATH}")
-        return {}
-    except json.JSONDecodeError as e:
-        logger.error(f"Invalid JSON in manifest file {MANIFEST_PATH}: {e}")
-        return {}
-    except Exception as e:
-        logger.exception(f"Unexpected error loading manifest from {MANIFEST_PATH}: {e}")
-        return {}
+    except Exception:
+        return None
 
 
 def load_link_overrides():
@@ -289,27 +234,18 @@ def load_link_overrides():
         _link_overrides_cache = {}
         _link_overrides_mtime = None
         return {}
-    except OSError as e:
-        logger.error(f"Failed to stat link overrides file {LINK_OVERRIDES_PATH}: {e}")
+    except OSError:
         return {}
-
     if _link_overrides_cache is not None and _link_overrides_mtime == mtime:
         return _link_overrides_cache
-
     try:
         data = json.loads(path.read_text())
         if not isinstance(data, dict):
-            logger.warning(f"Link overrides file {LINK_OVERRIDES_PATH} contains non-dict data, using empty dict")
             data = {}
         _link_overrides_cache = data
         _link_overrides_mtime = mtime
-        logger.info(f"Loaded link overrides from {LINK_OVERRIDES_PATH}")
         return data
-    except json.JSONDecodeError as e:
-        logger.error(f"Invalid JSON in link overrides file {LINK_OVERRIDES_PATH}: {e}")
-        return {}
-    except Exception as e:
-        logger.exception(f"Unexpected error loading link overrides from {LINK_OVERRIDES_PATH}: {e}")
+    except Exception:
         return {}
 
 
@@ -373,7 +309,7 @@ def create_session(db: Session, user: User, request: Request) -> AuthSession:
         csrf_token=csrf,
         created_at=now,
         expires_at=expires,
-        ip_address=get_client_ip(request),
+        ip_address=request.client.host if request.client else None,
         user_agent=request.headers.get("user-agent"),
     )
     db.add(session)
@@ -532,238 +468,17 @@ async def auth_middleware(request: Request, call_next):
         return await call_next(request)
     finally:
         db.close()
-
-
-@app.middleware("http")
-async def metrics_middleware(request: Request, call_next):
-    """Collect Prometheus metrics for HTTP requests"""
-    # Skip metrics collection for the metrics endpoint itself
-    if request.url.path == "/api/metrics":
-        return await call_next(request)
-
-    method = request.method
-    # Normalize endpoint path (remove IDs, etc.)
-    endpoint = request.url.path
-    for pattern in [r'/\d+', r'/[a-f0-9-]{36}']:
-        endpoint = re.sub(pattern, '/{id}', endpoint)
-
-    prom_metrics.http_requests_in_progress.labels(method=method, endpoint=endpoint).inc()
-    start_time = time.time()
-
-    try:
-        response = await call_next(request)
-        status = response.status_code
-
-        prom_metrics.http_requests_total.labels(
-            method=method,
-            endpoint=endpoint,
-            status=status
-        ).inc()
-
-        duration = time.time() - start_time
-        prom_metrics.http_request_duration_seconds.labels(
-            method=method,
-            endpoint=endpoint
-        ).observe(duration)
-
-        return response
-    except Exception as e:
-        prom_metrics.errors_total.labels(
-            error_type=type(e).__name__,
-            endpoint=endpoint
-        ).inc()
-        raise
-    finally:
-        prom_metrics.http_requests_in_progress.labels(method=method, endpoint=endpoint).dec()
-
-
 @app.get("/api/health")
 def health(db: Session = Depends(get_db)):
     db_ok = True
     try:
         db.execute(text("select 1"))
-    except Exception as e:
-        logger.error(f"Database health check failed: {e}")
+    except Exception:
         db_ok = False
     return {
         "status": "ok" if db_ok else "degraded",
         "db_ok": db_ok,
         "time": utcnow().isoformat(),
-    }
-
-
-@app.get("/api/metrics")
-def prometheus_metrics(db: Session = Depends(get_db)):
-    """
-    Prometheus metrics endpoint
-    Returns metrics in Prometheus text format
-    """
-    from prometheus_client import REGISTRY, generate_latest
-
-    # Update dynamic metrics
-    try:
-        # Update active sessions gauge
-        active_sessions = db.query(AuthSession).filter(
-            AuthSession.expires_at > utcnow()
-        ).count()
-        prom_metrics.update_active_sessions(active_sessions)
-
-        # Update database connection pool metrics if available
-        # Note: SQLAlchemy pool stats require pool_pre_ping=True
-        if hasattr(engine.pool, 'size'):
-            prom_metrics.update_db_connections(engine.pool.size())
-    except Exception as e:
-        logger.warning(f"Failed to update dynamic metrics: {e}")
-
-    # Generate Prometheus format output
-    return Response(
-        content=generate_latest(REGISTRY),
-        media_type="text/plain; charset=utf-8"
-    )
-
-
-@app.get("/api/admin/metrics")
-def admin_metrics_summary(request: Request, db: Session = Depends(get_db)):
-    """
-    Admin metrics summary endpoint
-    Returns a JSON summary of key metrics for the admin dashboard
-    """
-    require_admin(request)
-
-    from prometheus_client import REGISTRY
-    from datetime import datetime, timedelta
-
-    # Helper function to get metric value
-    def get_metric_value(name, labels=None):
-        try:
-            # Strip _total suffix if present to get base metric name
-            base_name = name.replace('_total', '') if name.endswith('_total') else name
-
-            for metric in REGISTRY.collect():
-                if metric.name == base_name:
-                    for sample in metric.samples:
-                        # Skip _created timestamps
-                        if sample.name.endswith('_created'):
-                            continue
-                        # Match both base name and _total suffix
-                        if sample.name in (base_name, f"{base_name}_total"):
-                            if labels is None or all(sample.labels.get(k) == v for k, v in labels.items()):
-                                return sample.value
-        except Exception as e:
-            logger.warning(f"Error getting metric {name}: {e}")
-        return 0
-
-    # Helper function to sum metric values across labels
-    def sum_metric(name, label_filter=None):
-        try:
-            total = 0
-            # Strip _total suffix if present to get base metric name
-            base_name = name.replace('_total', '') if name.endswith('_total') else name
-
-            for metric in REGISTRY.collect():
-                if metric.name == base_name:
-                    for sample in metric.samples:
-                        # Skip _created timestamps and histogram buckets
-                        if sample.name.endswith('_created') or sample.name.endswith('_bucket'):
-                            continue
-                        # Match both base name and _total suffix
-                        if sample.name in (base_name, f"{base_name}_total"):
-                            if label_filter is None or label_filter(sample.labels):
-                                total += sample.value
-            return total
-        except Exception as e:
-            logger.warning(f"Error summing metric {name}: {e}")
-        return 0
-
-    # Update dynamic metrics
-    try:
-        active_sessions = db.query(AuthSession).filter(
-            AuthSession.expires_at > utcnow()
-        ).count()
-        prom_metrics.update_active_sessions(active_sessions)
-
-        if hasattr(engine.pool, 'size'):
-            prom_metrics.update_db_connections(engine.pool.size())
-    except Exception as e:
-        logger.warning(f"Failed to update dynamic metrics: {e}")
-
-    # Gather metrics
-    total_requests = sum_metric("tlac_http_requests_total")
-    successful_requests = sum_metric("tlac_http_requests_total", lambda l: l.get("status", "").startswith("2"))
-    error_requests = sum_metric("tlac_http_requests_total", lambda l: l.get("status", "").startswith(("4", "5")))
-
-    total_logins = sum_metric("tlac_auth_login_attempts_total")
-    successful_logins = get_metric_value("tlac_auth_login_attempts_total", {"status": "success"})
-    failed_logins = get_metric_value("tlac_auth_login_attempts_total", {"status": "failed"})
-    rate_limited_logins = get_metric_value("tlac_auth_login_attempts_total", {"status": "rate_limited"})
-
-    active_sessions_count = get_metric_value("tlac_auth_sessions_active")
-
-    total_python_runs = sum_metric("tlac_python_runs_total")
-    successful_runs = get_metric_value("tlac_python_runs_total", {"status": "success"})
-    error_runs = get_metric_value("tlac_python_runs_total", {"status": "error"})
-    timeout_runs = get_metric_value("tlac_python_runs_total", {"status": "timeout"})
-
-    total_activity_saves = sum_metric("tlac_activity_saves_total")
-    rate_limit_violations = sum_metric("tlac_rate_limit_exceeded_total")
-
-    db_connections = get_metric_value("tlac_db_connections_active")
-    total_errors = sum_metric("tlac_errors_total")
-
-    # Get database stats
-    total_users = db.query(User).count()
-    total_pupils = db.query(User).filter(User.role == "pupil").count()
-    total_teachers = db.query(User).filter(User.role == "teacher").count()
-    total_admins = db.query(User).filter(User.role == "admin").count()
-    active_users = db.query(User).filter(User.active == True).count()
-
-    # Get recent activity (last 7 days)
-    week_ago = utcnow() - timedelta(days=7)
-    recent_logins = db.query(User).filter(User.last_login_at > week_ago).count()
-
-    # Calculate success rates
-    login_success_rate = (successful_logins / total_logins * 100) if total_logins > 0 else 100
-    request_success_rate = (successful_requests / total_requests * 100) if total_requests > 0 else 100
-    python_success_rate = (successful_runs / total_python_runs * 100) if total_python_runs > 0 else 100
-
-    return {
-        "summary": {
-            "total_users": total_users,
-            "active_users": active_users,
-            "total_pupils": total_pupils,
-            "total_teachers": total_teachers,
-            "total_admins": total_admins,
-            "active_sessions": int(active_sessions_count),
-            "recent_logins_7d": recent_logins
-        },
-        "http": {
-            "total_requests": int(total_requests),
-            "successful_requests": int(successful_requests),
-            "error_requests": int(error_requests),
-            "success_rate": round(request_success_rate, 1)
-        },
-        "authentication": {
-            "total_login_attempts": int(total_logins),
-            "successful_logins": int(successful_logins),
-            "failed_logins": int(failed_logins),
-            "rate_limited_logins": int(rate_limited_logins),
-            "success_rate": round(login_success_rate, 1)
-        },
-        "python_runner": {
-            "total_runs": int(total_python_runs),
-            "successful_runs": int(successful_runs),
-            "error_runs": int(error_runs),
-            "timeout_runs": int(timeout_runs),
-            "success_rate": round(python_success_rate, 1)
-        },
-        "activity": {
-            "total_saves": int(total_activity_saves),
-            "rate_limit_violations": int(rate_limit_violations)
-        },
-        "system": {
-            "db_connections": int(db_connections),
-            "total_errors": int(total_errors)
-        }
     }
 
 
@@ -804,35 +519,27 @@ def login(request: Request, payload: dict, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Invalid payload.")
     username = normalize_username(payload.get("username", ""))
     password = payload.get("password", "")
-    client_ip = get_client_ip(request)
-    ip_key = f"{client_ip}:{username}"
+    ip_key = f"{request.client.host if request.client else 'unknown'}:{username}"
 
-    # Check database-backed rate limiter
-    if login_limiter.check(db, ip_key) > 0:
-        prom_metrics.record_login_attempt(success=False, rate_limited=True)
+    if login_limiter.check(ip_key) > 0:
         raise HTTPException(status_code=429, detail="Too many attempts. Try again shortly.")
 
     user = db.query(User).filter(User.username == username).first()
-    locked_until_aware = ensure_timezone_aware(user.locked_until) if user else None
-    if user and locked_until_aware and locked_until_aware > utcnow():
-        prom_metrics.record_login_attempt(success=False, rate_limited=True)
+    if user and user.locked_until and user.locked_until > utcnow():
         raise HTTPException(status_code=429, detail="Too many attempts. Try again shortly.")
 
-    if not user or not verify_password(cast(str, user.password_hash), password):
-        prom_metrics.record_login_attempt(success=False, rate_limited=False)
+    if not user or not verify_password(user.password_hash, password):
         if user:
             user.failed_login_count += 1
-            lock_seconds = compute_lock_seconds(cast(int, user.failed_login_count))
+            lock_seconds = compute_lock_seconds(user.failed_login_count)
             if lock_seconds:
                 user.locked_until = utcnow() + timedelta(seconds=lock_seconds)
             db.commit()
         else:
-            # Record failed attempt in database
-            login_limiter.record_failure(db, ip_key)
+            login_limiter.record_failure(ip_key)
         raise HTTPException(status_code=401, detail="Invalid username or password.")
 
     if not user.active:
-        prom_metrics.record_login_attempt(success=False, rate_limited=False)
         raise HTTPException(status_code=403, detail="Account disabled.")
 
     user.failed_login_count = 0
@@ -842,10 +549,8 @@ def login(request: Request, payload: dict, db: Session = Depends(get_db)):
 
     session = create_session(db, user, request)
     response = JSONResponse({"ok": True, "user": user_public(user)})
-    set_session_cookie(response, cast(str, session.id))
-    # Clear rate limiting on successful login
-    login_limiter.reset(db, ip_key)
-    prom_metrics.record_login_attempt(success=True, rate_limited=False)
+    set_session_cookie(response, session.id)
+    login_limiter.reset(ip_key)
     return response
 
 
@@ -915,20 +620,6 @@ def save_activity_state(
     user = request.state.user
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated.")
-
-    # Apply rate limiting
-    identifier = f"user:{user.id}"
-    is_allowed, current, limit = api_rate_limiter.check_and_increment(
-        db, identifier, "activity_save"
-    )
-    if not is_allowed:
-        logger.warning(f"Rate limit exceeded for user {user.username} on activity_save: {current}/{limit}")
-        prom_metrics.record_rate_limit_exceeded("activity_save", "api")
-        raise HTTPException(
-            status_code=429,
-            detail=f"Too many requests. Limit: {limit} per minute."
-        )
-
     if not valid_lesson_id(lesson_id) or not valid_activity_id(activity_id):
         raise HTTPException(status_code=400, detail="Invalid lesson or activity id.")
     if not isinstance(payload, dict):
@@ -974,15 +665,7 @@ def save_activity_state(
         created_at=now,
     )
     db.add(revision)
-
-    import time
-    start_time = time.time()
     db.commit()
-    duration = time.time() - start_time
-
-    # Record activity save metrics
-    prom_metrics.record_activity_save(lesson_id, duration)
-
     return {
         "ok": True,
         "updated_at": row.updated_at.isoformat() if row.updated_at else None,
@@ -991,25 +674,11 @@ def save_activity_state(
 
 
 @app.post("/api/python/run")
-async def python_run(request: Request, payload: dict, db: Session = Depends(get_db)):
+async def python_run(request: Request, payload: dict):
     csrf_guard(request)
     user = request.state.user
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated.")
-
-    # Apply rate limiting
-    identifier = f"user:{user.id}"
-    is_allowed, current, limit = api_rate_limiter.check_and_increment(
-        db, identifier, "python_run"
-    )
-    if not is_allowed:
-        logger.warning(f"Rate limit exceeded for user {user.username} on python_run: {current}/{limit}")
-        prom_metrics.record_rate_limit_exceeded("python_run", "api")
-        raise HTTPException(
-            status_code=429,
-            detail=f"Too many code executions. Limit: {limit} per minute."
-        )
-
     if not isinstance(payload, dict):
         raise HTTPException(status_code=400, detail="Invalid payload.")
     lesson_id = payload.get("lesson_id", "")
@@ -1021,37 +690,14 @@ async def python_run(request: Request, payload: dict, db: Session = Depends(get_
     if not isinstance(code, str) or not code.strip():
         raise HTTPException(status_code=400, detail="Code is required.")
 
-    import time
-    start_time = time.time()
-    status = "error"  # Default status
-
     async with runner_semaphore:
         try:
             result = await asyncio.to_thread(run_python, code, files)
-
-            # Determine status from result
-            if result.get("timed_out"):
-                status = "timeout"
-            elif result.get("exit_code") == 0:
-                status = "success"
-            else:
-                status = "error"
-
-            # Record metrics
-            duration = time.time() - start_time
-            prom_metrics.record_python_run(status, duration)
-
         except ValueError as exc:
-            duration = time.time() - start_time
-            prom_metrics.record_python_run("error", duration)
             raise HTTPException(status_code=400, detail=str(exc)) from exc
         except RunnerUnavailable as exc:
-            duration = time.time() - start_time
-            prom_metrics.record_python_run("error", duration)
             raise HTTPException(status_code=503, detail=str(exc)) from exc
         except RunnerError as exc:
-            duration = time.time() - start_time
-            prom_metrics.record_python_run("error", duration)
             raise HTTPException(status_code=500, detail=str(exc)) from exc
 
     return {"ok": True, **result}
@@ -1467,23 +1113,22 @@ def audit_entries(
     action: str,
     since: str,
     limit: int,
-    cursor: str = None,
 ):
-    limit = max(1, min(int(limit or 50), 200))
+    limit = max(1, min(int(limit or 200), 500))
     query = db.query(AuditLog)
 
     if actor_username:
         actor_username = normalize_username(actor_username)
         actor = db.query(User).filter(User.username == actor_username).first()
         if not actor:
-            return {"items": [], "has_more": False, "next_cursor": None}
+            return {"items": []}
         query = query.filter(AuditLog.actor_user_id == actor.id)
 
     if target_username:
         target_username = normalize_username(target_username)
         target = db.query(User).filter(User.username == target_username).first()
         if not target:
-            return {"items": [], "has_more": False, "next_cursor": None}
+            return {"items": []}
         query = query.filter(AuditLog.target_user_id == target.id)
 
     if action:
@@ -1493,32 +1138,7 @@ def audit_entries(
     if since_dt:
         query = query.filter(AuditLog.created_at >= ensure_utc(since_dt))
 
-    # Cursor-based pagination
-    if cursor:
-        try:
-            # Cursor format: timestamp:id
-            cursor_parts = cursor.split(":")
-            if len(cursor_parts) == 2:
-                cursor_time_str, cursor_id = cursor_parts
-                cursor_time = datetime.fromisoformat(cursor_time_str.replace("Z", "+00:00"))
-                query = query.filter(
-                    (AuditLog.created_at < cursor_time) |
-                    ((AuditLog.created_at == cursor_time) & (AuditLog.id < cursor_id))
-                )
-        except (ValueError, TypeError) as e:
-            logger.warning(f"Invalid cursor format: {cursor}: {e}")
-
-    # Fetch one extra to determine if there are more results
-    entries = query.order_by(AuditLog.created_at.desc(), AuditLog.id.desc()).limit(limit + 1).all()
-    has_more = len(entries) > limit
-    entries = entries[:limit]
-
-    # Generate next cursor if there are more results
-    next_cursor = None
-    if has_more and entries:
-        last_entry = entries[-1]
-        next_cursor = f"{last_entry.created_at.isoformat()}:{last_entry.id}"
-
+    entries = query.order_by(AuditLog.created_at.desc()).limit(limit).all()
     user_ids = {entry.actor_user_id for entry in entries if entry.actor_user_id}
     user_ids.update({entry.target_user_id for entry in entries if entry.target_user_id})
     user_map = {user.id: user for user in db.query(User).filter(User.id.in_(user_ids)).all()} if user_ids else {}
@@ -1527,9 +1147,7 @@ def audit_entries(
         "items": [
             audit_log_public(entry, user_map.get(entry.actor_user_id), user_map.get(entry.target_user_id))
             for entry in entries
-        ],
-        "has_more": has_more,
-        "next_cursor": next_cursor,
+        ]
     }
 
 
@@ -1540,12 +1158,11 @@ def teacher_audit(
     target_username: str = "",
     action: str = "",
     since: str = "",
-    limit: int = 50,
-    cursor: str = "",
+    limit: int = 200,
     db: Session = Depends(get_db),
 ):
     require_admin(request)
-    return audit_entries(db, actor_username, target_username, action, since, limit, cursor or None)
+    return audit_entries(db, actor_username, target_username, action, since, limit)
 
 
 @app.get("/api/admin/audit")
@@ -1555,12 +1172,11 @@ def admin_audit(
     target_username: str = "",
     action: str = "",
     since: str = "",
-    limit: int = 50,
-    cursor: str = "",
+    limit: int = 200,
     db: Session = Depends(get_db),
 ):
     require_admin(request)
-    return audit_entries(db, actor_username, target_username, action, since, limit, cursor or None)
+    return audit_entries(db, actor_username, target_username, action, since, limit)
 
 @app.get("/api/teacher/pupil/{username}/lesson/{lesson_id}")
 def pupil_lesson_detail(
@@ -2061,4 +1677,215 @@ def import_users(
     return {"created": created, "errors": []}
 
 
-app.mount("/", StaticFiles(directory=STATIC_ROOT, html=True), name="static")
+@app.get("/api/admin/users")
+def list_users(
+    request: Request,
+    role: str = "",
+    cohort_year: str = "",
+    active: str = "",
+    search: str = "",
+    db: Session = Depends(get_db),
+):
+    """List all users with optional filtering."""
+    require_admin(request)
+
+    query = db.query(User)
+
+    if role:
+        query = query.filter(User.role == role.lower())
+    if cohort_year:
+        query = query.filter(User.cohort_year == cohort_year)
+    if active:
+        is_active = active.lower() in ("true", "1", "yes")
+        query = query.filter(User.active.is_(is_active))
+    if search:
+        search_term = f"%{search.lower()}%"
+        query = query.filter(
+            (User.username.ilike(search_term)) | (User.name.ilike(search_term))
+        )
+
+    users = query.order_by(User.username.asc()).all()
+
+    return {
+        "items": [
+            {
+                **user_public(user),
+                "active": user.active,
+                "last_login_at": user.last_login_at.isoformat() if user.last_login_at else None,
+                "created_at": user.created_at.isoformat() if user.created_at else None,
+            }
+            for user in users
+        ]
+    }
+
+
+@app.get("/api/admin/users/{username}")
+def get_user(
+    request: Request,
+    username: str,
+    db: Session = Depends(get_db),
+):
+    """Get a specific user by username."""
+    require_admin(request)
+    username = normalize_username(username)
+
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found.")
+
+    return {
+        "user": {
+            **user_public(user),
+            "active": user.active,
+            "teacher_notes": user.teacher_notes or "",
+            "last_login_at": user.last_login_at.isoformat() if user.last_login_at else None,
+            "created_at": user.created_at.isoformat() if user.created_at else None,
+            "failed_login_count": user.failed_login_count or 0,
+            "locked_until": user.locked_until.isoformat() if user.locked_until else None,
+        }
+    }
+
+
+@app.put("/api/admin/users/{username}")
+def update_user(
+    request: Request,
+    username: str,
+    payload: dict,
+    db: Session = Depends(get_db),
+):
+    """Update a user's details."""
+    csrf_guard(request)
+    actor = require_admin(request)
+
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="Invalid payload.")
+
+    username = normalize_username(username)
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found.")
+
+    # Prevent admin from deactivating themselves
+    if user.id == actor.id and payload.get("active") is False:
+        raise HTTPException(status_code=400, detail="Cannot deactivate your own account.")
+
+    # Prevent demoting the last admin
+    if user.role == "admin" and payload.get("role") and payload.get("role") != "admin":
+        admin_count = db.query(User).filter(User.role == "admin", User.active.is_(True)).count()
+        if admin_count <= 1:
+            raise HTTPException(status_code=400, detail="Cannot demote the last admin.")
+
+    changes = {}
+
+    # Update name
+    if "name" in payload:
+        new_name = (payload["name"] or "").strip()
+        if new_name and new_name != user.name:
+            changes["name"] = {"old": user.name, "new": new_name}
+            user.name = new_name
+
+    # Update role
+    if "role" in payload:
+        new_role = (payload["role"] or "").strip().lower()
+        if new_role and new_role in {"pupil", "teacher", "admin"} and new_role != user.role:
+            changes["role"] = {"old": user.role, "new": new_role}
+            user.role = new_role
+
+    # Update cohort_year
+    if "cohort_year" in payload:
+        new_cohort = (payload["cohort_year"] or "").strip() or None
+        if new_cohort != user.cohort_year:
+            changes["cohort_year"] = {"old": user.cohort_year, "new": new_cohort}
+            user.cohort_year = new_cohort
+
+    # Update active status
+    if "active" in payload:
+        new_active = bool(payload["active"])
+        if new_active != user.active:
+            changes["active"] = {"old": user.active, "new": new_active}
+            user.active = new_active
+
+    # Update teacher_notes
+    if "teacher_notes" in payload:
+        new_notes = (payload["teacher_notes"] or "").strip() or None
+        if new_notes != user.teacher_notes:
+            changes["teacher_notes"] = {"old": bool(user.teacher_notes), "new": bool(new_notes)}
+            user.teacher_notes = new_notes
+
+    # Update password
+    if "password" in payload and payload["password"]:
+        new_password = payload["password"]
+        if len(new_password) < 4:
+            raise HTTPException(status_code=400, detail="Password too short.")
+        user.password_hash = hash_password(new_password)
+        changes["password"] = True
+
+    # Reset failed login count / unlock account
+    if payload.get("unlock_account"):
+        if user.failed_login_count or user.locked_until:
+            changes["unlock"] = True
+            user.failed_login_count = 0
+            user.locked_until = None
+
+    if changes:
+        log_audit(
+            db,
+            action="update_user",
+            actor=actor,
+            target_user=user,
+            metadata={"changes": list(changes.keys())},
+            request=request,
+        )
+        db.commit()
+
+    return {
+        "ok": True,
+        "user": {
+            **user_public(user),
+            "active": user.active,
+            "teacher_notes": user.teacher_notes or "",
+            "last_login_at": user.last_login_at.isoformat() if user.last_login_at else None,
+        },
+        "changes": list(changes.keys()),
+    }
+
+
+@app.delete("/api/admin/users/{username}")
+def delete_user(
+    request: Request,
+    username: str,
+    db: Session = Depends(get_db),
+):
+    """Deactivate a user (soft delete)."""
+    csrf_guard(request)
+    actor = require_admin(request)
+
+    username = normalize_username(username)
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found.")
+
+    # Prevent admin from deleting themselves
+    if user.id == actor.id:
+        raise HTTPException(status_code=400, detail="Cannot delete your own account.")
+
+    # Prevent deleting the last admin
+    if user.role == "admin":
+        admin_count = db.query(User).filter(User.role == "admin", User.active.is_(True)).count()
+        if admin_count <= 1:
+            raise HTTPException(status_code=400, detail="Cannot delete the last admin.")
+
+    user.active = False
+    log_audit(
+        db,
+        action="delete_user",
+        actor=actor,
+        target_user=user,
+        request=request,
+    )
+    db.commit()
+
+    return {"ok": True, "message": f"User {username} has been deactivated."}
+
+
+app.mount("/", StaticFiles(directory="/srv", html=True), name="static")
