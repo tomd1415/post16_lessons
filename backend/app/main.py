@@ -33,6 +33,13 @@ from .models import AuditLog, ActivityMark, ActivityRevision, ActivityState, Bas
 from .python_runner import RunnerError, RunnerUnavailable, run_python, runner_diagnostics
 from .rate_limit import LoginLimiter, compute_lock_seconds, ensure_timezone_aware
 from .security import hash_password, verify_password
+from .metrics import (
+    PrometheusMiddleware,
+    record_login_attempt,
+    record_python_run,
+    record_activity_save,
+    record_rate_limit_exceeded,
+)
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
@@ -54,6 +61,9 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+
+# Add Prometheus metrics middleware
+app.add_middleware(PrometheusMiddleware)
 
 login_limiter = LoginLimiter()
 runner_semaphore = asyncio.Semaphore(RUNNER_CONCURRENCY)
@@ -666,6 +676,7 @@ def login(request: Request, payload: dict, db: Session = Depends(get_db)):
     ip_key = f"{request.client.host if request.client else 'unknown'}:{username}"
 
     if login_limiter.check(db, ip_key) > 0:
+        record_login_attempt(success=False, rate_limited=True)
         raise HTTPException(status_code=429, detail="Too many attempts. Try again shortly.")
 
     user = db.query(User).filter(User.username == username).first()
@@ -681,6 +692,7 @@ def login(request: Request, payload: dict, db: Session = Depends(get_db)):
             db.commit()
         else:
             login_limiter.record_failure(db, ip_key)
+        record_login_attempt(success=False)
         raise HTTPException(status_code=401, detail="Invalid username or password.")
 
     if not user.active:
@@ -695,6 +707,7 @@ def login(request: Request, payload: dict, db: Session = Depends(get_db)):
     response = JSONResponse({"ok": True, "user": user_public(user)})
     set_session_cookie(response, session.id)
     login_limiter.reset(db, ip_key)
+    record_login_attempt(success=True)
     return response
 
 
@@ -760,6 +773,7 @@ def save_activity_state(
     payload: dict,
     db: Session = Depends(get_db),
 ):
+    start_time = time.time()
     csrf_guard(request)
     user = request.state.user
     if not user:
@@ -810,6 +824,8 @@ def save_activity_state(
     )
     db.add(revision)
     db.commit()
+    duration = time.time() - start_time
+    record_activity_save(lesson_id=lesson_id, duration=duration)
     return {
         "ok": True,
         "updated_at": row.updated_at.isoformat() if row.updated_at else None,
@@ -835,13 +851,24 @@ async def python_run(request: Request, payload: dict):
         raise HTTPException(status_code=400, detail="Code is required.")
 
     async with runner_semaphore:
+        start_time = time.time()
         try:
             result = await asyncio.to_thread(run_python, code, files)
+            duration = time.time() - start_time
+            record_python_run(status="success", duration=duration)
         except ValueError as exc:
+            duration = time.time() - start_time
+            record_python_run(status="error", duration=duration)
             raise HTTPException(status_code=400, detail=str(exc)) from exc
         except RunnerUnavailable as exc:
+            duration = time.time() - start_time
+            record_python_run(status="error", duration=duration)
             raise HTTPException(status_code=503, detail=str(exc)) from exc
         except RunnerError as exc:
+            duration = time.time() - start_time
+            # Check if it was a timeout based on error message
+            status = "timeout" if "timeout" in str(exc).lower() else "error"
+            record_python_run(status=status, duration=duration)
             raise HTTPException(status_code=500, detail=str(exc)) from exc
 
     return {"ok": True, **result}
