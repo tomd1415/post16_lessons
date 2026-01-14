@@ -502,6 +502,149 @@ def metrics(request: Request, db: Session = Depends(get_db)):
     }
 
 
+@app.get("/api/admin/metrics")
+def admin_metrics(request: Request, db: Session = Depends(get_db)):
+    """Admin metrics dashboard endpoint with Prometheus metrics."""
+    require_admin(request)
+    from prometheus_client import REGISTRY
+
+    # Helper function to get metric value
+    def get_metric_value(name, labels=None):
+        try:
+            # Strip _total suffix if present to get base metric name
+            base_name = name.replace('_total', '') if name.endswith('_total') else name
+
+            for metric in REGISTRY.collect():
+                if metric.name == base_name:
+                    for sample in metric.samples:
+                        # Skip _created timestamps
+                        if sample.name.endswith('_created'):
+                            continue
+                        # Match both base name and _total suffix
+                        if sample.name in (base_name, f"{base_name}_total"):
+                            if labels is None or all(sample.labels.get(k) == v for k, v in labels.items()):
+                                return sample.value
+        except Exception as e:
+            logger.warning(f"Error getting metric {name}: {e}")
+        return 0
+
+    # Helper function to sum metric values across labels
+    def sum_metric(name, label_filter=None):
+        try:
+            total = 0
+            # Strip _total suffix if present to get base metric name
+            base_name = name.replace('_total', '') if name.endswith('_total') else name
+
+            for metric in REGISTRY.collect():
+                if metric.name == base_name:
+                    for sample in metric.samples:
+                        # Skip _created timestamps and histogram buckets
+                        if sample.name.endswith('_created') or sample.name.endswith('_bucket'):
+                            continue
+                        # Match both base name and _total suffix
+                        if sample.name in (base_name, f"{base_name}_total"):
+                            if label_filter is None or label_filter(sample.labels):
+                                total += sample.value
+            return total
+        except Exception as e:
+            logger.warning(f"Error summing metric {name}: {e}")
+        return 0
+
+    # Database counts
+    total_users = db.query(User).count()
+    active_users = db.query(User).filter(User.active.is_(True)).count()
+    total_pupils = db.query(User).filter(User.role == "pupil").count()
+    total_teachers = db.query(User).filter(User.role == "teacher").count()
+    total_admins = db.query(User).filter(User.role == "admin").count()
+    active_sessions = db.query(AuthSession).count()
+
+    # Recent logins (last 7 days)
+    seven_days_ago = utcnow() - timedelta(days=7)
+    recent_logins = db.query(User).filter(
+        User.last_login_at >= seven_days_ago
+    ).count()
+
+    # HTTP metrics from Prometheus
+    total_requests = sum_metric("tlac_http_requests_total")
+    successful_requests = sum_metric(
+        "tlac_http_requests_total",
+        lambda labels: labels.get("status", "").startswith("2")
+    )
+    error_requests = sum_metric(
+        "tlac_http_requests_total",
+        lambda labels: labels.get("status", "").startswith(("4", "5"))
+    )
+    http_success_rate = round(
+        (successful_requests / total_requests * 100) if total_requests > 0 else 100, 1
+    )
+
+    # Authentication metrics
+    successful_logins = get_metric_value("tlac_auth_login_attempts_total", {"status": "success"})
+    failed_logins = get_metric_value("tlac_auth_login_attempts_total", {"status": "failed"})
+    rate_limited_logins = get_metric_value("tlac_auth_login_attempts_total", {"status": "rate_limited"})
+    total_login_attempts = successful_logins + failed_logins + rate_limited_logins
+    login_success_rate = round(
+        (successful_logins / total_login_attempts * 100) if total_login_attempts > 0 else 100, 1
+    )
+
+    # Python runner metrics
+    successful_runs = get_metric_value("tlac_python_runs_total", {"status": "success"})
+    error_runs = get_metric_value("tlac_python_runs_total", {"status": "error"})
+    timeout_runs = get_metric_value("tlac_python_runs_total", {"status": "timeout"})
+    total_runs = successful_runs + error_runs + timeout_runs
+    python_success_rate = round(
+        (successful_runs / total_runs * 100) if total_runs > 0 else 100, 1
+    )
+
+    # Activity metrics
+    total_saves = sum_metric("tlac_activity_saves_total")
+    rate_limit_violations = sum_metric("tlac_rate_limit_exceeded_total")
+
+    # System metrics
+    db_connections = get_metric_value("tlac_db_connections_active")
+    total_errors = sum_metric("tlac_errors_total")
+
+    return {
+        "summary": {
+            "total_users": total_users,
+            "active_users": active_users,
+            "total_pupils": total_pupils,
+            "total_teachers": total_teachers,
+            "total_admins": total_admins,
+            "active_sessions": active_sessions,
+            "recent_logins_7d": recent_logins,
+        },
+        "http": {
+            "total_requests": int(total_requests),
+            "successful_requests": int(successful_requests),
+            "error_requests": int(error_requests),
+            "success_rate": http_success_rate,
+        },
+        "authentication": {
+            "total_login_attempts": int(total_login_attempts),
+            "successful_logins": int(successful_logins),
+            "failed_logins": int(failed_logins),
+            "rate_limited_logins": int(rate_limited_logins),
+            "success_rate": login_success_rate,
+        },
+        "python_runner": {
+            "total_runs": int(total_runs),
+            "successful_runs": int(successful_runs),
+            "error_runs": int(error_runs),
+            "timeout_runs": int(timeout_runs),
+            "success_rate": python_success_rate,
+        },
+        "activity": {
+            "total_saves": int(total_saves),
+            "rate_limit_violations": int(rate_limit_violations),
+        },
+        "system": {
+            "db_connections": int(db_connections),
+            "total_errors": int(total_errors),
+        },
+    }
+
+
 @app.get("/api/auth/me")
 def auth_me(request: Request):
     user = request.state.user
