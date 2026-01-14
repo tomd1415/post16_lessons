@@ -34,6 +34,28 @@
     .answer-status.incorrect { border-color: rgba(255,93,93,.6); color: var(--bad); }
     .answer-status.unmarked { color: var(--muted); }
     .answer-status-icon { font-weight: 700; }
+    .answer-status.auto { margin-left: 8px; }
+    .answer-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .answer-summary .summary-item {
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.05);
+      font-size: 0.9em;
+    }
+    .summary-item.good { color: var(--good); border-color: rgba(73,209,122,.5); }
+    .summary-item.bad { color: var(--bad); border-color: rgba(255,93,93,.5); }
+    .answer-section { margin-top: 14px; }
+    .answer-section h3 { margin: 0 0 8px; font-size: 18px; }
+    .checklist-view { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+    .checklist-view li { display: flex; align-items: flex-start; gap: 8px; }
+    .checklist-icon { font-weight: 700; width: 16px; display: inline-block; }
+    .diff-list { margin: 8px 0 0; padding-left: 18px; }
     .revision-item { padding: 8px; border-bottom: 1px solid var(--border); }
     .revision-item:last-child { border-bottom: none; }
     .revision-meta { font-size: 0.85em; color: var(--muted); margin-bottom: 4px; }
@@ -95,6 +117,7 @@
           <p><strong>Attempt count:</strong> <span id="attemptCount">0</span></p>
           <p><strong>First save:</strong> <span id="firstSave">-</span></p>
           <p><strong>Last save:</strong> <span id="lastSave">-</span></p>
+          <div id="activityContext" style="margin-top:12px"></div>
           <div style="margin-top:12px">
             <button class="btn" id="markCompleteBtn" type="button">Mark Complete</button>
             <button class="btn" id="markIncompleteBtn" type="button">Mark Incomplete</button>
@@ -116,10 +139,17 @@
         <h2>Pupil's Answers</h2>
         <div class="note">
           <b>Mark individual answers:</b> Click correct/incorrect to mark each answer. Green = correct, red = incorrect.
+          Auto-check results (if available) appear under each answer.
         </div>
+        <div id="answerSummary" class="answer-summary"></div>
         <div id="answersContainer" style="margin-top:12px">
           <p class="muted">No saved state yet.</p>
         </div>
+        <div id="stateDiff" style="margin-top:12px"></div>
+        <details style="margin-top:12px">
+          <summary>View raw state JSON</summary>
+          <pre id="rawState" class="json-view"></pre>
+        </details>
       </div>
 
       <div class="card" style="margin-top:12px">
@@ -161,7 +191,11 @@
     const attemptCount = document.getElementById("attemptCount");
     const firstSave = document.getElementById("firstSave");
     const lastSave = document.getElementById("lastSave");
+    const activityContext = document.getElementById("activityContext");
+    const answerSummary = document.getElementById("answerSummary");
     const answersContainer = document.getElementById("answersContainer");
+    const stateDiff = document.getElementById("stateDiff");
+    const rawState = document.getElementById("rawState");
     const revisionsContainer = document.getElementById("revisionsContainer");
     const revisionCount = document.getElementById("revisionCount");
     const feedbackInput = document.getElementById("feedbackInput");
@@ -172,6 +206,7 @@
 
     let activityData = null;
     let currentMark = null;
+    let manifestCache = null;
 
     function showError(msg) {
       loadingMsg.style.display = "none";
@@ -195,6 +230,47 @@
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;");
+    }
+
+    async function ensureManifest() {
+      if (manifestCache) return manifestCache;
+      try {
+        const res = await fetch("/lessons/manifest.json", { credentials: "same-origin" });
+        if (!res.ok) return null;
+        manifestCache = await res.json().catch(() => null);
+      } catch {
+        manifestCache = null;
+      }
+      return manifestCache;
+    }
+
+    function buildActivityContext(meta, lessonId, activityId) {
+      if (!meta && !manifestCache) return "";
+      const lesson = (manifestCache?.lessons || []).find(item => item.id === lessonId);
+      const activity = lesson?.activities?.find(item => item.id === activityId);
+      const objectiveIds = meta?.objectives || activity?.objectiveIds || [];
+      const objectiveTexts = [];
+      if (lesson?.objectives && objectiveIds.length) {
+        objectiveIds.forEach(id => {
+          const obj = lesson.objectives.find(item => item.id === id);
+          if (obj?.text) {
+            objectiveTexts.push(`${id}: ${obj.text}`);
+          } else {
+            objectiveTexts.push(id);
+          }
+        });
+      } else {
+        objectiveIds.forEach(id => objectiveTexts.push(id));
+      }
+      const evidence = activity?.expectedEvidence || "";
+
+      if (!objectiveTexts.length && !evidence) return "";
+      return `
+        <div class="note" style="margin:0">
+          ${objectiveTexts.length ? `<div style="margin-bottom:6px"><b>Objectives:</b><br>${objectiveTexts.map(escapeHtml).join("<br>")}</div>` : ""}
+          ${evidence ? `<div><b>Expected evidence:</b> ${escapeHtml(evidence)}</div>` : ""}
+        </div>
+      `;
     }
 
     function renderAnswerValue(value) {
@@ -225,29 +301,54 @@
       return escapeHtml(s);
     }
 
-    function renderAnswers(state, answerMarks) {
-      if (!state || typeof state !== "object") {
-        answersContainer.innerHTML = '<p class="muted">No saved state yet.</p>';
-        return;
-      }
-
-      const marks = answerMarks || {};
-      const entries = Object.entries(state);
-
+    function renderAnswerSummary(entries, marks, autoChecks) {
       if (!entries.length) {
-        answersContainer.innerHTML = '<p class="muted">No answers saved.</p>';
+        answerSummary.innerHTML = "";
         return;
       }
+      let teacherCorrect = 0;
+      let teacherIncorrect = 0;
+      let autoCorrect = 0;
+      let autoIncorrect = 0;
+      entries.forEach(([key]) => {
+        const markInfo = marks?.[key] || {};
+        if (markInfo.correct === true) teacherCorrect += 1;
+        if (markInfo.correct === false) teacherIncorrect += 1;
+        const auto = autoChecks?.[key];
+        if (auto === true) autoCorrect += 1;
+        if (auto === false) autoIncorrect += 1;
+      });
+      const teacherUnmarked = Math.max(0, entries.length - teacherCorrect - teacherIncorrect);
+      answerSummary.innerHTML = `
+        <span class="summary-item">${entries.length} answers</span>
+        <span class="summary-item good">Teacher correct: ${teacherCorrect}</span>
+        <span class="summary-item bad">Teacher incorrect: ${teacherIncorrect}</span>
+        <span class="summary-item">Unmarked: ${teacherUnmarked}</span>
+        ${autoCorrect || autoIncorrect ? `
+          <span class="summary-item good">Auto-check correct: ${autoCorrect}</span>
+          <span class="summary-item bad">Auto-check incorrect: ${autoIncorrect}</span>
+        ` : ""}
+      `;
+    }
 
-      answersContainer.innerHTML = entries.map(([key, value]) => {
-        const markInfo = marks[key] || {};
-        const isCorrect = markInfo.correct === true;
-        const isIncorrect = markInfo.correct === false;
-        const cssClass = isCorrect ? "correct" : (isIncorrect ? "incorrect" : "");
+    function renderAnswerItems(entries, marks, autoChecks) {
+      if (!entries.length) {
+        return '<p class="muted">No answers saved.</p>';
+      }
+      renderAnswerSummary(entries, marks, autoChecks);
+      return entries.map(([key, value]) => {
+        const markInfo = marks?.[key] || {};
+        const teacherCorrect = markInfo.correct === true;
+        const teacherIncorrect = markInfo.correct === false;
+        const autoStatus = autoChecks?.[key];
+        const cssClass = teacherCorrect ? "correct" : (teacherIncorrect ? "incorrect" : "");
         const attempts = markInfo.attempts || 0;
-        const statusClass = isCorrect ? "correct" : (isIncorrect ? "incorrect" : "unmarked");
-        const statusIcon = isCorrect ? "&#10003;" : (isIncorrect ? "&#10007;" : "&ndash;");
-        const statusLabel = isCorrect ? "Correct" : (isIncorrect ? "Incorrect" : "Not marked");
+        const statusClass = teacherCorrect ? "correct" : (teacherIncorrect ? "incorrect" : "unmarked");
+        const statusIcon = teacherCorrect ? "&#10003;" : (teacherIncorrect ? "&#10007;" : "&ndash;");
+        const statusLabel = teacherCorrect ? "Teacher: correct" : (teacherIncorrect ? "Teacher: incorrect" : "Teacher: not marked");
+        const autoClass = autoStatus === true ? "correct" : (autoStatus === false ? "incorrect" : "unmarked");
+        const autoIcon = autoStatus === true ? "&#10003;" : (autoStatus === false ? "&#10007;" : "&ndash;");
+        const autoLabel = autoStatus === true ? "Auto-check: correct" : (autoStatus === false ? "Auto-check: incorrect" : "Auto-check: not checked");
 
         return `
           <div class="answer-item ${cssClass}" data-question-id="${escapeHtml(key)}">
@@ -257,18 +358,237 @@
               <span class="answer-status-icon">${statusIcon}</span>
               <span>${statusLabel}</span>
             </div>
+            ${autoStatus !== undefined ? `
+              <div class="answer-status auto ${autoClass}">
+                <span class="answer-status-icon">${autoIcon}</span>
+                <span>${autoLabel}</span>
+              </div>
+            ` : ""}
             ${attempts > 0 ? `<div class="muted" style="margin-top:4px">Attempts: ${attempts}</div>` : ""}
             <div class="mark-btns">
-              <button class="btn ${isCorrect ? 'good' : ''}" data-mark-correct="${escapeHtml(key)}" type="button">
+              <button class="btn ${teacherCorrect ? 'good' : ''}" data-mark-correct="${escapeHtml(key)}" type="button">
                 Correct
               </button>
-              <button class="btn ${isIncorrect ? 'bad' : ''}" data-mark-incorrect="${escapeHtml(key)}" type="button">
+              <button class="btn ${teacherIncorrect ? 'bad' : ''}" data-mark-incorrect="${escapeHtml(key)}" type="button">
                 Incorrect
               </button>
             </div>
           </div>
         `;
       }).join("");
+    }
+
+    function renderKeyValueSection(title, entries) {
+      if (!entries.length) return "";
+      const items = entries.map(([key, value]) => (
+        `<div class="state-row"><dt>${escapeHtml(key)}</dt><dd>${renderAnswerValue(value)}</dd></div>`
+      )).join("");
+      return `
+        <div class="answer-section">
+          <h3>${escapeHtml(title)}</h3>
+          <dl class="state-dl">${items}</dl>
+        </div>
+      `;
+    }
+
+    function renderChecklistSection(entries) {
+      if (!entries.length) return "";
+      const items = entries.map(([key, value]) => {
+        const checked = !!value;
+        const icon = checked ? "&#10003;" : "&#10007;";
+        const className = checked ? "good" : "bad";
+        return `<li><span class="checklist-icon ${className}">${icon}</span><span>${escapeHtml(key)}</span></li>`;
+      }).join("");
+      return `
+        <div class="answer-section">
+          <h3>Checklist</h3>
+          <ul class="checklist-view">${items}</ul>
+        </div>
+      `;
+    }
+
+    function renderCodeSection(code) {
+      if (!code) return "";
+      return `
+        <div class="answer-section">
+          <h3>Code</h3>
+          <div class="code-block">${escapeHtml(code)}</div>
+        </div>
+      `;
+    }
+
+    function renderOutputSection(output) {
+      if (!output) return "";
+      const meta = [];
+      if (output.exit_code !== undefined && output.exit_code !== null) meta.push(`Exit: ${output.exit_code}`);
+      if (output.timed_out) meta.push("Timed out");
+      if (output.duration_ms) meta.push(`Duration: ${output.duration_ms}ms`);
+      if (output.ran_at) meta.push(`Ran: ${formatDateTime(output.ran_at)}`);
+      const stdout = output.stdout || "";
+      const stderr = output.stderr || "";
+      return `
+        <div class="answer-section">
+          <h3>Run Output</h3>
+          ${meta.length ? `<div class="muted" style="margin-bottom:6px">${escapeHtml(meta.join(" · "))}</div>` : ""}
+          ${stdout ? `<div><b>Stdout</b><div class="code-block">${escapeHtml(stdout)}</div></div>` : ""}
+          ${stderr ? `<div style="margin-top:8px"><b>Stderr</b><div class="code-block">${escapeHtml(stderr)}</div></div>` : ""}
+        </div>
+      `;
+    }
+
+    function renderFilesSection(files) {
+      if (!Array.isArray(files) || !files.length) return "";
+      const items = files.map(file => {
+        const path = file.path || "file";
+        const mime = file.mime ? ` (${file.mime})` : "";
+        return `<li>${escapeHtml(path)}${escapeHtml(mime)}</li>`;
+      }).join("");
+      return `
+        <div class="answer-section">
+          <h3>Saved files</h3>
+          <ul class="state-list">${items}</ul>
+        </div>
+      `;
+    }
+
+    function renderAnswers(state, answerMarks) {
+      const stateObj = state && typeof state === "object" && !Array.isArray(state) ? state : null;
+      if (!stateObj) {
+        answersContainer.innerHTML = '<p class="muted">No saved state yet.</p>';
+        answerSummary.innerHTML = "";
+        return;
+      }
+
+      answerSummary.innerHTML = "";
+      const marks = answerMarks || {};
+      const autoChecks = stateObj.checked || {};
+      const knownKeys = new Set([
+        "answers",
+        "notes",
+        "checklist",
+        "checked",
+        "code",
+        "output",
+        "files",
+        "hintsUsed",
+        "hints_used"
+      ]);
+      const answerEntries = stateObj.answers && typeof stateObj.answers === "object" && !Array.isArray(stateObj.answers)
+        ? Object.entries(stateObj.answers)
+        : Object.entries(stateObj).filter(([key]) => !knownKeys.has(key));
+      const notesEntries = stateObj.notes && typeof stateObj.notes === "object" ? Object.entries(stateObj.notes) : [];
+      const checklistEntries = stateObj.checklist && typeof stateObj.checklist === "object" ? Object.entries(stateObj.checklist) : [];
+      const sections = [];
+
+      sections.push(`
+        <div class="answer-section">
+          <h3>Answers</h3>
+          ${renderAnswerItems(answerEntries, marks, autoChecks)}
+        </div>
+      `);
+
+      if (notesEntries.length) {
+        sections.push(renderKeyValueSection("Notes", notesEntries));
+      }
+
+      if (checklistEntries.length) {
+        sections.push(renderChecklistSection(checklistEntries));
+      }
+
+      if (stateObj.code) {
+        sections.push(renderCodeSection(stateObj.code));
+      }
+
+      if (stateObj.output) {
+        sections.push(renderOutputSection(stateObj.output));
+      }
+
+      if (stateObj.files) {
+        sections.push(renderFilesSection(stateObj.files));
+      }
+
+      const extraEntries = Object.entries(stateObj).filter(([key]) => {
+        if (stateObj.answers && !Array.isArray(stateObj.answers)) return false;
+        return !knownKeys.has(key);
+      });
+      if (!stateObj.answers && extraEntries.length && !answerEntries.length) {
+        answerSummary.innerHTML = "";
+        sections.push(renderKeyValueSection("Responses", extraEntries));
+      }
+
+      const hintSummary = typeof renderHintSummary === "function" ? renderHintSummary(stateObj) : "";
+      answersContainer.innerHTML = `${hintSummary}${sections.join("")}`;
+    }
+
+    function renderRawState(state) {
+      if (!rawState) return;
+      if (!state) {
+        rawState.textContent = "";
+        return;
+      }
+      try {
+        rawState.textContent = JSON.stringify(state, null, 2);
+      } catch {
+        rawState.textContent = String(state);
+      }
+    }
+
+    function diffStates(prev, curr, path, depth, output) {
+      if (depth > 4) {
+        if (JSON.stringify(prev) !== JSON.stringify(curr)) {
+          output.push(path || "(root)");
+        }
+        return;
+      }
+      if (prev === curr) return;
+      if (prev === null || curr === null || typeof prev !== typeof curr) {
+        output.push(path || "(root)");
+        return;
+      }
+      if (typeof prev !== "object") {
+        output.push(path || "(root)");
+        return;
+      }
+      if (Array.isArray(prev) || Array.isArray(curr)) {
+        if (!Array.isArray(prev) || !Array.isArray(curr) || prev.length !== curr.length) {
+          output.push(path || "(root)");
+          return;
+        }
+        prev.forEach((item, idx) => {
+          diffStates(item, curr[idx], `${path || "items"}[${idx}]`, depth + 1, output);
+        });
+        return;
+      }
+      const keys = new Set([...Object.keys(prev || {}), ...Object.keys(curr || {})]);
+      keys.forEach((key) => {
+        diffStates(prev[key], curr[key], path ? `${path}.${key}` : key, depth + 1, output);
+      });
+    }
+
+    function renderStateDiff(revisions, latestState) {
+      if (!stateDiff) return;
+      if (!revisions || revisions.length < 2) {
+        stateDiff.innerHTML = '<div class="note">No previous revision to compare.</div>';
+        return;
+      }
+      const current = latestState || revisions[0]?.state;
+      const previous = revisions[1]?.state;
+      if (!current || !previous) {
+        stateDiff.innerHTML = '<div class="note">No previous revision to compare.</div>';
+        return;
+      }
+      const changes = [];
+      diffStates(previous, current, "", 0, changes);
+      const unique = Array.from(new Set(changes)).filter(Boolean);
+      const preview = unique.slice(0, 12);
+      const list = preview.map(item => `<li>${escapeHtml(item)}</li>`).join("");
+      stateDiff.innerHTML = `
+        <details>
+          <summary>Latest changes vs previous save (${unique.length})</summary>
+          ${unique.length ? `<ul class="diff-list">${list}</ul>` : '<div class="muted">No detected differences.</div>'}
+          ${unique.length > preview.length ? `<div class="muted">Showing first ${preview.length} changes.</div>` : ""}
+        </details>
+      `;
     }
 
     function renderRevisions(revisions) {
@@ -347,6 +667,7 @@
 
         activityData = await res.json();
         currentMark = activityData.mark;
+        await ensureManifest();
         renderActivityData();
 
         loadingMsg.style.display = "none";
@@ -377,9 +698,12 @@
       // Activity info
       activityTitle.textContent = title;
       updateStatusDisplay(mark);
+      activityContext.innerHTML = buildActivityContext(meta, lessonId, activityId);
 
       // Answers
       renderAnswers(state, mark?.answer_marks);
+      renderStateDiff(revisions, state);
+      renderRawState(state);
 
       // Revisions
       renderRevisions(revisions);
