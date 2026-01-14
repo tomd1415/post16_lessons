@@ -9,21 +9,36 @@
     .answer-item {
       margin-bottom: 12px;
       padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      background: #fafafa;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(255,255,255,.04);
     }
-    .answer-item.correct { border-color: #2a2; background: #f0fff0; }
-    .answer-item.incorrect { border-color: #c22; background: #fff0f0; }
+    .answer-item.correct { border-color: rgba(73,209,122,.6); background: rgba(73,209,122,.12); }
+    .answer-item.incorrect { border-color: rgba(255,93,93,.6); background: rgba(255,93,93,.12); }
     .answer-key { font-weight: bold; margin-bottom: 4px; }
     .answer-value { margin-left: 10px; }
     .mark-btns { margin-top: 6px; }
     .mark-btns button { margin-right: 6px; }
-    .revision-item { padding: 8px; border-bottom: 1px solid #eee; }
+    .answer-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.05);
+      font-size: 0.9em;
+    }
+    .answer-status.correct { border-color: rgba(73,209,122,.6); color: var(--good); }
+    .answer-status.incorrect { border-color: rgba(255,93,93,.6); color: var(--bad); }
+    .answer-status.unmarked { color: var(--muted); }
+    .answer-status-icon { font-weight: 700; }
+    .revision-item { padding: 8px; border-bottom: 1px solid var(--border); }
     .revision-item:last-child { border-bottom: none; }
-    .revision-meta { font-size: 0.85em; color: #666; margin-bottom: 4px; }
-    .feedback-item { padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px; background: #fffef0; }
-    .feedback-meta { font-size: 0.85em; color: #666; margin-bottom: 4px; }
+    .revision-meta { font-size: 0.85em; color: var(--muted); margin-bottom: 4px; }
+    .feedback-item { padding: 10px; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; background: rgba(255,255,255,.04); }
+    .feedback-meta { font-size: 0.85em; color: var(--muted); margin-bottom: 4px; }
     .feedback-text { margin-top: 4px; }
     .status-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.85em; }
     .status-badge.complete { background: #2a2; color: white; }
@@ -189,7 +204,17 @@
       if (typeof value === "boolean") {
         return value ? "Yes" : "No";
       }
+      const parsed = typeof tryParseJsonString === "function" ? tryParseJsonString(value) : null;
+      if (parsed !== null) {
+        if (typeof renderStateReadable === "function") {
+          return renderStateReadable(parsed);
+        }
+        return `<pre style="margin:0;white-space:pre-wrap">${escapeHtml(JSON.stringify(parsed, null, 2))}</pre>`;
+      }
       if (typeof value === "object") {
+        if (typeof renderStateReadable === "function") {
+          return renderStateReadable(value);
+        }
         return `<pre style="margin:0;white-space:pre-wrap">${escapeHtml(JSON.stringify(value, null, 2))}</pre>`;
       }
       // Check if it looks like code
@@ -220,11 +245,18 @@
         const isIncorrect = markInfo.correct === false;
         const cssClass = isCorrect ? "correct" : (isIncorrect ? "incorrect" : "");
         const attempts = markInfo.attempts || 0;
+        const statusClass = isCorrect ? "correct" : (isIncorrect ? "incorrect" : "unmarked");
+        const statusIcon = isCorrect ? "&#10003;" : (isIncorrect ? "&#10007;" : "&ndash;");
+        const statusLabel = isCorrect ? "Correct" : (isIncorrect ? "Incorrect" : "Not marked");
 
         return `
           <div class="answer-item ${cssClass}" data-question-id="${escapeHtml(key)}">
             <div class="answer-key">${escapeHtml(key)}</div>
             <div class="answer-value">${renderAnswerValue(value)}</div>
+            <div class="answer-status ${statusClass}">
+              <span class="answer-status-icon">${statusIcon}</span>
+              <span>${statusLabel}</span>
+            </div>
             ${attempts > 0 ? `<div class="muted" style="margin-top:4px">Attempts: ${attempts}</div>` : ""}
             <div class="mark-btns">
               <button class="btn ${isCorrect ? 'good' : ''}" data-mark-correct="${escapeHtml(key)}" type="button">
