@@ -2,6 +2,7 @@ import asyncio
 import csv
 import io
 import json
+import logging
 import os
 import re
 import secrets
@@ -41,10 +42,12 @@ from .metrics import (
     record_rate_limit_exceeded,
 )
 
+logger = logging.getLogger(__name__)
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     last_err = None
-    for _ in range(10):
+    for _attempt in range(10):
         try:
             Base.metadata.create_all(bind=engine)
             break
