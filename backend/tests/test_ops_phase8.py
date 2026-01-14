@@ -4,6 +4,79 @@ from backend.app.models import ActivityMark, ActivityRevision, ActivityState, Au
 from backend.tests.utils import login, seed_user
 
 
+def test_admin_metrics_requires_admin(client, db_session):
+    """Ensure /api/admin/metrics requires admin role."""
+    seed_user(db_session, "pupil.one", role="pupil", cohort_year="2024", password="Secret123!")
+    seed_user(db_session, "teacher.one", role="teacher", cohort_year=None, password="Secret123!")
+    seed_user(db_session, "admin.one", role="admin", cohort_year=None, password="Secret123!")
+
+    # Unauthenticated request should fail
+    res = client.get("/api/admin/metrics")
+    assert res.status_code == 403
+
+    # Pupil should be denied
+    login(client, "pupil.one", "Secret123!")
+    res = client.get("/api/admin/metrics")
+    assert res.status_code == 403
+
+    # Teacher should be denied
+    login(client, "teacher.one", "Secret123!")
+    res = client.get("/api/admin/metrics")
+    assert res.status_code == 403
+
+    # Admin should succeed
+    login(client, "admin.one", "Secret123!")
+    res = client.get("/api/admin/metrics")
+    assert res.status_code == 200
+
+
+def test_admin_metrics_returns_valid_structure(client, db_session):
+    """Ensure /api/admin/metrics returns expected response structure."""
+    seed_user(db_session, "admin.one", role="admin", cohort_year=None, password="Secret123!")
+    login(client, "admin.one", "Secret123!")
+
+    res = client.get("/api/admin/metrics")
+    assert res.status_code == 200
+    data = res.json()
+
+    # Check top-level keys
+    assert "summary" in data
+    assert "http" in data
+    assert "authentication" in data
+    assert "python_runner" in data
+    assert "activity" in data
+    assert "system" in data
+
+    # Check summary section
+    summary = data["summary"]
+    assert "total_users" in summary
+    assert "active_users" in summary
+    assert "total_pupils" in summary
+    assert "total_teachers" in summary
+    assert "total_admins" in summary
+    assert "active_sessions" in summary
+    assert "recent_logins_7d" in summary
+
+    # Check system section has db_connections
+    system = data["system"]
+    assert "db_connections" in system
+    assert "total_errors" in system
+
+
+def test_admin_metrics_db_connections_is_valid(client, db_session):
+    """Ensure db_connections is a non-negative integer (the fix for always showing 0)."""
+    seed_user(db_session, "admin.one", role="admin", cohort_year=None, password="Secret123!")
+    login(client, "admin.one", "Secret123!")
+
+    res = client.get("/api/admin/metrics")
+    assert res.status_code == 200
+    data = res.json()
+
+    db_connections = data["system"]["db_connections"]
+    assert isinstance(db_connections, int)
+    assert db_connections >= 0
+
+
 def test_metrics_requires_admin(client, db_session):
     seed_user(db_session, "teacher.one", role="teacher", cohort_year=None, password="Secret123!")
     seed_user(db_session, "admin.one", role="admin", cohort_year=None, password="Secret123!")
