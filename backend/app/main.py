@@ -31,7 +31,7 @@ from .config import (
 from .db import SessionLocal, engine, get_db
 from .models import AuditLog, ActivityMark, ActivityRevision, ActivityState, Base, Session as AuthSession, User
 from .python_runner import RunnerError, RunnerUnavailable, run_python, runner_diagnostics
-from .rate_limit import LoginLimiter, compute_lock_seconds
+from .rate_limit import LoginLimiter, compute_lock_seconds, ensure_timezone_aware
 from .security import hash_password, verify_password
 
 @asynccontextmanager
@@ -58,6 +58,7 @@ app = FastAPI(
 login_limiter = LoginLimiter()
 runner_semaphore = asyncio.Semaphore(RUNNER_CONCURRENCY)
 MANIFEST_PATH = os.getenv("LESSON_MANIFEST_PATH", "/srv/lessons/manifest.json")
+STATIC_ROOT = os.getenv("STATIC_ROOT", "/srv")
 _manifest_cache = None
 _manifest_mtime = None
 _link_overrides_cache = None
@@ -521,11 +522,11 @@ def login(request: Request, payload: dict, db: Session = Depends(get_db)):
     password = payload.get("password", "")
     ip_key = f"{request.client.host if request.client else 'unknown'}:{username}"
 
-    if login_limiter.check(ip_key) > 0:
+    if login_limiter.check(db, ip_key) > 0:
         raise HTTPException(status_code=429, detail="Too many attempts. Try again shortly.")
 
     user = db.query(User).filter(User.username == username).first()
-    if user and user.locked_until and user.locked_until > utcnow():
+    if user and user.locked_until and ensure_timezone_aware(user.locked_until) > utcnow():
         raise HTTPException(status_code=429, detail="Too many attempts. Try again shortly.")
 
     if not user or not verify_password(user.password_hash, password):
@@ -536,7 +537,7 @@ def login(request: Request, payload: dict, db: Session = Depends(get_db)):
                 user.locked_until = utcnow() + timedelta(seconds=lock_seconds)
             db.commit()
         else:
-            login_limiter.record_failure(ip_key)
+            login_limiter.record_failure(db, ip_key)
         raise HTTPException(status_code=401, detail="Invalid username or password.")
 
     if not user.active:
@@ -550,7 +551,7 @@ def login(request: Request, payload: dict, db: Session = Depends(get_db)):
     session = create_session(db, user, request)
     response = JSONResponse({"ok": True, "user": user_public(user)})
     set_session_cookie(response, session.id)
-    login_limiter.reset(ip_key)
+    login_limiter.reset(db, ip_key)
     return response
 
 
@@ -1888,4 +1889,4 @@ def delete_user(
     return {"ok": True, "message": f"User {username} has been deactivated."}
 
 
-app.mount("/", StaticFiles(directory="/srv", html=True), name="static")
+app.mount("/", StaticFiles(directory=STATIC_ROOT, html=True), name="static")
