@@ -2,14 +2,34 @@
   admin off
 }
 
+http://:80 {
+  redir https://{host}{uri}
+}
+
 http://:8080 {
   redir https://{host}:8443{uri}
 }
 
-https://:8443 {
-  tls internal {
-    on_demand
+https://:443 {
+  tls /etc/caddy/certs/server.crt /etc/caddy/certs/server.key
+
+  header {
+    Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
+    X-Frame-Options "DENY"
+    X-Content-Type-Options "nosniff"
+    X-XSS-Protection "1; mode=block"
+    Referrer-Policy "strict-origin-when-cross-origin"
+    Permissions-Policy "geolocation=(), microphone=(), camera=()"
   }
+
+  reverse_proxy api:8000 {
+    header_up X-Real-IP {remote_host}
+    header_up X-Forwarded-For {remote_host}
+  }
+}
+
+https://:8443 {
+  tls /etc/caddy/certs/server.crt /etc/caddy/certs/server.key
 
   # Security headers
   header {
@@ -36,9 +56,7 @@ https://:8443 {
 
   # Reverse proxy with header forwarding
   reverse_proxy api:8000 {
-    # Forward real client IP information
     header_up X-Real-IP {remote_host}
     header_up X-Forwarded-For {remote_host}
-    header_up X-Forwarded-Proto {scheme}
   }
 }
