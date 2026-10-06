@@ -35,7 +35,7 @@ System data:
 - Data is deleted rather than exported by default.
 
 ## Security and safeguarding
-- TLS termination via Caddy (internal CA).
+- TLS termination via Caddy (certificate supplied in `docker/certs/`).
 - Secure session cookies (HttpOnly, Secure, SameSite=Lax).
 - Passwords hashed with Argon2id.
 - CSRF protection on state-changing endpoints.

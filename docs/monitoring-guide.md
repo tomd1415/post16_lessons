@@ -40,7 +40,7 @@ Admin metrics (requires an admin session):
 - JSON: `https://localhost:8443/api/admin/metrics`
 
 Prometheus metrics endpoint:
-- `https://localhost:8443/metrics` (TLS uses Caddy's internal CA)
+- `https://localhost:8443/metrics` (TLS uses the certificate in `docker/certs/`)
 
 ## Prometheus Endpoint
 

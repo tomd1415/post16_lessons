@@ -303,7 +303,7 @@ docker stats
 - Long queue times
 
 **Solutions**:
-- Increase `RUNNER_TIMEOUT_SEC` in `.env`
+- Increase `RUNNER_TIMEOUT_SEC` in the `api` service's `environment:` list in `compose.yml` (a `.env` file does not override it)
 - Increase `RUNNER_CONCURRENCY` for more parallel executions
 - Optimize container startup time
 

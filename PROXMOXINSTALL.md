@@ -50,7 +50,7 @@ cd post16_lessons
 
 ## 5) Runtime configuration
 - **Docker socket:** The Python runner uses Docker-in-Docker to execute sandboxed code. Ensure the API container can reach the host socket. Default is `unix:///var/run/docker.sock` (mounted by Compose).
-- **Environment:** If you need overrides, copy `compose.yml` env vars into a `.env` file (e.g., `RUNNER_TIMEOUT_SEC`, `RUNNER_MEMORY_MB`, `RUNNER_CPUS`, `RUNNER_IMAGE`). Defaults usually work.
+- **Environment:** A `.env` file only fills the `${...}` placeholders in `compose.yml` (`POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `SESSION_TTL_MINUTES`). Runner and retention settings (e.g., `RUNNER_TIMEOUT_SEC`, `RUNNER_MEMORY_MB`, `RUNNER_CPUS`, `RUNNER_IMAGE`, `RETENTION_YEARS`) are written directly in the `api` service's `environment:` list, so change them there. Defaults usually work.
 - **TLS / reverse proxy:** `docker/Caddyfile` is included. For public HTTPS, point DNS at the VM and set `email` + hosts in the Caddyfile (or terminate TLS at a Proxmox/LB front end).
 - **Data:** Review any bind mounts/volumes in `compose.yml` and ensure the VM disk or attached storage is sized appropriately.
 
@@ -67,7 +67,7 @@ sudo docker compose up -d --build
 
 ## 8) Maintenance
 - **Ops checklist (quick):**
-  - Ensure any overrides live in `.env` (for example: `RUNNER_TIMEOUT_SEC`, `RUNNER_MEMORY_MB`, `RUNNER_CPUS`, `RUNNER_IMAGE`, `RUNNER_AUTO_PULL`, `RETENTION_YEARS`).
+  - Keep database credentials and `SESSION_TTL_MINUTES` in `.env`; runner and retention overrides (for example: `RUNNER_TIMEOUT_SEC`, `RUNNER_MEMORY_MB`, `RUNNER_CPUS`, `RUNNER_IMAGE`, `RUNNER_AUTO_PULL`, `RETENTION_YEARS`) go in the `api` service's `environment:` list in `compose.yml`, because `.env` does not reach them.
   - Backups: run `scripts/backup.sh`, copy the backup off the VM, and test restore with `scripts/restore.sh <backup_dir> --force` on a schedule.
   - Upgrade flow: `git pull` -> `sudo docker compose build --pull` -> `sudo docker compose up -d`.
   - Post-upgrade checks: `/api/health` and `/api/python/diagnostics`.
@@ -82,7 +82,7 @@ sudo docker compose up -d --build
 
 ## 9) Troubleshooting
 - **Docker permission denied:** Ensure your user is in `docker` group or prepend `sudo`.
-- **Runner errors:** Check diagnostics endpoint; verify the Docker socket is mounted and the host can pull `RUNNER_IMAGE` (default `python:3.12-slim`).
+- **Runner errors:** Check diagnostics endpoint; verify the Docker socket is mounted and `RUNNER_IMAGE` is present on the host (the `compose.yml` default is `post16_lessons-api`, the API's own image, with `RUNNER_AUTO_PULL=0`; outside compose the default is `python:3.12-slim`).
 - **No turtle SVG:** Confirm the runner was rebuilt after code changes (`docker compose up -d --build`) and the activity shows “Run files”.
 - **Port conflicts:** Adjust published ports in `compose.yml` or front the stack with a Proxmox/LXC reverse proxy.
 

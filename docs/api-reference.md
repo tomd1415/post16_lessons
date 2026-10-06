@@ -319,7 +319,7 @@ Save activity state.
 }
 ```
 
-**Rate Limiting**: 60 saves per minute per user.
+**Rate Limiting**: None enforced by default (see [Rate Limits](#rate-limits)).
 
 ---
 
@@ -379,11 +379,10 @@ Execute Python code in sandboxed environment.
 | Status | Detail |
 |--------|--------|
 | 400 | `"Code is required."` |
-| 429 | `"Too many code executions. Limit: X per minute."` |
 | 503 | `"Python runner unavailable."` |
 | 500 | Runner error details |
 
-**Rate Limiting**: 30 executions per minute per user.
+**Rate Limiting**: None enforced by default (see [Rate Limits](#rate-limits)). At most `RUNNER_CONCURRENCY` runs execute at once; further requests wait.
 
 ---
 

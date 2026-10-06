@@ -22,13 +22,13 @@ This repo delivers a containerized, on-prem web platform for the ICDL "Thinking 
 - [x] Phase 7: Teacher view v2 (stats, attention lists, timing).
 - [x] Phase 8: Ops hardening (backups, retention purge, audit log, DPIA support).
 
-Detailed requirements and the phase plan are in `plans/prompt_1`.
+Detailed requirements and the phase plan are in `plans/prompt_1` (`plans/` is git-ignored, so it and the handbook PDF referenced below exist only on the development machine, not in the repository).
 
 ## What is in the repo
 - `web/` static frontend (hubs, lesson pages, manifest, core CSS/JS).
 - `backend/` FastAPI service (auth, sessions, admin API) + Postgres integration.
 - `compose.yml` container orchestration (Caddy reverse proxy, API, DB).
-- `docker/Caddyfile` TLS + reverse proxy config (internal CA).
+- `docker/Caddyfile` TLS + reverse proxy config (certificate and key from `docker/certs/`).
 - `docs/design-system-inventory.md` Lesson 1 UI/behavior inventory (design system).
 - `docs/lesson-manifest.md` lesson manifest schema and usage.
 - `docs/dpia-summary.md` DPIA support summary (data, retention, access).
@@ -48,6 +48,7 @@ Request flow: browser -> Caddy -> FastAPI -> StaticFiles or API routes -> Postgr
 ## Running locally (Docker)
 Prereqs:
 - Docker + Docker Compose (or Podman + podman-compose)
+- A TLS certificate and key at `docker/certs/server.crt` and `docker/certs/server.key` (mounted into Caddy by `compose.yml`; not in the repo, and Caddy will not start without them). The mkcert section of `docs/production-deployment.md` shows how to make a pair; save them under these names.
 
 Start:
 ```
@@ -61,8 +62,9 @@ sudo scripts/install_debian.sh
 This installs Docker and starts the stack. See `PROXMOXINSTALL.md` for options.
 
 Open:
-- `https://localhost:8443` (TLS uses Caddy internal CA; accept the browser warning)
+- `https://localhost:8443` (TLS uses the certificate in `docker/certs/`; accept the browser warning if the PC does not trust it)
 - `http://localhost:8080` redirects to HTTPS
+- Ports 443 and 80 are also published: `https://localhost/` (and `http://localhost/` redirects to it)
 
 Stop:
 ```
@@ -117,7 +119,7 @@ Rules:
 ## Lesson manifest system
 Lessons are data-driven via `web/lessons/manifest.json`.
 - Used by `web/core/catalog.js` to render the course catalogue.
-- Lesson 1 is the fully styled exemplar. Lessons 2-15 have draft packs generated from the handbook exercises.
+- Lesson 1 is the fully styled exemplar. Lessons 2-15 were generated as draft packs from the handbook exercises; all 15 lessons are now marked `ready` in the manifest.
 - Schema details: `docs/lesson-manifest.md`.
 
 ## Lesson pack scaffolding (Phase 5)
@@ -177,7 +179,7 @@ Stats + attention + timing are delivered at:
 - Completion stats: aggregated per lesson and objective (objective totals = activities mapped to the objective × pupils in scope).
 - Needs attention list: only activities a pupil has started (has revisions). Flags:
   - `not_completed` when status is not complete.
-  - `many_revisions` when revision count exceeds the threshold.
+  - `many_revisions` when revision count reaches the threshold.
   - `stuck` when last save is older than the threshold and not complete.
 - Timing metrics: approximate, based on first/last saved timestamps per activity; only activities with 2+ saves contribute to averages.
 
@@ -244,7 +246,7 @@ Key rules:
 - CSRF protection on state-changing endpoints.
 - Login rate limiting + lockout backoff.
 - Path-based access control for teacher/admin routes.
-- TLS termination via Caddy (internal CA).
+- TLS termination via Caddy (certificate in `docker/certs/`).
 
 ## Data model (Phase 2-3)
 User fields (stored in Postgres):
@@ -328,7 +330,7 @@ python -m py_compile backend/app/*.py
 ```
 
 ## Troubleshooting
-- TLS warning: Caddy uses an internal CA; accept the browser warning or import the CA if needed.
+- TLS warning: the browser does not trust the certificate in `docker/certs/`; accept the warning or install the issuing CA on the PC (see the mkcert section of `docs/production-deployment.md`).
 - Login blocked: too many failures triggers backoff; wait and retry.
 - Access denied: verify role and session; check `/api/auth/me`.
 - Static changes not visible: hard refresh to bypass cached assets.

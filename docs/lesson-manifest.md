@@ -35,7 +35,7 @@ Purpose: Provide a single source of truth for the course catalogue, lesson metad
 
 ## Notes
 - Lesson 1 is populated with real metadata and activity mappings.
-- Lessons 2-15 are draft packs generated from the teacher handbook exercises.
+- Lessons 2-15 were generated as draft packs from the teacher handbook exercises; all 15 lessons now have `status: ready`.
 - The catalogue UI uses the manifest directly; there is no additional build step.
 
 ## Activity scaffold convention

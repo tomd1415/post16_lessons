@@ -23,10 +23,9 @@ Add this before other scripts:
 
 ### 2. Update your pages
 
-The error handler has already been integrated into:
-- All index pages (index.html, teacher.html, admin.html, login.html)
-- Activity pages
-- Lesson pages
+The error handler script is already included in:
+- The hub, teacher and admin pages (index.html, login.html, teacher*.html, admin*.html)
+- The Lesson 4 Python runner activity (other lesson and activity pages do not include it yet)
 
 ## Usage Examples
 

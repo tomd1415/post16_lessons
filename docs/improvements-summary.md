@@ -328,7 +328,7 @@ curl "https://localhost:8443/api/admin/audit?limit=10&cursor=2025-01-11T12:00:00
 curl -H "X-Forwarded-For: 203.0.113.45" https://localhost:8443/api/auth/login \
   -d '{"username": "test", "password": "wrong"}'
 
-# Check audit log - should show 203.0.113.45, not 127.0.0.1
+# Audit log and sessions currently record the proxy's address (request.client.host), not 203.0.113.45, until proxy headers are enabled (see section 8)
 ```
 
 ---

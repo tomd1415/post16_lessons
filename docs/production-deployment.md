@@ -122,6 +122,8 @@ LESSON_MANIFEST_PATH=/srv/lessons/manifest.json
 LINK_OVERRIDES_PATH=/data/link-overrides.json
 ```
 
+Note: Compose uses this file only to fill `${...}` placeholders. In `compose.yml` those are `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` and `SESSION_TTL_MINUTES` (and `GRAFANA_ADMIN_*` in `compose.monitoring.yml`). The other values above reach the API only if you also set them under `api: environment:` (in `compose.yml` or `compose.prod.yml`), as the example `compose.prod.yml` below does for `RUNNER_AUTO_PULL` and `RETENTION_YEARS`.
+
 ### 3. Generate Secure Passwords
 
 ```bash
