@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What I have learnt: An on-prem platform for Thinking like a Coder</title>
+<link rel="stylesheet" href="learnt.css">
+<style>
+  /* page-only additions; the shared learnt.css stays identical across projects */
+  figure.diagram { margin: 1rem 0; }
+  figure.diagram svg { width: 100%; height: auto; max-width: 46rem; display: block; }
+  figure.diagram figcaption { color: var(--muted); font-size: 0.9rem; max-width: 46rem; }
+  main th, main td { overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<header class="site">
+  <div class="inner">
+    <p class="meta"><a href="../../index.html">What I have learnt</a> · project: <code>post16_lessons</code> · a school-server web platform for the ICDL "Thinking like a Coder" course (about 50 pupils, at most 7 at once, per the README)</p>
+    <h1>An on-prem platform for Thinking like a Coder</h1>
+    <p class="meta">Reconstructed on 2026-10-06 from the repository record (git history 2026-01-08–2026-01-16, <code>README.md</code>, <code>docs/</code>, the local brief <code>plans/prompt_1</code>), not written at the time · all nine planned phases built and all 15 lessons marked ready; nothing committed since 16 January 2026, and the repo does not say whether pupils are using it · for revisiting later, not for reference while working (that is <code>README.md</code>)</p>
+  </div>
+</header>
+
+<main>
+<nav class="toc" aria-label="Contents">
+  <strong>Contents</strong>
+  <ol>
+    <li><a href="#big-picture">The big picture</a></li>
+    <li><a href="#stack">How a request travels</a></li>
+    <li><a href="#auth">Accounts, sessions and who sees what</a></li>
+    <li><a href="#saving">Saving pupil work</a></li>
+    <li><a href="#runner">The Python runner</a></li>
+    <li><a href="#teacher">Teacher views and marking</a></li>
+    <li><a href="#content">Lessons as data</a></li>
+    <li><a href="#ops">Operations and monitoring</a></li>
+    <li><a href="#rewrite">What one rewrite quietly removed</a></li>
+    <li><a href="#assessment">The assessment plan that moved out</a></li>
+    <li><a href="#traps">Traps</a></li>
+    <li><a href="#lessons">General lessons</a></li>
+    <li><a href="#results">Results</a></li>
+    <li><a href="#test">Test yourself</a></li>
+    <li><a href="#next">Still to check</a></li>
+    <li><a href="#glossary">Glossary</a></li>
+  </ol>
+</nav>
+
+<h2 id="big-picture">1. The big picture</h2>
+<p>A small, self-hosted web platform that turned one working, pupil-tested Lesson 1 web pack for ICDL "Thinking like a Coder" into a 15-lesson course with local accounts, pupil work saved to a server with a full revision history, a sandboxed Python runner and teacher marking views. It runs as three Docker containers (Caddy for TLS, one FastAPI app that serves both the pages and the API, and PostgreSQL) and was built in phased commits over a week, 8–16 January 2026.</p>
+<p>The starting point was a brief, <code>plans/prompt_1</code> (kept locally; <code>plans/</code> is git-ignored), written as instructions to an AI assistant. Its fixed requirements: keep Lesson 1's look and behaviour exactly; deliver in nine phases, each ending with a running demo, acceptance tests and a rollback plan; local accounts only (no Microsoft sign-in); store minimal personal data and delete it after two years; keep every save but do not show attempt history to pupils; and run Python on the server, safely. The history follows those phases closely: "Phase 0 complete and tested" (<code>75d5298</code>) through "Phase 8 finished" (<code>1d47296</code>) fell within three calendar days, 8–10 January. A <code>.claude/settings.json</code> appears in <code>3f83eb2</code> on 11 January, so Claude Code was in use by then; the history does not record which code an assistant wrote.</p>
+<table>
+  <tr><th>When</th><th>What happened</th><th>Evidence</th></tr>
+  <tr><td>8 Jan</td><td>Phases 0–1: Lesson 1 audited into a design inventory, its CSS and JS pulled into a shared core, a Compose skeleton, and a course catalogue drawn from a lesson manifest.</td><td><code>75d5298</code>, <code>8afbd9a</code>, <code>docs/design-system-inventory.md</code></td></tr>
+  <tr><td>9 Jan</td><td>Phases 2–6: accounts and roles, server saving with offline sync, teacher view, content tooling, the Python runner. The first automated tests arrive with Phase 4.</td><td><code>44241d8</code>, <code>c550ae8</code>, <code>e6527d5</code>, <code>a97781e</code>, <code>dc34d26</code></td></tr>
+  <tr><td>9–10 Jan</td><td>The runner's "save files" bug fixed; Phases 7–8 (stats, backups, retention purge, audit log, DPIA notes); content for all 15 lessons.</td><td><code>ea6d1af</code>, <code>027a05f</code>, <code>6f43abc</code>, <code>1d47296</code>, <code>c05d36c</code></td></tr>
+  <tr><td>10–11 Jan</td><td>Polish: step-by-step "how to" instructions for each activity, a menu redesign, coding hints, Playwright smoke tests, shuffled answer choices.</td><td><code>f3b2b48</code>, <code>21c43ee</code>, <code>a9d205f</code>, <code>3cb3fbb</code>, <code>7dce1c9</code></td></tr>
+  <tr><td>11–12 Jan</td><td>Hardening from a review list (<code>docs/improvements-summary.md</code>): database-backed rate limits, security headers, connection pooling; then backups, Prometheus and Grafana, performance scripts, API and deployment guides.</td><td><code>3cae641</code>, <code>7c00326</code>, <code>06915d0</code>, <code>3f83eb2</code>, <code>e21fc3d</code></td></tr>
+  <tr><td>12 Jan</td><td>The next project, a KS3 assessment system, planned in <code>assessment_prompts/</code> (section 10).</td><td><code>d4dbb25</code>, <code>84ec721</code></td></tr>
+  <tr><td>14 Jan</td><td>Admin user management, through a rewrite of <code>main.py</code> that lost earlier work (section 9); then per-answer marking, written feedback, and the first hand-written database migration.</td><td><code>4fb501b</code> … <code>9b6477b</code></td></tr>
+  <tr><td>16 Jan</td><td>TLS switched from Caddy's own certificates to a supplied certificate; ports 80 and 443 added.</td><td><code>fcb33dc</code></td></tr>
+</table>
+
+<h2 id="stack">2. How a request travels</h2>
+<p><code>compose.yml</code> defines three services. <strong>proxy</strong> is Caddy: it holds the TLS certificate, adds security headers, and forwards plain HTTP to <code>api:8000</code>. <strong>api</strong> is the FastAPI app. The unusual part is that it also serves the static pages: <code>web/</code> is mounted read-only at <code>/srv</code> and the app ends with <code>app.mount("/", StaticFiles(directory=STATIC_ROOT, html=True))</code>. So one HTTP middleware sees every request, page or API, and that is what lets it send a logged-out visitor to the login page before any lesson HTML is returned (section 3). <strong>db</strong> is PostgreSQL 16 with its data in a named volume, <code>pg_data</code>.</p>
+<figure class="diagram">
+<svg viewBox="0 0 720 270" role="img" aria-label="Diagram: the browser talks HTTPS to Caddy; Caddy forwards HTTP to the FastAPI app, which serves pages and API and talks SQL to PostgreSQL. The app also uses the host's Docker socket to start one short-lived runner container per Python run." style="color: var(--fg); font-family: system-ui, sans-serif;">
+  <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: currentColor"/></marker></defs>
+  <g style="fill: var(--card); stroke: currentColor; stroke-width: 1.5">
+    <rect x="10" y="40" width="120" height="64" rx="8"/>
+    <rect x="180" y="40" width="150" height="64" rx="8"/>
+    <rect x="380" y="30" width="180" height="84" rx="8"/>
+    <rect x="600" y="40" width="110" height="64" rx="8"/>
+    <rect x="380" y="175" width="180" height="56" rx="8"/>
+    <rect x="600" y="170" width="110" height="66" rx="8" style="stroke-dasharray: 5 4"/>
+  </g>
+  <g style="fill: currentColor; font-size: 14px">
+    <text x="70" y="66" text-anchor="middle" font-weight="700">Browser</text>
+    <text x="70" y="86" text-anchor="middle" font-size="12">school PC</text>
+    <text x="255" y="66" text-anchor="middle" font-weight="700">proxy: Caddy</text>
+    <text x="255" y="86" text-anchor="middle" font-size="12">TLS, headers</text>
+    <text x="470" y="56" text-anchor="middle" font-weight="700">api: FastAPI</text>
+    <text x="470" y="76" text-anchor="middle" font-size="12">pages (StaticFiles)</text>
+    <text x="470" y="94" text-anchor="middle" font-size="12">+ /api routes, :8000</text>
+    <text x="655" y="66" text-anchor="middle" font-weight="700">db</text>
+    <text x="655" y="86" text-anchor="middle" font-size="12">PostgreSQL 16</text>
+    <text x="470" y="199" text-anchor="middle" font-weight="700">host Docker daemon</text>
+    <text x="470" y="218" text-anchor="middle" font-size="12">via /var/run/docker.sock</text>
+    <text x="655" y="194" text-anchor="middle" font-weight="700">runner</text>
+    <text x="655" y="211" text-anchor="middle" font-size="12">one per Run,</text>
+    <text x="655" y="226" text-anchor="middle" font-size="12">no network</text>
+    <text x="155" y="32" text-anchor="middle" font-size="12">HTTPS</text>
+    <text x="355" y="32" text-anchor="middle" font-size="12">HTTP</text>
+    <text x="580" y="32" text-anchor="middle" font-size="12">SQL</text>
+    <text x="478" y="146" font-size="12">Docker API</text>
+    <text x="580" y="160" text-anchor="middle" font-size="12">create, exec, remove</text>
+  </g>
+  <g style="fill: none; stroke: currentColor; stroke-width: 1.6">
+    <path d="M130,72 H180" marker-end="url(#arr)"/>
+    <path d="M330,72 H380" marker-end="url(#arr)"/>
+    <path d="M560,72 H600" marker-end="url(#arr)"/>
+    <path d="M470,114 V175" marker-end="url(#arr)"/>
+    <path d="M560,203 H600" marker-end="url(#arr)"/>
+  </g>
+</svg>
+<figcaption>The three Compose services (solid) and the short-lived runner containers (dashed) that the app starts through the host's Docker socket. Monitoring (Prometheus and Grafana) is an optional second Compose file on the same network.</figcaption>
+</figure>
+<p>The Docker socket mount is what makes the Python runner possible (section 5). It is also the most powerful thing in the stack: whatever can talk to that socket can start any container on the host, which in practice means root on the host. That is a general Docker fact; the repo's own guidance on it is "do not expose the Docker socket externally" (<code>PROXMOXINSTALL.md</code>).</p>
+
+<h3>TLS, in three stages</h3>
+<ol>
+  <li><strong>Phase 2:</strong> <code>https://localhost:8443</code> with <code>tls internal</code>. Caddy runs its own private certificate authority and signs a certificate for <code>localhost</code>. Browsers do not trust that authority, hence the README's "accept the browser warning".</li>
+  <li><strong><code>9dcf298</code>, "deployment tweaks":</strong> the site address became the host-less <code>https://:8443</code> with <code>tls internal { on_demand }</code>, so Caddy issues a certificate for whatever name or IP address a request arrives on. The redirect on 8080 changed from a fixed <code>localhost</code> to <code>{host}</code> for the same reason.</li>
+  <li><strong><code>fcb33dc</code>, "update network settings", the last commit:</strong> both HTTPS sites now load <code>/etc/caddy/certs/server.crt</code> and <code>server.key</code>, mounted from <code>docker/certs/</code>, and ports 80 and 443 are published next to 8080 and 8443. That folder is not in the repo, so the stack cannot start without a certificate being put there first. Why the change was made is not recorded; my inference is that it was to get a certificate the school PCs trust, which is what the mkcert section of <code>docs/production-deployment.md</code> describes for an IP-only LAN.</li>
+</ol>
+<div class="card fact"><span class="label">Verified: what a .env file can change</span>
+Compose reads a <code>.env</code> file only to fill <code>${…}</code> placeholders in the Compose file; it does not pass the file's contents into containers. <code>compose.yml</code> uses placeholders for <code>POSTGRES_USER</code>, <code>POSTGRES_PASSWORD</code>, <code>POSTGRES_DB</code> and <code>SESSION_TTL_MINUTES</code>, but writes every <code>RUNNER_*</code> value and <code>RETENTION_YEARS=2</code> literally. While writing this page I ran <code>docker compose --env-file probe.env config</code> with a probe file setting <code>RUNNER_TIMEOUT_SEC=99</code>, <code>RETENTION_YEARS=7</code>, <code>SESSION_TTL_MINUTES=123</code> and <code>POSTGRES_DB=probe</code>. Only the last two came through; the runner timeout stayed at 3 and retention at 2.</div>
+
+<h2 id="auth">3. Accounts, sessions and who sees what</h2>
+<h3>Accounts</h3>
+<p>Accounts are local, with three roles: <code>pupil</code>, <code>teacher</code> and <code>admin</code>. Instead of classes there is a <code>cohort_year</code> label, as the brief asked. Pupil usernames must follow the school's existing <code>lastname.firstinitial</code> format, enforced by the pattern <code>^[a-z][a-z\-']*\.[a-z]$</code> (<code>valid_pupil_username</code> in <code>backend/app/main.py</code>). Admins create users one at a time or by CSV import.</p>
+<p>The very first admin is created with an <em>unauthenticated</em> <code>POST /api/admin/bootstrap</code>. It works exactly once: as soon as any admin exists it refuses with 403. That is a common first-run pattern, and its weak point is the window before it is used, when anyone who can reach the server could claim the admin account.</p>
+<p>Passwords are hashed with Argon2id (<code>backend/app/security.py</code>: 2 passes, 64 MiB of memory, 1 lane). Argon2id is deliberately slow and memory-hungry, so a stolen hash is expensive to guess at.</p>
+<h3>Sessions and CSRF</h3>
+<p>Logging in creates a random session id (<code>secrets.token_urlsafe(32)</code>) and stores it in the <code>sessions</code> table along with a second random value, the CSRF token. The id goes to the browser as the <code>tlac_session</code> cookie: <code>HttpOnly</code> (page scripts cannot read it), <code>Secure</code> (HTTPS only), <code>SameSite=Lax</code>, lasting 480 minutes by default. Because the session lives in the database, logging out deletes the row and the cookie becomes worthless at once, which was one of Phase 2's acceptance tests.</p>
+<p>The CSRF token is the defence against another website making a pupil's browser send a request with the cookie attached. <code>SameSite=Lax</code> already keeps the cookie off most requests started by other sites; the token is a second layer. Pages fetch <code>/api/auth/me</code>, which returns the token, and send it back in an <code>X-CSRF-Token</code> header on every state-changing call; <code>csrf_guard</code> compares it with the session's copy. Even where a foreign site can get the cookie sent, it cannot <em>read</em> the token from <code>/api/auth/me</code>, so it cannot forge the header.</p>
+<h3>Who can open which page</h3>
+<p>An HTTP middleware (<code>auth_middleware</code>) runs on every request. Requests under <code>/api/</code> pass straight through and each endpoint checks for itself (<code>require_teacher</code>, <code>require_admin</code>). For pages: <code>/login.html</code>, <code>/favicon.ico</code>, <code>/core/…</code> and the lesson manifest are public; anything else needs a session, otherwise the visitor is redirected to <code>/login.html?next=…</code>. <code>/admin…</code> needs the admin role. Teacher-only paths are anything starting <code>/teacher</code>, anything containing <code>/teacher/</code>, and each lesson's <code>index.html</code>: in the Lesson 1 pack, a lesson's <code>index.html</code> was the <em>teacher</em> hub and <code>student.html</code> the pupil hub, and the platform kept that. Tests <code>test_teacher_pages_blocked_for_pupils</code> and <code>test_admin_pages_blocked_for_teachers</code> cover the rules.</p>
+<h3>Login backoff</h3>
+<p>Failed logins are slowed down twice over: per account (<code>users.failed_login_count</code> and <code>locked_until</code>) and per client address plus username (the <code>login_attempts</code> table). Both use <code>compute_lock_seconds</code>: nothing for the first two failures, then 30 seconds after 3–4, 120 after 5–6, 300 after 7–8 and 600 from 9. The brief asked for a "lockout/backoff strategy suitable for SEND context"; short, growing waits rather than a permanent lock fit that. The second table used to be a Python dictionary in memory, which every restart emptied; <code>3cae641</code> moved it into the database.</p>
+<div class="card fact"><span class="label">Verified</span>
+The committed performance run (<code>performance/results/test_results_20260112_003737.txt</code>) shows the backoff working: attempts 1–3 with a wrong password returned 401, and attempts 4–10 returned 429 "Too many attempts. Try again shortly."</div>
+
+<h2 id="saving">4. Saving pupil work</h2>
+<p>Lesson 1 already saved each activity in the browser's <code>localStorage</code>, under keys such as <code>tlac_l1_a01_state</code>, through a small <code>store</code> wrapper. The design inventory's rules included "do not change teacher mode behavior or storage keys", so Phase 3 put the server <em>underneath</em> that contract rather than replacing it (<code>web/core/app.js</code>):</p>
+<figure class="chain"><ol>
+  <li><strong>Save locally, as before.</strong> An activity calls <code>store.set(key, value)</code>, which writes <code>localStorage</code> exactly as Lesson 1 did.</li>
+  <li><strong>Queue it.</strong> <code>store.set</code> also hands the value to <code>tlacSync.queue</code>, which records it in a pending list (<code>tlac_sync_pending</code>, itself in <code>localStorage</code>, so it survives closing the tab) with the time it was saved.</li>
+  <li><strong>Send it, a moment later.</strong> After 1.2 seconds without a further change, <code>flushPending</code> posts each pending entry to <code>/api/activity/state/lesson-N/aNN</code> with the CSRF header, and removes it from the list only when the server says yes. If the PC is offline nothing is lost: the list is retried at the next page load and when the browser fires its <code>online</code> event.</li>
+  <li><strong>Store current state and history.</strong> The server upserts one <code>activity_states</code> row per pupil and activity (a unique constraint enforces "one"), and appends an <code>activity_revisions</code> row on <em>every</em> save.</li>
+  <li><strong>Resume from the server.</strong> On page load, <code>bootstrapServerState</code> fetches the pupil's saved states and overwrites the local copy, unless there is an unsent local change or the local copy is at least as new.</li>
+</ol></figure>
+<p>Pupils only ever get the current state back; the revisions are for teachers (<code>teacher-history.html</code>). That is the brief's "store attempt history, but do NOT make it obvious to pupils". Since <code>0d0d1a9</code> each save also creates or updates an <code>activity_marks</code> row: the first save sets it to <code>in_progress</code>, later saves count attempts and timestamps, and a teacher's verdict is never overwritten (test <code>test_hybrid_automark_on_save</code>).</p>
+<div class="card fact"><span class="label">Verified</span>
+The state column is declared as <code>JSON().with_variant(JSONB, "postgresql")</code> (<code>backend/app/models.py</code>): JSONB in production, plain JSON in the tests, which run against an in-memory SQLite database (<code>backend/tests/conftest.py</code>). One model works on both.</div>
+
+<h2 id="runner">5. The Python runner</h2>
+<p>The brief wanted server-side Python with file input and output, turtle drawings and no risk to the server. The answer (<code>backend/app/python_runner.py</code>, Phase 6, <code>dc34d26</code>) is a fresh container for every press of Run, created through the host's Docker socket:</p>
+<figure class="chain"><ol>
+  <li><strong>Create a locked-down container</strong> that only runs <code>sleep 3600</code>: no network (<code>network_mode="none"</code>), a 32 MB in-memory <code>/tmp</code>, 128 MB of memory, half a CPU, at most 64 processes, every Linux capability dropped, <code>no-new-privileges</code>, running as user 65534 (<code>nobody</code>).</li>
+  <li><strong>Run the code with <code>exec</code></strong>: <code>timeout -s SIGKILL 3s python -c &lt;bootstrap&gt;</code>, with the pupil's code passed base64-encoded in an environment variable. The bootstrap writes it to <code>/tmp/main.py</code>, installs a fake <code>turtle</code> module that records lines and writes <code>turtle.svg</code> at exit, and a do-nothing <code>tkinter</code>, so drawing programs work with no screen.</li>
+  <li><strong>Collect files with a second <code>exec</code></strong>: a short script walks <code>/tmp</code> and prints any new files (at most 8, 50 KB each) as base64 JSON.</li>
+  <li><strong>Remove the container.</strong> If the code is still running after the time limit plus two seconds, the app kills it and reports exit code 137.</li>
+</ol></figure>
+<p>An <code>asyncio.Semaphore</code> lets only <code>RUNNER_CONCURRENCY</code> (2) runs happen at once; the rest wait their turn, which is the brief's "runs are queued; concurrency capped". The runner image defaults, in <code>compose.yml</code>, to <code>post16_lessons-api</code>, the app's own image, with automatic pulling off, so the school server never needs to download anything to run pupil code. The README calls this the offline fallback; the code's own default is <code>python:3.12-slim</code>.</p>
+<div class="card fact"><span class="label">Verified</span>
+The tests never start Docker: <code>conftest.py</code> sets <code>RUNNER_ENABLED=0</code>, and <code>test_python_run_happy_path</code> swaps <code>run_python</code> for a fake. What they do check is how the commands are built (<code>test_runner_exec_command_uses_inline_code</code>, <code>test_runner_file_listing_command_targets_tmp</code>) and that unsafe file paths are refused (<code>test_sanitize_files_rejects_parent_path</code>).</div>
+
+<h2 id="teacher">6. Teacher views and marking</h2>
+<p><strong>Phase 4</strong> (<code>e6527d5</code>) built the first teacher view: filter pupils by cohort, a completion overview per lesson, a drill-down per pupil with their latest work, revision history and private notes, a Complete/Incomplete mark per activity alongside the objectives it maps to, and CSV export per lesson and per pupil (tests <code>test_marking_and_overview</code>, <code>test_csv_exports</code>, <code>test_cohort_filters</code>).</p>
+<p><strong>Phase 7</strong> (<code>6f43abc</code>) added statistics. Completion per objective is counted as "activities mapped to the objective × pupils in scope". A "needs attention" list looks only at activities a pupil has started, and flags <code>not_completed</code>, <code>many_revisions</code> (5 or more saves) and <code>stuck</code> (no save for 7 days and not complete). Time on task is estimated from the first and last save, and only activities with two or more saves count. The brief said "do not overclaim precision", and the README repeats that the timings are approximate.</p>
+<p><strong>14 January</strong> (<code>0d0d1a9</code>, <code>9990ecf</code>) added marking of individual answers (<code>answer_marks</code>, a JSON map such as <code>{"q1": {"correct": true}}</code>, with <code>score</code> = answers marked correct out of answers marked) and written feedback that the pupil can read. Every marking action writes an audit-log entry.</p>
+<div class="card fact"><span class="label">Verified</span>
+<code>set_answer_mark</code> edits the <code>answer_marks</code> dictionary in place and then calls <code>flag_modified(mark, "answer_marks")</code>. SQLAlchemy notices when a column is given a new value, but not when the inside of a JSON value is changed. Without that call, the edit would never be written to the database.</div>
+
+<h2 id="content">7. Lessons as data</h2>
+<p>Everything about the course lives in <code>web/lessons/manifest.json</code>: the course details, a registry of 36 links from the teacher handbook, and 15 lessons, each with objectives, timings, resources, teacher resources and a list of activities. Each activity names the objectives it serves (<code>objectiveIds</code>) and the evidence expected. The catalogue page draws itself from the manifest, and the teacher statistics use the objective mapping. There are 39 activities in all: 8 in Lesson 1 (the original pack), 4 in Lesson 2, 3 in Lesson 3 and 2 in each of the rest.</p>
+<ul>
+  <li><strong>Making packs.</strong> <code>scripts/new_lesson_pack.py</code> scaffolds a lesson in the Lesson 1 style: three auto-marked quick checks, guided notes, a main task in small steps, a reflection box and a teacher-only answer block. <code>scripts/build_handbook_lessons.py</code> parsed the handbook PDF to generate draft packs for lessons 3–15 (<code>9985d90</code>). The manifest marked 14 lessons as drafts at that point; since <code>c05d36c</code>, "all content added", all 15 are <code>ready</code>.</li>
+  <li><strong>Link rot.</strong> <code>scripts/link_registry_check.py</code> checks every handbook link and writes a report; teachers can give any link a replacement URL or a local copy, or switch it off, from <code>teacher-links.html</code>. The overrides sit in <code>data/link-overrides.json</code>, outside the manifest, so regenerating content does not lose them.</li>
+  <li><strong>Explicit instructions.</strong> <code>f3b2b48</code> added numbered "how to" steps for every activity, as 485 lines inside <code>app.js</code>. The very next commit, <code>21c43ee</code>, moved them into <code>web/core/howto-map.json</code>: content as data, not code.</li>
+  <li><strong>Shuffled choices.</strong> <code>7dce1c9</code>, "improving randomising", shuffles radio-button answers and drop-down options in the browser, keeping a leading "Select…" option in place.</li>
+  <li><strong>Coding hints.</strong> <code>a9d205f</code> and <code>20a4fff</code> added starter-code hints for each step of the coding activities.</li>
+</ul>
+<p>One consequence of keeping Lesson 1's "teacher mode" as it was: the teacher-only answer guidance is part of the same HTML file the pupil loads, hidden with <code>display:none</code> and shown when a staff member switches teacher mode on (for example in <code>lesson-3/activities/02-inputs-and-outputs.html</code>). A pupil who opens "view source" can read it. Only the separate <code>teacher/</code> pages (lesson plan, cards, answer key) are actually blocked for pupils.</p>
+
+<h2 id="ops">8. Operations and monitoring</h2>
+<ul>
+  <li><strong>Backups</strong> (<code>scripts/backup.sh</code>): <code>pg_dump</code> through <code>docker compose exec</code> into <code>db.sql.gz</code>, a tar of <code>data/</code> and <code>reports/</code>, and a <code>backup.meta</code> file, in <code>backups/backup_YYYYMMDD_HHMMSS/</code>; old backups are pruned (30 days, keep the last 14). <code>scripts/restore.sh</code> refuses to run without <code>--force</code>, because it drops the whole database schema before loading the dump.</li>
+  <li><strong>Retention</strong> (<code>backend/app/retention.py</code>): a pupil is due for deletion when the latest of their last login, account creation, last save and last revision is more than two years old. The default is a dry run that lists what would go; <code>--apply</code> deletes; staff are left alone unless <code>--include-staff</code> is given (test <code>test_retention_purge_deletes_old_pupil</code>).</li>
+  <li><strong>Audit and DPIA.</strong> Teacher and admin actions go to an audit log with an admin page; <code>docs/dpia-summary.md</code> lists what personal data is held, why, for how long and who sees it.</li>
+  <li><strong>Monitoring.</strong> <code>backend/app/metrics.py</code> defines Prometheus counters and histograms (requests, logins, saves, Python runs). <code>compose.monitoring.yml</code> adds Prometheus (30-day retention) and Grafana with a ready-made dashboard; <code>admin-metrics.html</code> shows a summary inside the app itself.</li>
+  <li><strong>Schema changes.</strong> The app creates its tables at start-up with <code>Base.metadata.create_all</code>, which creates missing tables but never changes existing ones. New columns therefore needed a hand-written migration (see the traps).</li>
+</ul>
+
+<h2 id="rewrite">9. What one rewrite quietly removed</h2>
+<p>On 14 January, <code>4fb501b</code> "add admin for users" added user management. It also rewrote <code>backend/app/main.py</code>, which went from 2,064 lines to 1,891, and the version it wrote did not contain several things added on 11 January. The next commits put some of them back:</p>
+<table>
+  <tr><th>Missing after <code>4fb501b</code></th><th>What happened next</th></tr>
+  <tr><td>Database-backed login limiter calls (the code went back to the old in-memory signature, <code>login_limiter.check(ip_key)</code>)</td><td>Restored in <code>a8f42fb</code>, "tests passed", along with <code>STATIC_ROOT</code></td></tr>
+  <tr><td>The admin metrics endpoint</td><td>Restored in <code>36b7c1a</code>, "added the metrics endpoint back in"</td></tr>
+  <tr><td>The Prometheus middleware and the login, save and run counters</td><td>Restored in <code>e840623</code></td></tr>
+  <tr><td>The Prometheus text endpoint (was <code>/api/metrics</code>)</td><td>Replaced by a new <code>/metrics</code> in <code>c8bc1af</code>, with <code>docker/prometheus.yml</code> changed to match</td></tr>
+  <tr class="hl"><td>API rate limits: 60 saves and 20 Python runs per minute per user</td><td>Not restored. The <code>ApiRateLimiter</code> class is still in <code>rate_limit.py</code>, but nothing calls it.</td></tr>
+  <tr class="hl"><td><code>get_client_ip</code>, which read the real pupil address from <code>X-Forwarded-For</code></td><td>Not restored. Sessions, audit entries and the login limiter record <code>request.client.host</code>, which behind Caddy is the proxy's address.</td></tr>
+</table>
+<p>The same evening, <code>311f086</code> "Updated documents" changed <code>docs/improvements-summary.md</code> to match the reduced code: "Implemented API Rate Limiting ✓" became "API Rate Limiter Primitives … when wired into endpoints", and "Fixed Client IP Logging for Audit ✓" became "Client IP Logging (Proxy Headers Required)". The record does not say whether leaving the features out was a decision or the end of the clean-up.</p>
+<div class="card fact"><span class="label">Verified: why the tests stayed green</span>
+<code>backend/tests/test_rate_limiting.py</code> tests the <code>ApiRateLimiter</code> class directly (<code>test_api_rate_limiter_sliding_window</code>, <code>test_api_rate_limiter_window_reset</code>). No test checks that the save or run endpoints <em>use</em> it, and nothing tests the client address. So the class kept passing after the endpoints stopped calling it.</div>
+
+<h2 id="assessment">10. The assessment plan that moved out</h2>
+<p>On 12 January, <code>d4dbb25</code> and <code>84ec721</code> added <code>assessment_prompts/</code>: twelve documents, 6,713 lines, specifying a different system, AI-generated computing assessments for KS3 (Years 7–9) built from teachers' lesson plans. Four minutes after the second commit, the same documents became the first commit of a new repository.</p>
+<div class="card fact"><span class="label">Verified</span>
+Every file in <code>post16_lessons/assessment_prompts/</code> is byte-identical to the same file in <code>computing_check</code>'s first commit, <code>19e936e</code> (18:31 on 12 January; <code>84ec721</code> here was 18:27). The plan was drafted here and then built, and further edited, in <code>computing_check</code>; the copy here has not changed since. See the <a href="../../computing_check/learnt/index.html">computing_check page</a>.</div>
+
+<h2 id="traps">11. Traps</h2>
+<div class="card trap"><span class="label">Trap: a feature commit that deletes features</span>
+<code>4fb501b</code> was described as "add admin for users", and it did add that. It also took out API rate limiting, real client addresses and the metrics endpoints, because <code>main.py</code> was rewritten from a version that predated them (section 9). Four follow-up commits restored part of it; two features stayed gone, and the documentation was changed to fit. A commit message only says what was meant to change.</div>
+<div class="card trap"><span class="label">Trap: .gitignore does not untrack a file</span>
+<code>scripts/run_playwright_tests.sh</code>, which exports usernames and passwords for the Playwright test accounts, was committed in <code>3cb3fbb</code> and <code>73cc1ca</code>. Two hours later <code>7dce1c9</code> added <code>run_playwright_tests.sh</code> to <code>.gitignore</code>. That only stops <em>untracked</em> files being added; the committed file stayed tracked, was pushed to GitHub, and is still in the repo. The same test passwords are written into <code>performance/*.py</code>. Ignoring a file afterwards needs <code>git rm --cached</code>, and a password that has been pushed needs changing, because the history keeps it.</div>
+<div class="card trap"><span class="label">Trap: a green tick over zero successes</span>
+The committed performance results print "✓ All requests succeeded (no rate limiting triggered at this load)" directly below "Successful requests: 0", and "✓ All executions succeeded" below "Successful executions: 0". The save requests were going to <code>POST /api/activity/state</code>, a path with no lesson or activity in it, which only accepts GET (hence 405). The run requests got 403 because the scripts read the CSRF token from the login reply, which does not contain it; the token comes from <code>/api/auth/me</code>. The save and run benchmarks therefore measured nothing, and the summary still looked like a pass.</div>
+<div class="card trap"><span class="label">Trap: a .env file does not reach the containers</span>
+<code>PROXMOXINSTALL.md</code> said to put overrides such as <code>RUNNER_TIMEOUT_SEC</code> and <code>RETENTION_YEARS</code> in <code>.env</code>. Because <code>compose.yml</code> writes those values literally, a <code>.env</code> file changes nothing (checked with <code>docker compose config</code>, section 2). They have to be edited in the <code>api</code> service's <code>environment:</code> list. The guide was corrected on 2026-10-06.</div>
+<div class="card trap"><span class="label">Trap: create_all never alters a table</span>
+When <code>0d0d1a9</code> added six columns to <code>activity_marks</code>, a fresh database got them, because <code>create_all</code> builds missing tables from the models. An existing database did not, because <code>create_all</code> skips tables that already exist. <code>ab3047a</code> "added DB migration" and <code>fa3041d</code> (<code>backend/migrations/README.md</code>) added hand-written <code>ALTER TABLE … ADD COLUMN IF NOT EXISTS</code> SQL to paste into <code>psql</code>.</div>
+<div class="card trap"><span class="label">Trap: Docker's archive calls and a tmpfs /tmp</span>
+The runner's <code>/tmp</code> is a tmpfs, an in-memory filesystem. The README note added in <code>ea6d1af</code> says the code is passed inline because file-based execution gave intermittent "<code>can't open file '/tmp/main.py'</code>" errors "caused by relying on Docker archive uploads into tmpfs", and warns not to switch back. Collecting output files had the matching problem: <code>027a05f</code> "save files is now working" replaced <code>get_archive("/tmp")</code> with an <code>exec</code>'d script that prints the files as JSON. The repo records the symptom and the workaround, not the cause. My understanding is that Docker's archive API reads and writes the container's own filesystem, not filesystems mounted over it, but I have not verified that here.</div>
+<div class="card trap"><span class="label">Trap: a strict CSP and inline scripts</span>
+<code>3cae641</code> added a Content Security Policy with <code>script-src 'self'</code>, which blocks scripts written inside the HTML. The lesson pages use inline scripts, so <code>96fe184</code> added <code>'unsafe-inline'</code> with the comment "needed for inline scripts and styles" and a TODO to move to nonces or hashes. A CSP has to match how the pages are built, or it breaks them.</div>
+<div class="card trap"><span class="label">Trap: SQLite in the tests, PostgreSQL in production</span>
+SQLite hands back datetimes without a time zone, while the code compares them with <code>datetime.now(timezone.utc)</code>; Python refuses to compare the two kinds. Hence <code>ensure_timezone_aware</code> ("for SQLite compatibility") in <code>rate_limit.py</code>, and the same fix-up in the session-expiry check. Fast in-memory tests are worth having, but the test database is not the real one.</div>
+<div class="card trap"><span class="label">Trap: two Compose files, one network</span>
+<code>compose.monitoring.yml</code> first joined an <code>external</code> network called <code>tlac-network</code>, which <code>compose.yml</code> never created. <code>a147e6e</code> "monitoring fixes" gave both files' default network the explicit name <code>tlac-network</code>, so Prometheus can reach <code>api:8000</code> whichever file starts first.</div>
+<div class="card trap"><span class="label">Trap: docs that describe last week's code</span>
+On 2026-10-06 the docs still said TLS used Caddy's internal CA (<code>README.md</code>, <code>docs/dpia-summary.md</code>, <code>docs/monitoring-guide.md</code>), although <code>fcb33dc</code>, the last commit, had replaced it with a supplied certificate; no doc was touched in that commit. <code>docs/api-reference.md</code> still listed per-endpoint rate limits, contradicting its own "Rate Limits" section and the code. These were corrected in the documentation commit made alongside this page.</div>
+
+<h2 id="lessons">12. General lessons</h2>
+<div class="card idea"><span class="label">Review the deletions</span>
+After any large rewrite of a file, by a person or an assistant, read the removed lines as carefully as the added ones. <code>git diff --stat</code> showed 418 deletions in <code>4fb501b</code>; a search of the old file for function names (<code>get_client_ip</code>, <code>ApiRateLimiter</code>) would have found the losses in a minute.</div>
+<div class="card idea"><span class="label">Test the wiring, not just the part</span>
+A unit test of a rate limiter proves the limiter works, not that anything uses it. For every safety feature, keep at least one test that goes through the real endpoint, such as "the 61st save in a minute gets 429".</div>
+<div class="card idea"><span class="label">A harness that cannot fail is not a test</span>
+Print a pass only after checking that something succeeded. "0 successful, 0 rate limited" should be reported as a failure of the test itself, not as "no rate limiting triggered".</div>
+<div class="card idea"><span class="label">Keep the old contract, change what is underneath</span>
+Server saving was added without touching Lesson 1's storage keys: the existing <code>store.set</code> call simply started queueing a sync as well. Every existing activity got server saving and offline resilience without being edited.</div>
+<div class="card idea"><span class="label">Decide before you reconcile</span>
+When code and docs disagree, first decide which one is right, then fix the other. On 14 January the docs were edited to match code that had lost two features by accident, which turned a regression into the documented design.</div>
+<div class="card idea"><span class="label">Secrets never go in, not "go in, then get ignored"</span>
+Test credentials belong in an environment file that is ignored before it is ever committed: <code>export_vars_for_test.sh</code> was listed in <code>.gitignore</code> a minute after it was created (<code>9b6477b</code>) and has never been in the repo. Once a secret is committed and pushed, the only real fix is to change it.</div>
+
+<h2 id="results">13. Results</h2>
+<table>
+  <tr><th>Measure</th><th>Value</th><th>Evidence</th></tr>
+  <tr><td>Commits</td><td>64, on 7 days between 8 and 16 January 2026</td><td><code>git log</code></td></tr>
+  <tr class="hl"><td>Course content</td><td>15 lessons, all <code>ready</code>; 39 activities; 36 registered handbook links</td><td><code>web/lessons/manifest.json</code></td></tr>
+  <tr><td>Backend tests</td><td>57 pytest tests (in-memory SQLite, runner disabled), plus a Playwright smoke spec run against a live stack</td><td><code>backend/tests/</code>, <code>ui-tests/ui-smoke.spec.js</code></td></tr>
+  <tr><td>Login lockout</td><td>401 for attempts 1–3, then 429 from attempt 4</td><td><code>performance/results/test_results_20260112_003737.txt</code></td></tr>
+  <tr><td>Read endpoints (100 requests each)</td><td>average 4.98 ms health, 4.83 ms manifest, 4.17 ms <code>/api/auth/me</code>, 6.91 ms saved-state list</td><td>same file</td></tr>
+  <tr><td>Logins under load (100, 10 workers)</td><td>379 ms average, 25.6 per second. My inference: most of this is the deliberately slow Argon2id hash.</td><td>same file</td></tr>
+  <tr><td>Save and run benchmarks</td><td>0 successes: 405 (wrong path) and 403 (missing CSRF token)</td><td>same file; scripts in <code>performance/</code></td></tr>
+  <tr><td>Runner limits</td><td>3 s, 128 MB, 0.5 CPU, 64 processes, 32 MB <code>/tmp</code>, no network, 2 at a time</td><td><code>compose.yml</code></td></tr>
+</table>
+
+<h2 id="test">14. Test yourself</h2>
+<details><summary>Why does the FastAPI app serve the static lesson pages itself instead of leaving them to Caddy?</summary>
+So that one middleware sees every request. It can redirect a logged-out visitor to the login page, and keep pupils off teacher and admin pages, before any HTML is sent. If Caddy served the files directly, the app would never see those requests.</details>
+<details><summary>The session cookie is HttpOnly, so page scripts cannot read it. How does a page get the CSRF token, and why can't a hostile website do the same?</summary>
+The page fetches <code>/api/auth/me</code>, which returns the token stored with the session, and sends it back in the <code>X-CSRF-Token</code> header. Even if a hostile site manages to get the cookie sent with a request (<code>SameSite=Lax</code> already blocks most cases), the browser will not let that site read the reply from <code>/api/auth/me</code>, so it never learns the token.</details>
+<details><summary>Why does logging out really end a session here, rather than just deleting the cookie?</summary>
+The session is a row in the database, identified by the cookie's random id. Logout deletes that row, so even a copy of the cookie stops working at once.</details>
+<details><summary>A pupil saves while the classroom Wi-Fi is down, then closes the tab. What happens to the work?</summary>
+It is in <code>localStorage</code> twice: the activity state itself, and an entry in the pending list (<code>tlac_sync_pending</code>). The next time a page loads in that browser, or the browser comes back online, <code>flushPending</code> posts it to the server, and removes the entry only after a successful reply.</details>
+<details><summary>How does the platform keep every attempt without showing attempt history to pupils?</summary>
+Each save updates one current-state row (all the pupil's page ever loads) and also appends a revision row. Only teacher pages and teacher-only API endpoints read the revisions.</details>
+<details><summary>Name four limits on a runner container, and say what each protects against.</summary>
+Any four of these. No network: the code cannot reach anything. 3-second <code>timeout</code> with SIGKILL: infinite loops. 128 MB of memory and half a CPU: one pupil starving the server. 64 processes: fork bombs. All capabilities dropped, <code>no-new-privileges</code> and user <code>nobody</code>: escalation inside the container. 32 MB tmpfs: filling the disk. And at most 2 runs at once (the semaphore): the server overall.</details>
+<details><summary>How do turtle programs work in a container with no screen?</summary>
+The bootstrap installs its own <code>turtle</code> module, which records each line as the program moves and writes <code>turtle.svg</code> when the program ends. It also installs a <code>tkinter</code> that does nothing. The SVG is collected like any other output file and shown in the page.</details>
+<details><summary>I set <code>RUNNER_TIMEOUT_SEC=10</code> in <code>.env</code> and restarted. Why is the limit still 3 seconds?</summary>
+Compose uses <code>.env</code> only to fill <code>${…}</code> placeholders, and <code>compose.yml</code> writes <code>RUNNER_TIMEOUT_SEC=3</code> literally with no placeholder. Edit the value under the <code>api</code> service's <code>environment:</code> instead.</details>
+<details><summary>A new column was added to a model, the API restarted cleanly, and the first query using it fails on the school server but not on a fresh install. Why?</summary>
+<code>Base.metadata.create_all</code> creates missing tables but never adds columns to existing ones. A fresh database got the new column; the existing one needed <code>ALTER TABLE … ADD COLUMN</code> (as in <code>backend/migrations/</code>).</details>
+<details><summary>Every rate-limiter test still passed after the save and run endpoints stopped being rate-limited. Why?</summary>
+The tests called the <code>ApiRateLimiter</code> class directly. None of them sent 61 saves to the real endpoint, so nothing noticed that the endpoints no longer called the class.</details>
+<details><summary>Why did "add <code>run_playwright_tests.sh</code> to <code>.gitignore</code>" not keep its passwords out of GitHub?</summary>
+<code>.gitignore</code> only affects files Git is not already tracking. The script had been committed two hours earlier, so it stayed tracked and was pushed. It needs <code>git rm --cached</code>, and the passwords need changing.</details>
+<details><summary>Why can a pupil read the teacher's answer guidance on an activity page, but not the answer key page?</summary>
+The guidance block is part of the activity's own HTML, hidden with <code>display:none</code> until teacher mode shows it, so "view source" reveals it. The answer key lives under <code>/lessons/lesson-N/teacher/</code>, which the middleware refuses to send to a pupil.</details>
+<details><summary>Why does <code>set_answer_mark</code> call <code>flag_modified</code>?</summary>
+It changes the inside of the <code>answer_marks</code> JSON dictionary. SQLAlchemy only notices when a column is given a new value, so without <code>flag_modified</code> the change would not be saved.</details>
+
+<h2 id="next">15. Still to check</h2>
+<p>These come from reading the code while writing this page on 2026-10-06. None was run.</p>
+<ul>
+  <li><strong>Can Prometheus actually scrape <code>/metrics</code>?</strong> The login middleware redirects any request without a session that is not under <code>/api/</code> and not on the public list, and <code>/metrics</code> is not on the list (<code>is_public_path</code>). No test covers it. Start the monitoring stack and look at Prometheus's Targets page.</li>
+  <li><strong>The start-up retry.</strong> <code>lifespan</code> records an error when <code>create_all</code> fails but never clears it after a later attempt succeeds, so a database that is slow on first boot would still stop the API (the restart policy then tries again).</li>
+  <li><strong>Shared browsers.</strong> The <code>localStorage</code> keys are not per user, and logout clears only <code>tlac_role</code>. On a PC where pupils share one browser profile, the next pupil could see the previous pupil's local answers, and an unsent pending save could be sent under the next login.</li>
+  <li><strong>Pupil input files</strong> still reach the runner only through <code>put_archive</code> into the tmpfs <code>/tmp</code>, the mechanism the README calls unreliable. Run a file-reading activity repeatedly.</li>
+  <li><strong>Decide about the two lost features:</strong> wire <code>ApiRateLimiter</code> back into the save and run endpoints and restore the forwarded-address handling (or start uvicorn with proxy headers), or leave them documented as off.</li>
+  <li><strong>Teacher-only answers</strong> in pupil-loaded HTML: decide whether that matters for this course.</li>
+  <li><strong>Committed test passwords:</strong> change them, and untrack <code>scripts/run_playwright_tests.sh</code>.</li>
+  <li><strong>The performance scripts:</strong> fix the save path and take the CSRF token from <code>/api/auth/me</code>, then measure saves and runs for real.</li>
+</ul>
+
+<h2 id="glossary">16. Glossary</h2>
+<dl class="glossary">
+  <dt>Reverse proxy</dt><dd>A server that receives the browser's requests and passes them on to the real application. Here Caddy holds the TLS certificate and adds security headers, and the app only ever sees plain HTTP from Caddy.</dd>
+  <dt>TLS termination</dt><dd>Decrypting HTTPS at the proxy, so the traffic behind it (proxy to app, inside the Docker network) is plain HTTP.</dd>
+  <dt>Caddy internal CA</dt><dd>Caddy's built-in private certificate authority (<code>tls internal</code>). The encryption is real, but browsers do not trust the authority until its root certificate is installed. <code>on_demand</code> makes Caddy issue a certificate for whatever host name or IP a request arrives on.</dd>
+  <dt>Compose interpolation</dt><dd>Docker Compose replacing <code>${VAR:-default}</code> in the Compose file with values from the shell or a <code>.env</code> file. It does not inject the <code>.env</code> file into containers.</dd>
+  <dt>StaticFiles</dt><dd>FastAPI's (Starlette's) way of serving a folder of files from inside the app, so the app's middleware applies to them.</dd>
+  <dt>Session cookie flags</dt><dd><code>HttpOnly</code>: page scripts cannot read the cookie. <code>Secure</code>: sent over HTTPS only. <code>SameSite=Lax</code>: not sent on most requests started by other websites.</dd>
+  <dt>CSRF</dt><dd>Cross-site request forgery: another site making your browser send a request that carries your cookie. Prevented here by a per-session token that must be sent back in a header.</dd>
+  <dt>Argon2id</dt><dd>A password-hashing method designed to be slow and memory-hungry, so guessing passwords from a stolen hash is expensive.</dd>
+  <dt>Backoff</dt><dd>Making a client wait longer after each further failure, instead of locking the account for good.</dd>
+  <dt>Offline-first sync</dt><dd>Saving to the device first and sending to the server when possible, so a dropped connection loses nothing.</dd>
+  <dt>Revision</dt><dd>One stored copy of an activity's state per save. Teachers can see the history; pupils only get the latest.</dd>
+  <dt>Docker socket</dt><dd><code>/var/run/docker.sock</code>, the Docker daemon's control channel. Whatever can use it can start any container on the host.</dd>
+  <dt>tmpfs</dt><dd>A filesystem held in memory, mounted into a container; it vanishes when the container is removed.</dd>
+  <dt>exec (Docker)</dt><dd>Running an extra command inside a container that is already running. The runner uses one exec for the pupil's code and one to collect output files.</dd>
+  <dt>Semaphore</dt><dd>A counter that lets only a fixed number of tasks into a section at once. Here, at most two Python runs.</dd>
+  <dt><code>create_all</code></dt><dd>SQLAlchemy's "create any tables that are missing" call. It never alters an existing table.</dd>
+  <dt><code>flag_modified</code></dt><dd>SQLAlchemy's way of marking a column as changed when its contents were edited in place, such as a key changed inside a JSON dictionary.</dd>
+  <dt>Prometheus / Grafana</dt><dd>Prometheus collects numeric metrics by "scraping" an HTTP endpoint at intervals; Grafana draws dashboards from them.</dd>
+  <dt>DPIA</dt><dd>Data Protection Impact Assessment: the record of what personal data a system holds, why, for how long and who can see it.</dd>
+  <dt>Retention purge</dt><dd>Deleting personal data once it is older than the agreed period (two years after last activity here), with a dry run first.</dd>
+  <dt>Lesson manifest</dt><dd>The single JSON file that describes the course, its lessons, activities, objectives and links, from which the pages and statistics are built.</dd>
+  <dt>Link registry</dt><dd>The list of external handbook links, with a checker and teacher-set replacements for links that have died.</dd>
+</dl>
+</main>
+<footer><div class="inner">Part of the "what I have learnt" collection, one page per project, all sharing <code>learnt.css</code>. Reconstructed 2026-10-06 from the post16_lessons repository and the local brief <code>plans/prompt_1</code>; nothing here was written at the time.</div></footer>
+</body>
+</html>
